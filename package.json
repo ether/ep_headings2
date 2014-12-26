@@ -1,0 +1,34 @@
+{
+  "description": "Adds heading support to Etherpad Lite.  Includes improved suppot for export, i18n etc.",
+  "name": "ep_headings2",
+  "version": "0.0.1",
+  "author": {
+    "name": "John McLear",
+    "email": "john@mclear.co.uk"
+  },
+  "contributors": [
+    {
+      "name": "Matthias Bartelmeß",
+      "email": "mba@fourplusone.de"
+    },
+    {
+      "name": "John McLear",
+      "email": "john@mclear.co.uk"
+    },
+    {
+      "name": "Gedion Woldeselassie",
+      "email": "gwy321@gmail.com",
+      "url": "https://github.com/gedion"
+    }
+  ],
+  "dependencies": {},
+  "engines": {
+    "node": "*"
+  },
+  "homepage": "https://github.com/johnmclear/ep_headings2",
+  "devDependencies": {},
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/johnmclear/ep_headings2.git"
+  }
+}
