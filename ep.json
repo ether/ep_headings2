@@ -4,6 +4,7 @@
       "name": "main",
       "client_hooks": {
         "aceEditorCSS": "ep_headings2/static/js/index",
+        "aceEditEvent": "ep_headings2/static/js/index",
         "aceDomLineProcessLineAttributes": "ep_headings2/static/js/index",
         "postAceInit": "ep_headings2/static/js/index",
         "aceInitialized": "ep_headings2/static/js/index",

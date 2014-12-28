@@ -2,7 +2,7 @@ describe("Set Heading and ensure its removed properly", function(){
 
   //create a new pad before each test run
   beforeEach(function(cb){
-    testPad = helper.newPad(cb);
+    helper.newPad(cb);
     this.timeout(60000);
   });
 

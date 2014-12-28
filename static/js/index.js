@@ -7,12 +7,12 @@ var cssFiles = ['ep_headings2/static/css/editor.css'];
 
 // All our tags are block elements, so we just return them.
 var tags = ['h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'code'];
-var aceRegisterBlockElements = function(){
+exports.aceRegisterBlockElements = function(){
   return tags;
 }
 
 // Bind the event handler to the toolbar buttons
-var postAceInit = function(hook, context){
+exports.postAceInit = function(hook, context){
   var hs = $('#heading-selection');
   hs.on('change', function(){
     var value = $(this).val();
@@ -26,17 +26,22 @@ var postAceInit = function(hook, context){
   })
 };
 
-
+// On caret position change show the current heading
+exports.aceEditEvent = function(hook, context){
+  if(context.callstack.type == "handleClick" || context.callstack.type == "handleKeyEvent"){
+    // console.log("context", context.callstack.type);
+  }
+}
 
 // Our heading attribute will result in a heaading:h1... :h6 class
-function aceAttribsToClasses(hook, context){
+exports.aceAttribsToClasses = function(hook, context){
   if(context.key == 'heading'){
     return ['heading:' + context.value ];
   }
 }
 
 // Here we convert the class heading:h1 into a tag
-var aceDomLineProcessLineAttributes = function(name, context){
+exports.aceDomLineProcessLineAttributes = function(name, context){
   var cls = context.cls;
   var domline = context.domline;
   var headingType = /(?:^| )heading:([A-Za-z0-9]*)/.exec(cls);
@@ -83,19 +88,12 @@ function doInsertHeading(level){
 
 
 // Once ace is initialized, we set ace_doInsertHeading and bind it to the context
-function aceInitialized(hook, context){
+exports.aceInitialized = function(hook, context){
   var editorInfo = context.editorInfo;
   editorInfo.ace_doInsertHeading = _(doInsertHeading).bind(context);
 }
 
-function aceEditorCSS(){
+exports.aceEditorCSS = function(){
   return cssFiles;
 };
 
-// Export all hooks
-exports.aceRegisterBlockElements = aceRegisterBlockElements;
-exports.aceInitialized = aceInitialized;
-exports.postAceInit = postAceInit;
-exports.aceDomLineProcessLineAttributes = aceDomLineProcessLineAttributes;
-exports.aceAttribsToClasses = aceAttribsToClasses;
-exports.aceEditorCSS = aceEditorCSS;
