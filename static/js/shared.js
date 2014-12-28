@@ -7,18 +7,22 @@ var collectContentPre = function(hook, context){
   var state = context.state;
   var lineAttributes = state.lineAttributes
   var tagIndex = _.indexOf(tags, tname);
-
+  console.log(context);
+  if(tname === "div"){
+    delete lineAttributes['heading'];
+  }
   if(tagIndex >= 0){
+    console.log("line needs heading");
     lineAttributes['heading'] = tags[tagIndex];
   }
 };
 
+// I don't even know when this is run..
 var collectContentPost = function(hook, context){
   var tname = context.tname;
   var state = context.state;
   var lineAttributes = state.lineAttributes
   var tagIndex = _.indexOf(tags, tname);
-
   if(tagIndex >= 0){
     delete lineAttributes['heading'];
   }
