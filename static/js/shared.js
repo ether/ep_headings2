@@ -7,12 +7,10 @@ var collectContentPre = function(hook, context){
   var state = context.state;
   var lineAttributes = state.lineAttributes
   var tagIndex = _.indexOf(tags, tname);
-  console.log(context);
-  if(tname === "div"){
+  if(tname === "div" || tname === "p"){
     delete lineAttributes['heading'];
   }
   if(tagIndex >= 0){
-    console.log("line needs heading");
     lineAttributes['heading'] = tags[tagIndex];
   }
 };
