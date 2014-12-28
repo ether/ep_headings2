@@ -27,10 +27,49 @@ exports.postAceInit = function(hook, context){
 };
 
 // On caret position change show the current heading
-exports.aceEditEvent = function(hook, context){
-  if(context.callstack.type == "handleClick" || context.callstack.type == "handleKeyEvent"){
-    // console.log("context", context.callstack.type);
+exports.aceEditEvent = function(hook, call, cb){
+
+  // If it's not a click or a key event and the text hasn't changed then do nothing
+  var cs = call.callstack;
+  if(!(cs.type == "handleClick") && !(cs.type == "handleKeyEvent") && !(cs.docTextChanged)){
+    return false;
   }
+  // If it's an initial setup event then do nothing..
+  if(cs.type == "setBaseText" || cs.type == "setup") return false;
+
+  // It looks like we should check to see if this section has this attribute
+  setTimeout(function(){ // avoid race condition..
+    var attributeManager = call.documentAttributeManager;
+    var rep = call.rep;
+    var firstLine, lastLine;
+    var activeAttributes = {};
+    $("#heading-selection").val(-2);
+  
+    firstLine = rep.selStart[0];
+    lastLine = Math.max(firstLine, rep.selEnd[0] - ((rep.selEnd[1] === 0) ? 1 : 0));
+    var totalNumberOfLines = 0;
+
+    _(_.range(firstLine, lastLine + 1)).each(function(line){
+      totalNumberOfLines++;
+      var attr = attributeManager.getAttributeOnLine(line, "heading");
+      if(!activeAttributes[attr]){
+        activeAttributes[attr] = {};
+        activeAttributes[attr].count = 1;
+      }else{
+        activeAttributes[attr].count++;
+      }
+    });
+    
+    $.each(activeAttributes, function(k, attr){
+      if(attr.count === totalNumberOfLines){
+        // show as active class
+        var ind = tags.indexOf(k);
+        $("#heading-selection").val(ind);
+      }
+    });
+
+  },250);
+
 }
 
 // Our heading attribute will result in a heaading:h1... :h6 class
