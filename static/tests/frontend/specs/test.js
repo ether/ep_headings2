@@ -11,7 +11,7 @@ describe("Set Heading and ensure its removed properly", function(){
     // Set Line 1 heading and check it's set
      // Set Line 1 back to null heading value and check it's set
       // Do the same for all other line style types
-/*
+
   it("Checks default content doesn't have H1", function(done) {
     this.timeout(60000);
     var chrome$ = helper.padChrome$;
@@ -69,7 +69,6 @@ describe("Set Heading and ensure its removed properly", function(){
     });
 
   });
-*/
 
   it("Checks we can set content to H1 then on 'enter key' ensure h1 is lost", function(done) {
     this.timeout(60000);
