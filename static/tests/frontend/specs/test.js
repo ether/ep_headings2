@@ -10,7 +10,8 @@ describe("Set Heading and ensure its removed properly", function(){
    // Check Default Text has no Heading
     // Set Line 1 heading and check it's set
      // Set Line 1 back to null heading value and check it's set
-
+      // Do the same for all other line style types
+/*
   it("Checks default content doesn't have H1", function(done) {
     this.timeout(60000);
     var chrome$ = helper.padChrome$;
@@ -62,6 +63,46 @@ describe("Set Heading and ensure its removed properly", function(){
         return $h1Element.find("h1").length === 0
       }).done(function(){
         expect($h1Element.find("h1").length).to.be(0);
+        done();
+      });
+
+    });
+
+  });
+*/
+
+  it("Checks we can set content to H1 then on 'enter key' ensure h1 is lost", function(done) {
+    this.timeout(60000);
+    var chrome$ = helper.padChrome$;
+    var inner$ = helper.padInner$;
+
+    var $firstTextElement = inner$("div").first();
+    var $editorContainer = chrome$("#editorcontainer");
+
+    var $editorContents = inner$("div")
+    $editorContents.sendkeys('{selectall}');
+    $firstTextElement.sendkeys('First Line!');
+
+    // sets first line to h1
+    chrome$('#heading-selection').val('0');
+    chrome$('#heading-selection').change();
+
+    $firstTextElement.sendkeys('{enter}');
+
+    var $h1Element = inner$("div").first();
+
+    helper.waitFor(function(){
+      return $h1Element.find("h1").length === 1;
+    }).done(function(){
+      var $firstTextElement = inner$("div").first();
+      $firstTextElement.sendkeys('{enter}');
+      var $secondElement = inner$("div").first().next();
+      $secondElement.sendkeys('Second Line should not have H1');
+      helper.waitFor(function(){
+        return $secondElement.find("h1").length === 0
+      }).done(function(){
+        expect($secondElement.find("h1").length).to.be(0);
+        expect($secondElement.text()).to.be("Second Line should not have H1");
         done();
       });
 
