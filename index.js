@@ -8,13 +8,13 @@ exports.eejsBlock_editbarMenuLeft = function (hook_name, args, cb) {
 }
 
 // Define the styles so they are consistant between client and server
-var style = "h1{font-size: 2.0em;line-height: 120%;} \
-  h2{font-size: 1.5em;line-height: 120%;} \
-  h3{font-size: 1.17em;line-height: 120%;} \
-  h4{line-height: 120%;} \
-  h5{font-size: 0.83em;line-height: 120%;} \
-  h6{font-size: 0.75em;line-height: 120%;} \
-  code{font-family: monospace;}";
+var style = "heading{font-size: 2.0em;line-height: 120%;} \
+  action{font-size: 1.5em;line-height: 120%;} \
+  character{font-size: 1.17em;line-height: 120%;} \
+  parenthetical{line-height: 120%;} \
+  dialogue{font-size: 0.83em;line-height: 120%;} \
+  transition{font-size: 0.75em;line-height: 120%;} \
+  shot{font-family: monospace;}";
 
 // Include CSS for HTML export
 exports.stylesForExport = function(hook, padId, cb){

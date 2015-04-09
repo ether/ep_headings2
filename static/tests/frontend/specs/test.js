@@ -23,13 +23,13 @@ describe("Set Script Element and ensure its removed properly", function(){
     $editorContents.sendkeys('{selectall}');
     $firstTextElement.sendkeys('First Line!');
 
-    // sets first line to h1
+    // sets first line to heading
     chrome$('#script_element-selection').val('0');
     chrome$('#script_element-selection').change();
 
     $firstTextElement.sendkeys('{enter}');
 
-    var $h1Element = inner$("div").first();
+    var $headingElement = inner$("div").first();
 
     helper.waitFor(function(){
       return chrome$('#script_element-selection').val() == 0;
@@ -42,7 +42,7 @@ describe("Set Script Element and ensure its removed properly", function(){
       helper.waitFor(function(){
         return chrome$('#script_element-selection').val() == -1;
       }).done(function(){
-        expect($secondElement.find("h1").length).to.be(0);
+        expect($secondElement.find("heading").length).to.be(0);
         expect($secondElement.text()).to.be("Second Line");
         done();
       });

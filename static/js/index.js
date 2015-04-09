@@ -5,7 +5,7 @@ var _ = require('ep_etherpad-lite/static/js/underscore');
 var cssFiles = ['ep_script_elements/static/css/editor.css'];
 
 // All our tags are block elements, so we just return them.
-var tags = ['h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'code'];
+var tags = ['heading', 'action', 'character', 'parenthetical', 'dialogue', 'transition', 'shot'];
 exports.aceRegisterBlockElements = function(){
   return tags;
 }
@@ -71,14 +71,14 @@ exports.aceEditEvent = function(hook, call, cb){
 
 }
 
-// Our script element attribute will result in a script_element:h1... :h6 class
+// Our script element attribute will result in a script_element:heading... :transition class
 exports.aceAttribsToClasses = function(hook, context){
   if(context.key == 'script_element'){
     return ['script_element:' + context.value ];
   }
 }
 
-// Here we convert the class script_element:h1 into a tag
+// Here we convert the class script_element:heading into a tag
 exports.aceDomLineProcessLineAttributes = function(name, context){
   var cls = context.cls;
   var domline = context.domline;
