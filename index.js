@@ -3,7 +3,7 @@ var Changeset = require("ep_etherpad-lite/static/js/Changeset");
 var Security = require('ep_etherpad-lite/static/js/security');
 
 exports.eejsBlock_editbarMenuLeft = function (hook_name, args, cb) {
-  args.content = args.content + eejs.require("ep_headings2/templates/editbarButtons.ejs");
+  args.content = args.content + eejs.require("ep_script_elements/templates/editbarButtons.ejs");
   return cb();
 }
 
@@ -23,20 +23,20 @@ exports.stylesForExport = function(hook, padId, cb){
 
 // line, apool,attribLine,text
 exports.getLineHTMLForExport = function (hook, context) {
-  var header = _analyzeLine(context.attribLine, context.apool);
-  if (header) {
-    return "<" + header + ">" + Security.escapeHTML(context.text.substring(1)) + "</" + header + ">";
+  var script_element = _analyzeLine(context.attribLine, context.apool);
+  if (script_element) {
+    return "<" + script_element + ">" + Security.escapeHTML(context.text.substring(1)) + "</" + script_element + ">";
   }
 }
 
 function _analyzeLine(alineAttrs, apool) {
-  var header = null;
+  var script_element = null;
   if (alineAttrs) {
     var opIter = Changeset.opIterator(alineAttrs);
     if (opIter.hasNext()) {
       var op = opIter.next();
-      header = Changeset.opAttributeValue(op, 'heading', apool);
+      script_element = Changeset.opAttributeValue(op, 'script_element', apool);
     }
   }
-  return header;
+  return script_element;
 }

@@ -8,10 +8,10 @@ var collectContentPre = function(hook, context){
   var lineAttributes = state.lineAttributes
   var tagIndex = _.indexOf(tags, tname);
   if(tname === "div" || tname === "p"){
-    delete lineAttributes['heading'];
+    delete lineAttributes['script_element'];
   }
   if(tagIndex >= 0){
-    lineAttributes['heading'] = tags[tagIndex];
+    lineAttributes['script_element'] = tags[tagIndex];
   }
 };
 
@@ -22,7 +22,7 @@ var collectContentPost = function(hook, context){
   var lineAttributes = state.lineAttributes
   var tagIndex = _.indexOf(tags, tname);
   if(tagIndex >= 0){
-    delete lineAttributes['heading'];
+    delete lineAttributes['script_element'];
   }
 };
 

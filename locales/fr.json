@@ -1,11 +1,11 @@
 {
-  "ep_headings.style" : "Titres",
-  "ep_headings.normal" : "Normal",
-  "ep_headings.h1" : "Titre 1",
-  "ep_headings.h2" : "Titre 2",
-  "ep_headings.h3" : "Titre 3",
-  "ep_headings.h4" : "Titre 4",
-  "ep_headings.h5" : "Titre 5",
-  "ep_headings.h6" : "Titre 6",
-  "ep_headings.code" : "Code"
+  "ep_script_elements.style" : "Titres",
+  "ep_script_elements.normal" : "Normal",
+  "ep_script_elements.h1" : "Titre 1",
+  "ep_script_elements.h2" : "Titre 2",
+  "ep_script_elements.h3" : "Titre 3",
+  "ep_script_elements.h4" : "Titre 4",
+  "ep_script_elements.h5" : "Titre 5",
+  "ep_script_elements.h6" : "Titre 6",
+  "ep_script_elements.code" : "Code"
 }
