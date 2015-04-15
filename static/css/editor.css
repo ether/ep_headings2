@@ -1,7 +1,44 @@
-heading{font-size: 2.0em;line-height: 120%;}
-action{font-size: 1.5em;line-height: 120%;}
-character{font-size: 1.17em;line-height: 120%;}
-parenthetical{line-height: 120%;}
-dialogue{font-size: 0.83em;line-height: 120%;}
-transition{font-size: 0.75em;line-height: 120%;}
-shot{font-family: monospace;}
+heading{
+  text-transform: uppercase;
+}
+/*heading:before {
+  counter-increment: scene;
+  content: counter(scene) " ";
+  display: inline-block;
+  margin-left: -7%;
+  width: 7%;
+}*/
+action{
+}
+character{
+  display:inline-block;
+  margin-left: 153px;
+  margin-right: 16px;
+  text-transform: uppercase;
+}
+parenthetical{
+  display:inline-block;
+  margin-left: 116px;
+  margin-right: 155px;
+}
+parenthetical:before {
+    content: '(';
+}
+parenthetical:after {
+    content: ')';
+}
+dialogue{
+  display:inline-block;
+  margin-left: 77px;
+  margin-right: 116px;
+}
+transition{
+  display:inline-block;
+  margin-left: 309px;
+  margin-right: 39px;
+  text-align: right;
+  text-transform: uppercase;
+}
+shot{
+  text-transform: uppercase;
+}

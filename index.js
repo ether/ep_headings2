@@ -8,13 +8,7 @@ exports.eejsBlock_editbarMenuLeft = function (hook_name, args, cb) {
 }
 
 // Define the styles so they are consistant between client and server
-var style = "heading{font-size: 2.0em;line-height: 120%;} \
-  action{font-size: 1.5em;line-height: 120%;} \
-  character{font-size: 1.17em;line-height: 120%;} \
-  parenthetical{line-height: 120%;} \
-  dialogue{font-size: 0.83em;line-height: 120%;} \
-  transition{font-size: 0.75em;line-height: 120%;} \
-  shot{font-family: monospace;}";
+var style = eejs.require("ep_script_elements/static/css/editor.css")
 
 // Include CSS for HTML export
 exports.stylesForExport = function(hook, padId, cb){
