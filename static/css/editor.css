@@ -1,19 +1,30 @@
+body{
+  /* scene numbering: */
+  counter-reset: scene;
+}
+
 heading{
   display:inline-block;
   margin-top: 2em;
   text-transform: uppercase;
 }
-/*heading:before {
+heading:before {
+  float: left;
+  text-align: right;
+  display: inline-block;
+  width: 40px;
+  margin-left: -67px; /* - (27 + width) */
+
+  /* scene numbering: */
   counter-increment: scene;
   content: counter(scene) " ";
-  display: inline-block;
-  margin-left: -7%;
-  width: 7%;
-}*/
+}
+
 action{
   display:inline-block;
   margin-top: 1em;
 }
+
 character{
   display:inline-block;
   margin-left: 153px;
@@ -21,6 +32,7 @@ character{
   margin-top: 1em;
   text-transform: uppercase;
 }
+
 parenthetical{
   display:inline-block;
   margin-left: 116px;
@@ -32,11 +44,13 @@ parenthetical:before {
 parenthetical:after {
     content: ')';
 }
+
 dialogue{
   display:inline-block;
   margin-left: 77px;
   margin-right: 116px;
 }
+
 transition{
   display:inline-block;
   margin-left: 309px;
@@ -45,6 +59,7 @@ transition{
   text-align: right;
   text-transform: uppercase;
 }
+
 shot{
   display:inline-block;
   margin-top: 1em;
