@@ -35,8 +35,8 @@ character{
 
 parenthetical{
   display:inline-block;
-  margin-left: 116px;
-  margin-right: 155px;
+  margin-left: 105px;
+  margin-right: 142px;
 }
 parenthetical:before {
     content: '(';
@@ -48,7 +48,7 @@ parenthetical:after {
 dialogue{
   display:inline-block;
   margin-left: 77px;
-  margin-right: 116px;
+  margin-right: 111px;
 }
 
 transition{
