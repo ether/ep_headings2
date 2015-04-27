@@ -4,14 +4,14 @@ body{
 }
 
 heading{
-  display:inline-block;
+  display:block;
   margin-top: 2em;
   text-transform: uppercase;
 }
 heading:before {
   float: left;
   text-align: right;
-  display: inline-block;
+  display: block;
   width: 40px;
   margin-left: -67px; /* - (27 + width) */
 
@@ -21,12 +21,12 @@ heading:before {
 }
 
 action{
-  display:inline-block;
+  display:block;
   margin-top: 1em;
 }
 
 character{
-  display:inline-block;
+  display:block;
   margin-left: 153px;
   margin-right: 16px;
   margin-top: 1em;
@@ -34,7 +34,7 @@ character{
 }
 
 parenthetical{
-  display:inline-block;
+  display:block;
   margin-left: 105px;
   margin-right: 142px;
 }
@@ -46,13 +46,13 @@ parenthetical:after {
 }
 
 dialogue{
-  display:inline-block;
+  display:block;
   margin-left: 77px;
   margin-right: 111px;
 }
 
 transition{
-  display:inline-block;
+  display:block;
   margin-left: 309px;
   margin-right: 39px;
   margin-top: 1em;
@@ -61,7 +61,7 @@ transition{
 }
 
 shot{
-  display:inline-block;
+  display:block;
   margin-top: 1em;
   text-transform: uppercase;
 }
