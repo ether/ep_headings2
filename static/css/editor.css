@@ -36,13 +36,14 @@ character{
 parenthetical{
   display:block;
   margin-left: 105px;
-  margin-right: 142px;
+  margin-right: 148px;
 }
 parenthetical:before {
-    content: '(';
+  content: '(';
 }
 parenthetical:after {
-    content: ')';
+  content: ')';
+  margin-right: -6px;
 }
 
 dialogue{
