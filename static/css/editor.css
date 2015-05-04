@@ -75,3 +75,27 @@ shot{
 #innerdocbody > div:first-of-type > shot {
   margin-top: 0em;
 }
+
+/* If available width is not even enough to have the regular 61
+   chars/line, we make the margins proportional to available width: */
+@media (max-width : 463px) { /* based on value form ep_script_page_view */
+  character{
+    margin-left: 35%;
+    margin-right: 4%;
+  }
+
+  parenthetical{
+    margin-left: 26%;
+    margin-right: 35%;
+  }
+
+  dialogue{
+    margin-left: 17%;
+    margin-right: 26%;
+  }
+
+  transition{
+    margin-left: 69%;
+    margin-right: 9%;
+  }
+}
