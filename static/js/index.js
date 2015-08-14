@@ -5,7 +5,7 @@ var _ = require('ep_etherpad-lite/static/js/underscore');
 var cssFiles = ['ep_script_elements/static/css/editor.css'];
 
 // All our tags are block elements, so we just return them.
-var tags = ['heading', 'action', 'character', 'parenthetical', 'dialogue', 'transition', 'shot', 'general'];
+var tags = ['heading', 'action', 'character', 'parenthetical', 'dialogue', 'transition', 'shot'];
 exports.aceRegisterBlockElements = function(){
   return tags;
 }

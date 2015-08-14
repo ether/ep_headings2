@@ -20,6 +20,8 @@ exports.getLineHTMLForExport = function (hook, context) {
   var script_element = _analyzeLine(context.attribLine, context.apool);
   if (script_element) {
     return "<" + script_element + ">" + Security.escapeHTML(context.text.substring(1)) + "</" + script_element + ">";
+  } else {
+    return "<general>" + Security.escapeHTML(context.text) + "</general>";
   }
 }
 
