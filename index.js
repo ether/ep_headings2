@@ -18,11 +18,13 @@ exports.stylesForExport = function(hook, padId, cb){
 // line, apool,attribLine,text
 exports.getLineHTMLForExport = function (hook, context) {
   var script_element = _analyzeLine(context.attribLine, context.apool);
+  var text = context.lineContent;
   if (script_element) {
-    return "<" + script_element + ">" + Security.escapeHTML(context.text.substring(1)) + "</" + script_element + ">";
+    text = text.substring(1);
   } else {
-    return "<general>" + Security.escapeHTML(context.text) + "</general>";
+    script_element = "general"
   }
+  return "<" + script_element + ">" + text + "</" + script_element + ">";
 }
 
 function _analyzeLine(alineAttrs, apool) {
