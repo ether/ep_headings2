@@ -2,7 +2,7 @@
   "parts": [
     {
       "name": "main",
-      "pre": ["ep_font_color/main"],
+      "pre": ["ep_font_color/main", "ep_comments_page/comments_page"],
       "client_hooks": {
         "aceEditorCSS": "ep_script_elements/static/js/index",
         "aceEditEvent": "ep_script_elements/static/js/index",
