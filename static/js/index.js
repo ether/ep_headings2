@@ -10,6 +10,10 @@ exports.aceRegisterBlockElements = function(){
   return tags;
 }
 
+exports.aceRegisterLineAttributes = function(){
+  return ['script_element'];
+}
+
 // Bind the event handler to the toolbar buttons
 exports.postAceInit = function(hook, context){
   var script_element_selection = $('#script_element-selection');
