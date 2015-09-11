@@ -17,24 +17,44 @@ exports.stylesForExport = function(hook, padId, cb){
 
 // line, apool,attribLine,text
 exports.getLineHTMLForExport = function (hook, context) {
-  var script_element = _analyzeLine(context.attribLine, context.apool);
+  var script_element = findAttrib(context.attribLine, context.apool, "script_element");
+  //try to find a scene line attributes. if it's found mount the HTML with it
+  var dataAttributes = mountAdditionalSceneData(context);
   var text = context.lineContent;
   if (script_element) {
     text = text.substring(1);
   } else {
-    script_element = "general"
+    script_element = "general";
   }
-  return "<" + script_element + ">" + text + "</" + script_element + ">";
+  //these dataAttributes refers do scene attributes like scene-name, scene-number, ...
+  return "<" + script_element + dataAttributes + ">" + text + "</" + script_element + ">";
 }
 
-function _analyzeLine(alineAttrs, apool) {
+//attrib is the element key in the pair key-value, scene-name:'whatever', in this case scene-name
+function findAttrib(alineAttrs, apool, attrib) {
   var script_element = null;
   if (alineAttrs) {
     var opIter = Changeset.opIterator(alineAttrs);
     if (opIter.hasNext()) {
       var op = opIter.next();
-      script_element = Changeset.opAttributeValue(op, 'script_element', apool);
+      script_element = Changeset.opAttributeValue(op, attrib, apool);
     }
   }
   return script_element;
+}
+
+//check if there's any scene tag as a lineattribute, if so return it formatted
+function mountAdditionalSceneData(context) {
+  var sceneTag = ["scene-name", "scene-number", "scene-duration", "scene-temporality", "scene-workstate", "scene-index"];
+  var dataAttributes = "";
+  for (var i = 0; i < sceneTag.length; i++) {
+    var attribute = findAttrib(context.attribLine, context.apool, sceneTag[i]);
+    if (attribute !=="") dataAttributes += formatTagOutput(sceneTag[i],attribute);
+  };
+  return dataAttributes;
+}
+
+//helper to output the sceneTag as tag='value'
+function formatTagOutput(key, value) {
+  return  " "+key+"='"+value+"'";
 }

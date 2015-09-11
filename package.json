@@ -25,7 +25,10 @@
       "email": "lpagliari@gmail.com"
     }
   ],
-  "dependencies": {},
+  "dependencies": {
+    "formidable": "*",
+    "socket.io-client": "*"
+    },
   "engines": {
     "node": "*"
   },

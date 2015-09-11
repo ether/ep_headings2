@@ -11,6 +11,7 @@
         "aceInitialized": "ep_script_elements/static/js/index",
         "aceAttribsToClasses": "ep_script_elements/static/js/index",
         "collectContentPre": "ep_script_elements/static/js/shared",
+        "aceRegisterLineAttributes": "ep_script_elements/static/js/index",
         "aceRegisterBlockElements": "ep_script_elements/static/js/index"
       },
       "hooks": {
