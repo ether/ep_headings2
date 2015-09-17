@@ -1,16 +1,8 @@
 var       supertest = require('ep_etherpad-lite/node_modules/supertest'),
-                 io = require('socket.io-client'),
               utils = require('../../../utils'),
           createPad = utils.createPad,
           setHTML   = utils.setHTML,
           getHTML   = utils.getHTML,
-             appUrl = utils.appUrl,
-             apiKey = utils.apiKey,
-          codeToBe0 = utils.codeToBe0,
-          codeToBe1 = utils.codeToBe1,
-          codeToBe4 = utils.codeToBe4,
-  scenesEndPointFor = utils.scenesEndPointFor,
-                api = supertest(appUrl),
          apiVersion = 1;
        randomString = require('ep_etherpad-lite/static/js/pad_utils').randomString;
 
@@ -51,7 +43,7 @@ describe('read scenes data', function(){
     });
 
     it('gets html processed when exported', function(done) {
-      expected = buildExpectedHTML("<heading scene-name='whatever'>Once upon a time</heading>");
+      expected = buildExpectedHTML("<heading><scene scene-name='whatever'></scene>Once upon a time</heading>");
       getHTML(padID, function(err, html_res){
         if(expected !== html_res ) throw new Error("Exported HTML doesn't match to expected HTML - Expected " + expected + " got " + html_res);
         done();
@@ -67,7 +59,7 @@ describe('read scenes data', function(){
       });
 
       it('gets html processed when exported', function(done) {
-        expected = buildExpectedHTML("<heading scene-name='whatever' scene-number='1'>Once upon a time</heading>");
+        expected = buildExpectedHTML("<heading><scene scene-name='whatever' scene-number='1'></scene>Once upon a time</heading>");
         getHTML(padID, function(err, html_res){
           if(expected !== html_res ) throw new Error("Exported HTML doesn't match to expected HTML - Expected " + expected + " got " + html_res);
           done();
@@ -84,28 +76,30 @@ describe('read scenes data', function(){
       });
 
       it('exports only name attribute', function(done) {
-        expected = buildExpectedHTML("<heading scene-name='whatever'>Once upon a time</heading>");
+        expected = buildExpectedHTML("<heading><scene scene-name='whatever'></scene>Once upon a time</heading>");
         getHTML(padID, function(err, html_res){
           if(expected !== html_res ) throw new Error("Exported HTML doesn't match to expected HTML - Expected " + expected + " got " + html_res);
           done();
         });
       });
     });
-    context('and scene has name, number, duration, temporality and workstate as attributes', function(){
+    context('and scene has name, number, duration, temporality, workstate, summary and time as attributes', function(){
 
       before(function() {
         html = function() {
           return buildHTML("<heading><scene><scene-name class='whatever'><empty/></scene-name>" +
-            "<scene-number class='1'><empty/></scene-number>" +
+            "<scene-number class='11'><empty/></scene-number>" +
             "<scene-duration class='30'><empty/></scene-duration>" +
             "<scene-temporality class='PRESENT'><empty/></scene-temporality>" +
             "<scene-workstate class='IMMATURE'><empty/></scene-workstate>" +
+            "<scene-time class='20'><empty/></scene-time>" +
+            "<scene-summary class='my summary'><empty/></scene-summary></scene>" +
             "Once upon a time</heading>");
         }
       });
 
       it('gets html processed when exported', function(done) {
-        expected = buildExpectedHTML("<heading scene-name='whatever' scene-number='1' scene-duration='30' scene-temporality='PRESENT' scene-workstate='IMMATURE'>Once upon a time</heading>");
+        expected = buildExpectedHTML("<heading><scene scene-name='whatever' scene-number='11' scene-duration='30' scene-temporality='PRESENT' scene-workstate='IMMATURE' scene-time='20' scene-summary='my summary'></scene>Once upon a time</heading>");
         getHTML(padID, function(err, html_res){
           if(expected !== html_res ) throw new Error("Exported HTML doesn't match to expected HTML - Expected " + expected + " got " + html_res);
           done();
@@ -123,7 +117,7 @@ describe('read scenes data', function(){
     });
 
     it('gets two headings when exported', function(done) {
-      expected = buildExpectedHTML("<heading scene-name='whatever'>Once upon a time</heading> <heading scene-name='end'>The End</heading>");
+      expected = buildExpectedHTML("<heading><scene scene-name='whatever'></scene>Once upon a time</heading> <heading><scene scene-name='end'></scene>The End</heading>");
       getHTML(padID, function(err, html_res){
         if(expected !== html_res ) throw new Error("Exported HTML doesn't match to expected HTML - Expected " + expected + " got " + html_res);
         done();
@@ -140,7 +134,7 @@ describe('read scenes data', function(){
     });
 
     it('gets two headings when exported', function(done) {
-      expected = buildExpectedHTML("<heading scene-name='whatever'>Once upon a time</heading> <heading>The End</heading>");
+      expected = buildExpectedHTML("<heading><scene scene-name='whatever'></scene>Once upon a time</heading> <heading>The End</heading>");
       getHTML(padID, function(err, html_res){
         if(expected !== html_res ) throw new Error("Exported HTML doesn't match to expected HTML - Expected " + expected + " got " + html_res);
         done();
@@ -157,7 +151,7 @@ describe('read scenes data', function(){
     });
 
     it('gets a heading with attributes and one action', function(done) {
-      expected = buildExpectedHTML("<heading scene-name='whatever'>Once upon a time</heading> <action>The End</action>");
+      expected = buildExpectedHTML("<heading><scene scene-name='whatever'></scene>Once upon a time</heading> <action>The End</action>");
       getHTML(padID, function(err, html_res){
         if(expected !== html_res ) throw new Error("Exported HTML doesn't match to expected HTML - Expected " + expected + " got " + html_res);
         done();
@@ -174,7 +168,7 @@ describe('read scenes data', function(){
     });
 
     it('gets an action and a heading with attributes', function(done) {
-      expected = buildExpectedHTML("<action>The End</action> <heading scene-name='whatever'>Once upon a time</heading>");
+      expected = buildExpectedHTML("<action>The End</action> <heading><scene scene-name='whatever'></scene>Once upon a time</heading>");
       getHTML(padID, function(err, html_res){
         if(expected !== html_res ) throw new Error("Exported HTML doesn't match to expected HTML - Expected " + expected + " got " + html_res);
         done();

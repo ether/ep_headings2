@@ -27,7 +27,7 @@ exports.getLineHTMLForExport = function (hook, context) {
     script_element = "general";
   }
   //these dataAttributes refers do scene attributes like scene-name, scene-number, ...
-  return "<" + script_element + dataAttributes + ">" + text + "</" + script_element + ">";
+  return "<" + script_element + ">" + dataAttributes + text + "</" + script_element + ">";
 }
 
 //attrib is the element key in the pair key-value, scene-name:'whatever', in this case scene-name
@@ -45,12 +45,13 @@ function findAttrib(alineAttrs, apool, attrib) {
 
 //check if there's any scene tag as a lineattribute, if so return it formatted
 function mountAdditionalSceneData(context) {
-  var sceneTag = ["scene-name", "scene-number", "scene-duration", "scene-temporality", "scene-workstate", "scene-index"];
+  var sceneTag = ["scene-name", "scene-number", "scene-duration", "scene-temporality", "scene-workstate", "scene-index", "scene-time", "scene-summary"];
   var dataAttributes = "";
   for (var i = 0; i < sceneTag.length; i++) {
     var attribute = findAttrib(context.attribLine, context.apool, sceneTag[i]);
     if (attribute !=="") dataAttributes += formatTagOutput(sceneTag[i],attribute);
   };
+  if (dataAttributes) dataAttributes = "<scene"+dataAttributes+"></scene>"
   return dataAttributes;
 }
 
