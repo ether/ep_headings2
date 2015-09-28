@@ -17,6 +17,8 @@ exports.postAceInit = function(hook, context){
   script_element_selection.on('change', function(){
     var value = $(this).val();
     var intValue = parseInt(value,10);
+    var selectedOption = $(this).find("option:selected");
+    var l10nLabel = selectedOption.attr("data-l10n-id");
     if(!_.isNaN(intValue)){
       context.ace.callWithAce(function(ace){
         ace.ace_doInsertScriptElement(intValue);
@@ -24,7 +26,7 @@ exports.postAceInit = function(hook, context){
       script_element_selection.val("dummy");
     }
     //if change to a button different from heading removes sceneTag line attributes
-    if (value !== 0) {
+    if (l10nLabel !== "ep_script_elements.heading") {
       context.ace.callWithAce(function(ace){
         ace.ace_removeSceneTagFromSelection();
       },'removescenetag' , true);
