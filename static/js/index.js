@@ -3,7 +3,7 @@ var _, $, jQuery;
 var $ = require('ep_etherpad-lite/static/js/rjquery').$;
 var _ = require('ep_etherpad-lite/static/js/underscore');
 var tags = require('ep_script_elements/static/js/shared').tags;
-
+var sceneTag = require('ep_script_elements/static/js/shared').sceneTag;
 var cssFiles = ['ep_script_elements/static/css/editor.css'];
 
 // All our tags are block elements, so we just return them.
@@ -22,6 +22,12 @@ exports.postAceInit = function(hook, context){
         ace.ace_doInsertScriptElement(intValue);
       },'insertscriptelement' , true);
       script_element_selection.val("dummy");
+    }
+    //if change to a button different from heading removes sceneTag line attributes
+    if (value !== 0) {
+      context.ace.callWithAce(function(ace){
+        ace.ace_removeSceneTagFromSelection();
+      },'removescenetag' , true);
     }
   })
 };
@@ -127,8 +133,10 @@ function doInsertScriptElement(level){
 
 
 // Once ace is initialized, we set ace_doInsertScriptElement and bind it to the context
+// and we set ace_removeSceneTagFromSelection and bind it to the context
 exports.aceInitialized = function(hook, context){
   var editorInfo = context.editorInfo;
+  editorInfo.ace_removeSceneTagFromSelection = _(removeSceneTagFromSelection).bind(context);
   editorInfo.ace_doInsertScriptElement = _(doInsertScriptElement).bind(context);
 }
 
@@ -136,3 +144,21 @@ exports.aceEditorCSS = function(){
   return cssFiles;
 };
 
+// Find out which lines are selected and remove scenetag from them
+function removeSceneTagFromSelection() {
+  var rep = this.rep;
+  var documentAttributeManager = this.documentAttributeManager;
+  if (!(rep.selStart && rep.selEnd)) {
+    return;
+  }
+
+  var firstLine = rep.selStart[0];
+  var lastLine = Math.max(firstLine, rep.selEnd[0] - ((rep.selEnd[1] === 0) ? 1 : 0));
+
+  _(_.range(firstLine, lastLine + 1)).each(function(line) { // for each line on selected range
+    _.each(sceneTag, function(attribute) { // for each scene mark attribute
+      documentAttributeManager.removeAttributeOnLine(line, attribute);
+    });
+  });
+
+}

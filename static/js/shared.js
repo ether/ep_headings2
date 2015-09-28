@@ -44,3 +44,4 @@ var collectContentPost = function(hook, context){
 exports.collectContentPre = collectContentPre;
 exports.collectContentPost = collectContentPost;
 exports.tags = tags;
+exports.sceneTag = sceneTag;
