@@ -55,7 +55,7 @@ function mountAdditionalSceneData(context) {
   return dataAttributes;
 }
 
-//helper to output the sceneTag as tag='value'
+//helper to output the sceneTag as tag="value"
 function formatTagOutput(key, value) {
-  return  " "+key+"='"+value+"'";
+  return  " "+key+"=\""+value+"\"";
 }
