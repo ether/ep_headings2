@@ -36,7 +36,6 @@ exports.postAceInit = function(hook, context){
 
 // On caret position change show the current script element
 exports.aceEditEvent = function(hook, call, cb){
-
   // If it's not a click or a key event and the text hasn't changed then do nothing
   var cs = call.callstack;
   if(!(cs.type == "handleClick") && !(cs.type == "handleKeyEvent") && !(cs.docTextChanged)){
@@ -138,6 +137,13 @@ function doInsertScriptElement(level){
 // and we set ace_removeSceneTagFromSelection and bind it to the context
 exports.aceInitialized = function(hook, context){
   var editorInfo = context.editorInfo;
+  var padOuter = $('iframe[name="ace_outer"]').contents();
+  var padInner = padOuter.find('iframe[name="ace_inner"]');
+  //change the dropdown to the element where is the caret
+  padInner.contents().find("body").on("click", function() {
+    updateDropdownToCaretLine(context);
+  })
+
   editorInfo.ace_removeSceneTagFromSelection = _(removeSceneTagFromSelection).bind(context);
   editorInfo.ace_doInsertScriptElement = _(doInsertScriptElement).bind(context);
 }
@@ -163,4 +169,20 @@ function removeSceneTagFromSelection() {
     });
   });
 
+}
+
+function updateDropdownToCaretLine(context){
+  var editorInfo = context.editorInfo;
+  var attributeManager = context.documentAttributeManager;
+  setTimeout(function() {
+    var line = editorInfo.ace_caretLine();
+    var attr = attributeManager.getAttributeOnLine(line, "script_element") || "general";
+    isDropdownUpdated(attr);
+  }, 600);
+}
+
+function isDropdownUpdated(attr){
+  var ind = tags.indexOf(attr);
+  if ($("#script_element-selection").val == ind) return;
+  $("#script_element-selection").val(ind);
 }
