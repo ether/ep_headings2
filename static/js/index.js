@@ -36,8 +36,6 @@ exports.postAceInit = function(hook, context){
 
 // On caret position change show the current script element
 exports.aceEditEvent = function(hook, call, cb){
-  var editorInfo = call.editorInfo;
-  editorInfo.ace_fastIncorp(2);
   updateDropdownToCaretLine(call);
 }
 
@@ -69,15 +67,6 @@ exports.aceDomLineProcessLineAttributes = function(name, context){
   }
   return [];
 };
-
-exports.aceCreateDomLine = function(name, context){
-  var modifier = {
-    extraOpenTags : "<span spellcheck=\'true\'>",
-    extraCloseTags : "</span>",
-    cls : "spellcheck-enable"
-  }
-  return [modifier];
-}
 
 // Find out which lines are selected and assign them the script element attribute.
 // Passing a level >= 0 will set a script element on the selected lines, level < 0
