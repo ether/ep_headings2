@@ -36,47 +36,9 @@ exports.postAceInit = function(hook, context){
 
 // On caret position change show the current script element
 exports.aceEditEvent = function(hook, call, cb){
-  // If it's not a click or a key event and the text hasn't changed then do nothing
-  var cs = call.callstack;
-  if(!(cs.type == "handleClick") && !(cs.type == "handleKeyEvent") && !(cs.docTextChanged)){
-    return false;
-  }
-  // If it's an initial setup event then do nothing..
-  if(cs.type == "setBaseText" || cs.type == "setup") return false;
-
-  // It looks like we should check to see if this section has this attribute
-  setTimeout(function(){ // avoid race condition..
-    var attributeManager = call.documentAttributeManager;
-    var rep = call.rep;
-    var firstLine, lastLine;
-    var activeAttributes = {};
-    $("#script_element-selection").val(-2);
-
-    firstLine = rep.selStart[0];
-    lastLine = Math.max(firstLine, rep.selEnd[0] - ((rep.selEnd[1] === 0) ? 1 : 0));
-    var totalNumberOfLines = 0;
-
-    _(_.range(firstLine, lastLine + 1)).each(function(line){
-      totalNumberOfLines++;
-      var attr = attributeManager.getAttributeOnLine(line, "script_element");
-      if(!activeAttributes[attr]){
-        activeAttributes[attr] = {};
-        activeAttributes[attr].count = 1;
-      }else{
-        activeAttributes[attr].count++;
-      }
-    });
-
-    $.each(activeAttributes, function(k, attr){
-      if(attr.count === totalNumberOfLines){
-        // show as active class
-        var ind = tags.indexOf(k);
-        $("#script_element-selection").val(ind);
-      }
-    });
-
-  },250);
-
+  var editorInfo = call.editorInfo;
+  editorInfo.ace_fastIncorp(2);
+  updateDropdownToCaretLine(call);
 }
 
 // Our script element attribute will result in a script_element:heading... :transition class
@@ -172,17 +134,49 @@ function removeSceneTagFromSelection() {
 }
 
 function updateDropdownToCaretLine(context){
-  var editorInfo = context.editorInfo;
-  var attributeManager = context.documentAttributeManager;
+  var editorInfo       = context.editorInfo;
   setTimeout(function() {
-    var line = editorInfo.ace_caretLine();
-    var attr = attributeManager.getAttributeOnLine(line, "script_element") || "general";
-    isDropdownUpdated(attr);
-  }, 600);
+    var rep = context.rep;
+    var multipleSelected = isMultipleLineSelected(rep);
+    var attributeManager = context.documentAttributeManager;
+    var sameElementOnSelection = isSameElementOnSelection(rep, attributeManager);
+    if (multipleSelected && !sameElementOnSelection){
+      //set drop-down to style
+      $("#script_element-selection").val(-2);
+    }else{
+      var line = editorInfo.ace_caretLine();
+      var attr = attributeManager.getAttributeOnLine(line, "script_element") || "general";
+      setDropdownTo(attr);
+    }
+  }, 100);
 }
 
-function isDropdownUpdated(attr){
+function isSameElementOnSelection(rep, attributeManager){
+  var firstLine = rep.selStart[0];
+  var isSameElement = true;
+  var lastLine = Math.max(firstLine, rep.selEnd[0] - ((rep.selEnd[1] === 0) ? 1 : 0));
+  //get the first attribute on the selection
+  var firstAttribute = attributeManager.getAttributeOnLine(firstLine, "script_element");
+  //check if the first attribute on selection is present in all lines
+  _(_.range(firstLine + 1, lastLine + 1)).each(function(line){
+    var attributeOnline = attributeManager.getAttributeOnLine(line, "script_element");
+    if (attributeOnline !== firstAttribute){
+      isSameElement = false;
+      return;
+    }
+  });
+  return isSameElement;
+}
+
+function setDropdownTo(attr){
   var ind = tags.indexOf(attr);
   if ($("#script_element-selection").val == ind) return;
   $("#script_element-selection").val(ind);
 }
+
+function isMultipleLineSelected(rep) {
+  var firstLineSelected = rep.selStart[0];
+  var lastLineSelected = rep.selEnd[0];
+  return (firstLineSelected !== lastLineSelected);
+}
+
