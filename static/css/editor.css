@@ -33,6 +33,9 @@ character{
   text-transform: uppercase;
 }
 
+parenthetical br{
+  content: "";
+}
 parenthetical{
   display:block;
   margin-left: 105px;
