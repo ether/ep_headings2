@@ -36,6 +36,9 @@ exports.postAceInit = function(hook, context){
 
 // On caret position change show the current script element
 exports.aceEditEvent = function(hook, call, cb){
+  var cs = call.callstack;
+  // If it's an initial setup event then do nothing..
+  if(cs.type == "setBaseText" || cs.type == "setup") return false;
   updateDropdownToCaretLine(call);
 }
 
@@ -97,12 +100,6 @@ function doInsertScriptElement(level){
 // and we set ace_removeSceneTagFromSelection and bind it to the context
 exports.aceInitialized = function(hook, context){
   var editorInfo = context.editorInfo;
-  var padOuter = $('iframe[name="ace_outer"]').contents();
-  var padInner = padOuter.find('iframe[name="ace_inner"]');
-  //change the dropdown to the element where is the caret
-  padInner.contents().find("body").on("click", function() {
-    updateDropdownToCaretLine(context);
-  })
 
   editorInfo.ace_removeSceneTagFromSelection = _(removeSceneTagFromSelection).bind(context);
   editorInfo.ace_doInsertScriptElement = _(doInsertScriptElement).bind(context);
