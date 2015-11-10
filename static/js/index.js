@@ -140,11 +140,11 @@ function updateDropdownToCaretLine(context){
 
     if (multipleLinesSelected && !sameElementOnSelection){
       //set drop-down to "Style"
-      $("#script_element-selection").val(-2);
+      setDropdownValue(-2);
     }else{
       var currentLine = rep.selStart[0];
       var elementOfCurrentLine = attributeManager.getAttributeOnLine(currentLine, "script_element") || "general";
-      setDropdownTo(elementOfCurrentLine);
+      setDropdownToElement(elementOfCurrentLine);
     }
   }, 100);
 }
@@ -166,9 +166,12 @@ function isSameElementOnSelection(rep, attributeManager){
   return isSameElement;
 }
 
-function setDropdownTo(attr){
+function setDropdownToElement(attr){
   var newValue = tags.indexOf(attr);
+  setDropdownValue(newValue);
+}
 
+function setDropdownValue(newValue){
   // only change value if necessary
   if ($("#script_element-selection").val() === newValue) return;
 
