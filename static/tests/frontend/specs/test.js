@@ -96,6 +96,38 @@ describe("ep_script_elements", function(){
         }, 2000).done(done);
       });
     });
+
+    it("triggers event 'selectElementChange' when select value is changed", function(done) {
+      // this is a longer test, might need more time to finish
+      this.timeout(10000);
+
+      var chrome$ = helper.padChrome$;
+      var inner$ = helper.padInner$;
+
+      // places caret on heading to force select value to not be "Action"
+      var $heading = inner$("div").first();
+      $heading.sendkeys("{selectall}");
+
+      helper.waitFor(function() {
+        var selectedValue = chrome$('#script_element-selection option:selected').text();
+        return selectedValue === "Heading";
+      }, 2000).done(function() {
+        // listens to 'selectElementChange' event
+        var eventTriggered = false;
+        chrome$('#script_element-selection').on('selectElementChange', function() {
+          eventTriggered = true;
+        });
+
+        // places caret on action so event can be triggered
+        var $action = inner$("div").first().next();
+        $action.sendkeys("{selectall}");
+
+        // validate event was triggered
+        helper.waitFor(function() {
+          return eventTriggered;
+        }, 3000).done(done);
+      });
+    });
   });
 });
 

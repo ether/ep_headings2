@@ -175,7 +175,9 @@ function setDropdownValue(newValue){
   // only change value if necessary
   if ($("#script_element-selection").val() === newValue) return;
 
-  $("#script_element-selection").val(newValue);
+  // change value and trigger event
+  // (we need to manually trigger an event because val() does not trigger the "change" event)
+  $("#script_element-selection").val(newValue).trigger("selectElementChange");
 }
 
 function isMultipleLinesSelected(rep) {
