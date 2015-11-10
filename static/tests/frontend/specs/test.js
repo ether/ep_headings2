@@ -1,4 +1,4 @@
-describe("Script Element", function(){
+describe("ep_script_elements", function(){
 
   //create a new pad before each test run
   beforeEach(function(cb){
@@ -49,6 +49,52 @@ describe("Script Element", function(){
         $firstTextElement = inner$("div").first(); // need to get it again because line is changed by Content Collector
         return $firstTextElement.find("heading").length === 0;
       }).done(done);
+    });
+  });
+
+  context("when pad has lines with different element types", function() {
+    beforeEach(function(cb) {
+      var inner$ = helper.padInner$;
+      var $firstTextElement = inner$("div").first();
+
+      // faster way to create two lines (1st is a scene heading, 2nd is an action)
+      var firstLine = "<heading>First Line!</heading><br/>";
+      var secondLine = "<action>Second Line!</action><br/>";
+      $firstTextElement.html(firstLine + secondLine);
+
+      // wait for Etherpad to finish processing lines
+      helper.waitFor(function(){
+        $secondTextElement = inner$("div").first().next();
+        return $secondTextElement.text() === "Second Line!";
+      }, 2000).done(cb);
+    });
+
+    it("sets select value according to the line caret is", function(done) {
+      // this is a longer test, might need more time to finish
+      this.timeout(10000);
+
+      var chrome$ = helper.padChrome$;
+      var inner$ = helper.padInner$;
+
+      // places caret on heading
+      var $heading = inner$("div").first();
+      $heading.sendkeys("{selectall}");
+
+      // validate select shows "Heading"
+      helper.waitFor(function() {
+        var selectedValue = chrome$('#script_element-selection option:selected').text();
+        return selectedValue === "Heading";
+      }, 2000).done(function() {
+        // places caret on action
+        var $action = inner$("div").first().next();
+        $action.sendkeys("{selectall}");
+
+        // validate select shows "Action"
+        helper.waitFor(function() {
+          var selectedValue = chrome$('#script_element-selection option:selected').text();
+          return selectedValue === "Action";
+        }, 2000).done(done);
+      });
     });
   });
 });
