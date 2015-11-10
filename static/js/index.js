@@ -35,11 +35,13 @@ exports.postAceInit = function(hook, context){
 };
 
 // On caret position change show the current script element
-exports.aceEditEvent = function(hook, call, cb){
-  var cs = call.callstack;
-  // If it's an initial setup event then do nothing..
+exports.aceSelectionChanged = function(hook, context, cb){
+  var cs = context.callstack;
+
+  // If it's an initial setup event then do nothing
   if(cs.type == "setBaseText" || cs.type == "setup") return false;
-  updateDropdownToCaretLine(call);
+
+  updateDropdownToCaretLine(context);
 }
 
 // Our script element attribute will result in a script_element:heading... :transition class
@@ -129,19 +131,20 @@ function removeSceneTagFromSelection() {
 }
 
 function updateDropdownToCaretLine(context){
-  var editorInfo       = context.editorInfo;
   setTimeout(function() {
-    var rep = context.rep;
-    var multipleSelected = isMultipleLineSelected(rep);
+    var rep              = context.rep;
     var attributeManager = context.documentAttributeManager;
+
+    var multipleLinesSelected  = isMultipleLinesSelected(rep);
     var sameElementOnSelection = isSameElementOnSelection(rep, attributeManager);
-    if (multipleSelected && !sameElementOnSelection){
-      //set drop-down to style
+
+    if (multipleLinesSelected && !sameElementOnSelection){
+      //set drop-down to "Style"
       $("#script_element-selection").val(-2);
     }else{
-      var line = editorInfo.ace_caretLine();
-      var attr = attributeManager.getAttributeOnLine(line, "script_element") || "general";
-      setDropdownTo(attr);
+      var currentLine = rep.selStart[0];
+      var elementOfCurrentLine = attributeManager.getAttributeOnLine(currentLine, "script_element") || "general";
+      setDropdownTo(elementOfCurrentLine);
     }
   }, 100);
 }
@@ -164,12 +167,15 @@ function isSameElementOnSelection(rep, attributeManager){
 }
 
 function setDropdownTo(attr){
-  var ind = tags.indexOf(attr);
-  if ($("#script_element-selection").val == ind) return;
-  $("#script_element-selection").val(ind);
+  var newValue = tags.indexOf(attr);
+
+  // only change value if necessary
+  if ($("#script_element-selection").val() === newValue) return;
+
+  $("#script_element-selection").val(newValue);
 }
 
-function isMultipleLineSelected(rep) {
+function isMultipleLinesSelected(rep) {
   var firstLineSelected = rep.selStart[0];
   var lastLineSelected = rep.selEnd[0];
   return (firstLineSelected !== lastLineSelected);

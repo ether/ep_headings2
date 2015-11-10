@@ -5,7 +5,7 @@
       "pre": ["ep_font_color/main", "ep_comments_page/comments_page"],
       "client_hooks": {
         "aceEditorCSS": "ep_script_elements/static/js/index",
-        "aceEditEvent": "ep_script_elements/static/js/index",
+        "aceSelectionChanged": "ep_script_elements/static/js/index",
         "aceDomLineProcessLineAttributes": "ep_script_elements/static/js/index",
         "postAceInit": "ep_script_elements/static/js/index",
         "aceInitialized": "ep_script_elements/static/js/index",
