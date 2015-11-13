@@ -4,6 +4,7 @@ var $ = require('ep_etherpad-lite/static/js/rjquery').$;
 var _ = require('ep_etherpad-lite/static/js/underscore');
 var tags = require('ep_script_elements/static/js/shared').tags;
 var sceneTag = require('ep_script_elements/static/js/shared').sceneTag;
+var findHandlerFor = require('./shortcuts').findHandlerFor;
 var cssFiles = ['ep_script_elements/static/css/editor.css'];
 
 // All our tags are block elements, so we just return them.
@@ -42,6 +43,20 @@ exports.aceSelectionChanged = function(hook, context, cb){
   if(cs.type == "setBaseText" || cs.type == "setup") return false;
 
   updateDropdownToCaretLine(context);
+}
+
+exports.aceKeyEvent = function(hook, context) {
+  var eventProcessed = false;
+  var evt = context.evt;
+
+  var handleShortcut = findHandlerFor(evt);
+  if (handleShortcut) {
+    evt.preventDefault();
+    handleShortcut(context);
+    eventProcessed = true;
+  }
+
+  return eventProcessed;
 }
 
 // Our script element attribute will result in a script_element:heading... :transition class
