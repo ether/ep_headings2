@@ -40,12 +40,13 @@ ep_script_elements_test_helper.utils = {
   },
 
   placeCaretOnLine: function(lineNum, cb) {
-    var $targetLine = this.getLine(lineNum);
+    var utils =  ep_script_elements_test_helper.utils;
+    var $targetLine = utils.getLine(lineNum);
     $targetLine.sendkeys("{selectall}");
 
     helper.waitFor(function() {
-      var $targetLine = this.getLine(lineNum);
-      var $lineWhereCaretIs = ep_script_elements_test_helper.utils.getLineWhereCaretIs();
+      var $targetLine = utils.getLine(lineNum);
+      var $lineWhereCaretIs = utils.getLineWhereCaretIs();
 
       return $targetLine.get(0) === $lineWhereCaretIs.get(0);
     }).done(cb);
