@@ -1,7 +1,8 @@
 describe("ep_script_elements", function(){
-
+  var utils;
   //create a new pad before each test run
   beforeEach(function(cb){
+    utils = ep_script_elements_test_helper.utils;
     helper.newPad(cb);
     this.timeout(60000);
   });
@@ -128,6 +129,6 @@ describe("ep_script_elements", function(){
         }, 3000).done(done);
       });
     });
+
   });
 });
-

@@ -51,4 +51,40 @@ ep_script_elements_test_helper.utils = {
       return $targetLine.get(0) === $lineWhereCaretIs.get(0);
     }).done(cb);
   },
+
+  placeCaretInTheBeginningOfLine: function(lineNum, cb) {
+    var utils =  ep_script_elements_test_helper.utils;
+    var $targetLine = utils.getLine(lineNum);
+    $targetLine.sendkeys("{selectall}{leftarrow}");
+    helper.waitFor(function() {
+      var $targetLine = utils.getLine(lineNum);
+      var $lineWhereCaretIs = utils.getLineWhereCaretIs();
+
+      return $targetLine.get(0) === $lineWhereCaretIs.get(0);
+    }).done(cb);
+  },
+
+  placeCaretAtTheEndOfLine: function(lineNum, cb) {
+    var utils =  ep_script_elements_test_helper.utils;
+    var $targetLine = utils.getLine(lineNum);
+    $targetLine.sendkeys("{selectall}{rightarrow}");
+    helper.waitFor(function() {
+      var $targetLine = utils.getLine(lineNum);
+      var $lineWhereCaretIs = utils.getLineWhereCaretIs();
+
+      return $targetLine.get(0) === $lineWhereCaretIs.get(0);
+    }).done(cb);
+  },
+
+  pressKey: function(CODE) {
+    var inner$ = helper.padInner$;
+    if(inner$(window)[0].bowser.firefox || inner$(window)[0].bowser.modernIE){ // if it's a mozilla or IE
+      var evtType = "keypress";
+    }else{
+      var evtType = "keydown";
+    }
+    var e = inner$.Event(evtType);
+    e.keyCode = CODE;
+    inner$("#innerdocbody").trigger(e);
+  },
 };

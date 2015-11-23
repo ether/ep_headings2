@@ -6,6 +6,7 @@ var tags = require('ep_script_elements/static/js/shared').tags;
 var sceneTag = require('ep_script_elements/static/js/shared').sceneTag;
 var findHandlerFor = require('./shortcuts').findHandlerFor;
 var cssFiles = ['ep_script_elements/static/css/editor.css'];
+var keyShouldBeIgnored  = require('./mergeLines').keyShouldBeIgnored;
 
 // All our tags are block elements, so we just return them.
 exports.aceRegisterBlockElements = function(){
@@ -53,6 +54,9 @@ exports.aceKeyEvent = function(hook, context) {
   if (handleShortcut) {
     evt.preventDefault();
     handleShortcut(context);
+    eventProcessed = true;
+  }else if(keyShouldBeIgnored(context)){
+    evt.preventDefault();
     eventProcessed = true;
   }
 
