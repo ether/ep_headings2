@@ -1,31 +1,48 @@
-BACKSPACE = 8;
-DELETE = 46;
+var BACKSPACE = 8;
+var DELETE = 46;
 
 exports.keyShouldBeIgnored = function(context){
   var rep = context.rep;
   var currentLine = rep.selStart[0];
   var editorInfo = context.editorInfo;
   var attributeManager = context.documentAttributeManager;
-  var position = caretPosition(currentLine, rep, editorInfo, attributeManager);
-
-  // if the caret is in the middle of a line, handle delete and backspace as usual
-  if (position.middleOfLine) return false;
 
   var evt = context.evt;
   var ignoreKey = false
+  var nextLine = currentLine + 1;
 
   var elementFromCurrentLineIsDifferentOfLineBefore = checkElementOfLines(currentLine, attributeManager);
   var elementFromCurrentLineIsDifferentOfLineAfter = checkElementOfLines(currentLine + 1, attributeManager);
 
-  if(evt.keyCode === BACKSPACE && elementFromCurrentLineIsDifferentOfLineBefore && position.beginningOfLine){
-    ignoreKey = true;
-  }else if(evt.keyCode === DELETE && elementFromCurrentLineIsDifferentOfLineAfter && position.endOfLine) {
-    ignoreKey = true;
+  if(evt.keyCode === BACKSPACE && elementFromCurrentLineIsDifferentOfLineBefore){
+    var lineIsEmpty = checkLineEmpty(currentLine, rep, attributeManager);
+    var position = caretPosition(currentLine, rep, editorInfo, attributeManager);
+    if(position.beginningOfLine && !lineIsEmpty) {
+      ignoreKey = true;
+    }
+  }else if(evt.keyCode === DELETE && elementFromCurrentLineIsDifferentOfLineAfter){
+    var nextLineIsEmpty = checkLineEmpty(nextLine, rep, attributeManager);
+    var position = caretPosition(currentLine, rep, editorInfo, attributeManager);
+    if(position.endOfLine && !nextLineIsEmpty){
+      ignoreKey = true;
+    }
   }
+
   return ignoreKey;
 }
 
-checkElementOfLines = function(line, attributeManager) {
+var checkLineEmpty = function(line, rep, attributeManager){
+  var emptyLine = false;
+  var lineText = getCurrentLineText(line, rep, attributeManager);
+  var lineHasNotText = lineText.trim().length === 0;
+  if(lineHasNotText){
+    emptyLine = true;
+  }
+
+  return emptyLine;
+}
+
+var checkElementOfLines = function(line, attributeManager) {
   var linesHasNotSameElement = false;
   var lineBefore = line - 1;
   var currentLineAttribute = attributeManager.getAttributeOnLine(line, "script_element");
@@ -66,4 +83,14 @@ function getLength(line, rep) {
   var lineLength = endLineOffset - startLineOffset - 1;
 
   return lineLength;
+}
+
+var getCurrentLineText = function(currentLine, rep, attributeManager) {
+  var currentLineText = rep.lines.atIndex(currentLine).text;
+  // if line has marker, it starts with "*". We need to ignore it
+  var lineHasMarker = attributeManager.lineHasMarker(currentLine);
+  if(lineHasMarker){
+    currentLineText = currentLineText.substr(1);
+  }
+  return currentLineText;
 }

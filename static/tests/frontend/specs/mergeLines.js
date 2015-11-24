@@ -1,4 +1,7 @@
-describe("ep_script_elements: merge lines", function(){
+var BACKSPACE = 8;
+var DELETE = 46;
+
+describe("ep_script_elements - merge lines", function(){
   var utils;
   //create a new pad before each test run
   beforeEach(function(cb){
@@ -31,7 +34,7 @@ describe("ep_script_elements: merge lines", function(){
       it("does not join these two lines", function(done){
         var inner$ = helper.padInner$;
         utils.placeCaretInTheBeginningOfLine(1, function(){
-          utils.pressKey(8);
+          utils.pressKey(BACKSPACE);
           setTimeout(function() {
             var textFirstLine = inner$("div").first().text();
             var textSecondLine = inner$("div").first().next().text();
@@ -48,8 +51,8 @@ describe("ep_script_elements: merge lines", function(){
       it("does not join these two lines", function(done){
         var inner$ = helper.padInner$;
         utils.placeCaretAtTheEndOfLine(1, function(){
-          utils.pressKey(46);
-          utils.pressKey(46); // force press delete twice
+          utils.pressKey(DELETE);
+          utils.pressKey(DELETE);
           setTimeout(function() {
             var textFirstLine = inner$("div").first().text();
             var textSecondLine = inner$("div").first().next().text();
@@ -60,6 +63,55 @@ describe("ep_script_elements: merge lines", function(){
         });
       });
     });
+
+    context("and element line is empty", function(){
+
+      beforeEach(function (cb) {
+        var $secondLine = utils.getLine(1).find("action");
+        // the space after the select all ensures empty lines are lines without any text but with spaces
+        // which is technically empty
+        $secondLine.sendkeys("{selectall}{backspace} ");
+        helper.waitFor(function(){
+          var inner$ = helper.padInner$;
+          var $secondLine = inner$("div").first().next();
+          // only one space in the line
+          return $secondLine.text().length === 1;
+        }).done(cb);
+      });
+
+      context("and user presses backspace in the beginning of this line", function(){
+
+        it("erases the empty line", function(done){
+          var inner$ = helper.padInner$;
+          utils.placeCaretInTheBeginningOfLine(1, function(){
+            utils.pressKey(BACKSPACE); // backspace
+          });
+          helper.waitFor(function(){
+            var $secondLine = inner$("div").first().next();
+            return $secondLine.text() === "Third Line!";
+          }).done(done);
+        });
+
+      });
+      // this test is commented because delete key does not work in the test
+      // as soon as we find the solution this should be uncommented =)
+
+      // context("and user presses delete at the end of the previous line", function(){
+      //   it("erases the empty line", function(done){
+      //     var inner$ = helper.padInner$;
+      //     utils.placeCaretAtTheEndOfLine(0, function(){
+      //       utils.pressKey(DELETE); // delete
+      //     });
+      //     helper.waitFor(function(){
+      //       // as the second line was empty, delete removed it so the third line is now the second one
+      //       var $secondLine = inner$("div").first().next();
+      //       return $secondLine.text() === "Third Line!";
+      //     }).done(done);
+      //   });
+      // });
+
+    });
+
   });
 
 });
