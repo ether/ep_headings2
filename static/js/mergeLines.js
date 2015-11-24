@@ -7,6 +7,8 @@ exports.keyShouldBeIgnored = function(context){
   var editorInfo = context.editorInfo;
   var attributeManager = context.documentAttributeManager;
 
+  if(textSelected(editorInfo)) return false;
+
   var evt = context.evt;
   var ignoreKey = false
   var nextLine = currentLine + 1;
@@ -30,6 +32,12 @@ exports.keyShouldBeIgnored = function(context){
 
   return ignoreKey;
 }
+
+function textSelected(editorInfo) {
+
+  return !editorInfo.ace_isCaret();
+}
+
 
 var checkLineEmpty = function(line, rep, attributeManager){
   var emptyLine = false;
