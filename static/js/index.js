@@ -7,6 +7,7 @@ var sceneTag = require('ep_script_elements/static/js/shared').sceneTag;
 var findHandlerFor = require('./shortcuts').findHandlerFor;
 var cssFiles = ['ep_script_elements/static/css/editor.css'];
 var keyShouldBeIgnored  = require('./mergeLines').keyShouldBeIgnored;
+var padInner = require("./utils").getPadInner;
 
 // All our tags are block elements, so we just return them.
 exports.aceRegisterBlockElements = function(){
@@ -15,6 +16,8 @@ exports.aceRegisterBlockElements = function(){
 
 // Bind the event handler to the toolbar buttons
 exports.postAceInit = function(hook, context){
+  listeningChangeElementByShortCut();
+
   var script_element_selection = $('#script_element-selection');
   script_element_selection.on('change', function(){
     var value = $(this).val();
@@ -36,13 +39,23 @@ exports.postAceInit = function(hook, context){
   })
 };
 
+function listeningChangeElementByShortCut(){
+  var $innerDocument = padInner().find("#innerdocbody");
+  // ep_script_element_transition triggers 'elementChange' event when element is
+  // changed by shortcut CMD+NUM, which means the type of current line was changed,
+  // so we need to update the dropdown. We take the context from ep_script_element_transition
+  // which is passed when then event happens
+  $innerDocument.on('elementChanged', function(event, context){
+    updateDropdownToCaretLine(context);
+  });
+}
+
 // On caret position change show the current script element
 exports.aceSelectionChanged = function(hook, context, cb){
   var cs = context.callstack;
 
   // If it's an initial setup event then do nothing
-  if(cs.type == "setBaseText" || cs.type == "setup") return false;
-
+  if(cs.type == "setBaseText" || cs.type == "setup" || cs.type == "importText") return false;
   updateDropdownToCaretLine(context);
 }
 
