@@ -27,6 +27,7 @@ exports.postAceInit = function(hook, context){
     if(!_.isNaN(intValue)){
       context.ace.callWithAce(function(ace){
         ace.ace_doInsertScriptElement(intValue);
+        ace.ace_updateDropdownWithValueChosen();
       },'insertscriptelement' , true);
       script_element_selection.val("dummy");
     }
@@ -38,6 +39,11 @@ exports.postAceInit = function(hook, context){
     }
   })
 };
+
+function updateDropdownWithValueChosen(){
+  var context = this;
+  updateDropdownToCaretLine(this);
+}
 
 function listeningChangeElementByShortCut(){
   var $innerDocument = padInner().find("#innerdocbody");
@@ -137,6 +143,7 @@ exports.aceInitialized = function(hook, context){
 
   editorInfo.ace_removeSceneTagFromSelection = _(removeSceneTagFromSelection).bind(context);
   editorInfo.ace_doInsertScriptElement = _(doInsertScriptElement).bind(context);
+  editorInfo.ace_updateDropdownWithValueChosen = _(updateDropdownWithValueChosen).bind(context);
 }
 
 exports.aceEditorCSS = function(){
