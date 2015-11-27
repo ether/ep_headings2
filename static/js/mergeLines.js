@@ -2,30 +2,31 @@ var BACKSPACE = 8;
 var DELETE = 46;
 
 exports.keyShouldBeIgnored = function(context){
-  var rep = context.rep;
-  var currentLine = rep.selStart[0];
-  var editorInfo = context.editorInfo;
+  var editorInfo       = context.editorInfo;
   var attributeManager = context.documentAttributeManager;
+  var evt              = context.evt;
+  var rep              = context.rep;
+  var currentLine      = rep.selStart[0];
+  var nextLine         = currentLine + 1;
 
   if(textSelected(editorInfo)) return false;
 
-  var evt = context.evt;
   var ignoreKey = false
-  var nextLine = currentLine + 1;
 
-  var elementFromCurrentLineIsDifferentOfLineBefore = checkElementOfLines(currentLine, attributeManager);
-  var elementFromCurrentLineIsDifferentOfLineAfter = checkElementOfLines(currentLine + 1, attributeManager);
+  if(evt.keyCode === BACKSPACE && evt.type === "keydown") {
+    var currentLineIsEmpty = lineIsEmpty(currentLine, rep, attributeManager);
+    var caretPosition = getCaretPosition(currentLine, rep, editorInfo, attributeManager);
+    var currentLineHasDifferentTypeOfPreviousLine = thisLineTypeIsDifferentFromPreviousLine(currentLine, attributeManager);
 
-  if(evt.keyCode === BACKSPACE && elementFromCurrentLineIsDifferentOfLineBefore){
-    var lineIsEmpty = checkLineEmpty(currentLine, rep, attributeManager);
-    var position = caretPosition(currentLine, rep, editorInfo, attributeManager);
-    if(position.beginningOfLine && !lineIsEmpty) {
+    if(caretPosition.beginningOfLine && !currentLineIsEmpty && currentLineHasDifferentTypeOfPreviousLine) {
       ignoreKey = true;
     }
-  }else if(evt.keyCode === DELETE && elementFromCurrentLineIsDifferentOfLineAfter){
-    var nextLineIsEmpty = checkLineEmpty(nextLine, rep, attributeManager);
-    var position = caretPosition(currentLine, rep, editorInfo, attributeManager);
-    if(position.endOfLine && !nextLineIsEmpty){
+  } else if(evt.keyCode === DELETE && evt.type === "keydown") {
+    var nextLineIsEmpty = lineIsEmpty(nextLine, rep, attributeManager);
+    var caretPosition = getCaretPosition(currentLine, rep, editorInfo, attributeManager);
+    var currentLineHasDifferentTypeOfNextLine = thisLineTypeIsDifferentFromPreviousLine(nextLine, attributeManager);
+
+    if(caretPosition.endOfLine && !nextLineIsEmpty && currentLineHasDifferentTypeOfNextLine) {
       ignoreKey = true;
     }
   }
@@ -33,13 +34,11 @@ exports.keyShouldBeIgnored = function(context){
   return ignoreKey;
 }
 
-function textSelected(editorInfo) {
-
+var textSelected = function(editorInfo) {
   return !editorInfo.ace_isCaret();
 }
 
-
-var checkLineEmpty = function(line, rep, attributeManager){
+var lineIsEmpty = function(line, rep, attributeManager){
   var emptyLine = false;
   var lineText = getCurrentLineText(line, rep, attributeManager);
   var lineHasNotText = lineText.trim().length === 0;
@@ -50,23 +49,24 @@ var checkLineEmpty = function(line, rep, attributeManager){
   return emptyLine;
 }
 
-var checkElementOfLines = function(line, attributeManager) {
+var thisLineTypeIsDifferentFromPreviousLine = function(line, attributeManager) {
   var linesHasNotSameElement = false;
   var lineBefore = line - 1;
   var currentLineAttribute = attributeManager.getAttributeOnLine(line, "script_element");
-  var beforeCurrentLineAttribute = attributeManager.getAttributeOnLine(lineBefore , "script_element");
-  if (currentLineAttribute !== beforeCurrentLineAttribute){
+  var previousLineAttribute = attributeManager.getAttributeOnLine(lineBefore , "script_element");
+  if (currentLineAttribute !== previousLineAttribute){
     linesHasNotSameElement = true;
   }
   return linesHasNotSameElement;
 }
 
-function synchronizeEditorWithUserSelection(editorInfo) {
+var synchronizeEditorWithUserSelection = function(editorInfo) {
   editorInfo.ace_fastIncorp();
 }
 
-function caretPosition(line, rep, editorInfo, attributeManager) {
+var getCaretPosition = function(line, rep, editorInfo, attributeManager) {
   synchronizeEditorWithUserSelection(editorInfo);
+
   var lineLength = getLength(line, rep);
   var caretPosition = editorInfo.ace_caretColumn();
   var lineHasMarker = attributeManager.lineHasMarker(line);
@@ -82,7 +82,7 @@ function caretPosition(line, rep, editorInfo, attributeManager) {
   }
 }
 
-function getLength(line, rep) {
+var getLength = function(line, rep) {
   var nextLine = line + 1;
   var startLineOffset = rep.lines.offsetOfIndex(line);
   var endLineOffset   = rep.lines.offsetOfIndex(nextLine);
