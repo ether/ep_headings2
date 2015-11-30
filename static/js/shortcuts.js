@@ -1,3 +1,7 @@
+var utils    = require("./utils");
+var padOuter = utils.getPadOuter;
+var padInner = utils.getPadInner;
+
 var TO_NEXT_SCENE = 221;
 var TO_PREVIOUS_SCENE = 219;
 
@@ -41,6 +45,9 @@ function moveCaretToAdjacentScene(context, findSceneHeading) {
   if (targetScene) {
     // found one, can move caret to it
     placeCaretOnLine(targetScene, editorInfo);
+
+    // scroll screen so targetScene is on top of the screen
+    scrollToLine(targetScene, rep);
   }
 }
 
@@ -52,6 +59,22 @@ function placeCaretOnLine(line, editorInfo) {
   var firstPostionOfLine = [line, 0];
   editorInfo.ace_performSelectionChange(firstPostionOfLine, firstPostionOfLine, true);
   editorInfo.ace_updateBrowserSelectionFromRep();
+}
+
+function scrollToLine(lineNumber, rep) {
+  // Set the top of the form to be the same Y as the target Rep
+  var y = getYofLine(lineNumber, rep);
+  padOuter().find('#outerdocbody').scrollTop(y); // Works in Chrome
+  padOuter().find('#outerdocbody').parent().scrollTop(y); // Works in Firefox
+}
+
+function getYofLine(lineNumber, rep) {
+  var line        = rep.lines.atIndex(lineNumber);
+  var key         = "#"+line.key;
+  var lineElement = padInner().find(key);
+  var yOfLine     = lineElement[0].offsetTop;
+
+  return yOfLine;
 }
 
 // Strategy to look for target scene. Returns the next scene heading, or undefined if
