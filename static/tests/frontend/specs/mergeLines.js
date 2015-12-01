@@ -31,7 +31,7 @@ describe("ep_script_elements - merge lines", function(){
 
     context("and user presses backspace in the beginning of a line", function(){
 
-      it("does not join these two lines", function(done){
+      it("does not merge these two lines", function(done){
         var inner$ = helper.padInner$;
         utils.placeCaretInTheBeginningOfLine(1, function(){
           utils.pressKey(BACKSPACE);
@@ -48,7 +48,7 @@ describe("ep_script_elements - merge lines", function(){
 
     context("and user presses delete in the end of a line", function(){
 
-      it("does not join these two lines", function(done){
+      it("does not merge these two lines", function(done){
         var inner$ = helper.padInner$;
         utils.placeCaretAtTheEndOfLine(1, function(){
           utils.pressKey(DELETE);
@@ -67,48 +67,132 @@ describe("ep_script_elements - merge lines", function(){
     context("and element line is empty", function(){
 
       beforeEach(function (cb) {
+        var inner$ = helper.padInner$;
+
+        // remove content from second line
         var $secondLine = utils.getLine(1).find("action");
-        // the space after the select all ensures empty lines are lines without any text but with spaces
-        // which is technically empty
-        $secondLine.sendkeys("{selectall}{backspace} ");
+        $secondLine.html("<br/>");
         helper.waitFor(function(){
-          var inner$ = helper.padInner$;
           var $secondLine = inner$("div").first().next();
-          // only one space in the line
-          return $secondLine.text().length === 1;
+          return $secondLine.text() === "";
         }).done(cb);
       });
 
       context("and user presses backspace in the beginning of this line", function(){
-
-        it("erases the empty line", function(done){
-          var inner$ = helper.padInner$;
+        beforeEach(function(cb) {
           utils.placeCaretInTheBeginningOfLine(1, function(){
-            utils.pressKey(BACKSPACE); // backspace
+            utils.pressKey(BACKSPACE);
+            cb();
           });
+        });
+
+        it("erases the empty line and keeps original line types", function(done){
+          var inner$ = helper.padInner$;
+
           helper.waitFor(function(){
             var $secondLine = inner$("div").first().next();
             return $secondLine.text() === "Third Line!";
-          }).done(done);
+          }).done(function() {
+            var $originalFirstLine = inner$("div").first();
+            var keptTypeOfFirstLine = $originalFirstLine.find("heading").length > 0;
+            expect(keptTypeOfFirstLine).to.be(true);
+
+            var $originalThirdLine = inner$("div").first().next();
+            var keptTypeOfThirdLine = $originalThirdLine.find("parenthetical").length > 0;
+            expect(keptTypeOfThirdLine).to.be(true);
+
+            done();
+          });
         });
 
       });
-      // this test is commented because delete key does not work in the test
-      // as soon as we find the solution this should be uncommented =)
 
-      // context("and user presses delete at the end of the previous line", function(){
-      //   it("erases the empty line", function(done){
-      //     var inner$ = helper.padInner$;
-      //     utils.placeCaretAtTheEndOfLine(0, function(){
-      //       utils.pressKey(DELETE); // delete
-      //     });
-      //     helper.waitFor(function(){
-      //       // as the second line was empty, delete removed it so the third line is now the second one
-      //       var $secondLine = inner$("div").first().next();
-      //       return $secondLine.text() === "Third Line!";
-      //     }).done(done);
-      //   });
-      // });
+      context("and user presses backspace in the beginning of next line", function(){
+        beforeEach(function(cb) {
+          utils.placeCaretInTheBeginningOfLine(2, function(){
+            utils.pressKey(BACKSPACE);
+            cb();
+          });
+        });
+
+        it("erases the empty line and keeps original line types", function(done){
+          var inner$ = helper.padInner$;
+
+          helper.waitFor(function(){
+            var $secondLine = inner$("div").first().next();
+            return $secondLine.text() === "Third Line!";
+          }).done(function() {
+            var $originalFirstLine = inner$("div").first();
+            var keptTypeOfFirstLine = $originalFirstLine.find("heading").length > 0;
+            expect(keptTypeOfFirstLine).to.be(true);
+
+            var $originalThirdLine = inner$("div").first().next();
+            var keptTypeOfThirdLine = $originalThirdLine.find("parenthetical").length > 0;
+            expect(keptTypeOfThirdLine).to.be(true);
+
+            done();
+          });
+        });
+
+      });
+
+      // these tests are commented because delete key does not work in the test
+      // as soon as we find the solution this should be uncommented =)
+      // I guess this is an Etherpad limitation we won't be able to workaround
+      context("and user presses delete at the end of the previous line", function(){
+        beforeEach(function(cb) {
+          utils.placeCaretInTheBeginningOfLine(0, function(){
+            utils.pressKey(DELETE);
+            cb();
+          });
+        });
+
+        xit("erases the empty line and keeps original line types", function(done){
+          var inner$ = helper.padInner$;
+
+          helper.waitFor(function(){
+            var $secondLine = inner$("div").first().next();
+            return $secondLine.text() === "Third Line!";
+          }).done(function() {
+            var $originalFirstLine = inner$("div").first();
+            var keptTypeOfFirstLine = $originalFirstLine.find("heading").length > 0;
+            expect(keptTypeOfFirstLine).to.be(true);
+
+            var $originalThirdLine = inner$("div").first().next();
+            var keptTypeOfThirdLine = $originalThirdLine.find("parenthetical").length > 0;
+            expect(keptTypeOfThirdLine).to.be(true);
+
+            done();
+          });
+        });
+      });
+      context("and user presses delete at the end of the this line", function(){
+        beforeEach(function(cb) {
+          utils.placeCaretInTheBeginningOfLine(1, function(){
+            utils.pressKey(DELETE);
+            cb();
+          });
+        });
+
+        xit("erases the empty line and keeps original line types", function(done){
+          var inner$ = helper.padInner$;
+
+          helper.waitFor(function(){
+            var $secondLine = inner$("div").first().next();
+            return $secondLine.text() === "Third Line!";
+          }).done(function() {
+            var $originalFirstLine = inner$("div").first();
+            var keptTypeOfFirstLine = $originalFirstLine.find("heading").length > 0;
+            expect(keptTypeOfFirstLine).to.be(true);
+
+            var $originalThirdLine = inner$("div").first().next();
+            var keptTypeOfThirdLine = $originalThirdLine.find("parenthetical").length > 0;
+            expect(keptTypeOfThirdLine).to.be(true);
+
+            done();
+          });
+        });
+      });
 
     });
 

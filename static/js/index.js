@@ -1,13 +1,12 @@
-var _, $, jQuery;
-
-var $ = require('ep_etherpad-lite/static/js/rjquery').$;
-var _ = require('ep_etherpad-lite/static/js/underscore');
-var tags = require('ep_script_elements/static/js/shared').tags;
-var sceneTag = require('ep_script_elements/static/js/shared').sceneTag;
+var $              = require('ep_etherpad-lite/static/js/rjquery').$;
+var _              = require('ep_etherpad-lite/static/js/underscore');
+var tags           = require('ep_script_elements/static/js/shared').tags;
+var sceneTag       = require('ep_script_elements/static/js/shared').sceneTag;
 var findHandlerFor = require('./shortcuts').findHandlerFor;
+var mergeLines     = require('./mergeLines');
+var padInner       = require('./utils').getPadInner;
+
 var cssFiles = ['ep_script_elements/static/css/editor.css'];
-var keyShouldBeIgnored  = require('./mergeLines').keyShouldBeIgnored;
-var padInner = require("./utils").getPadInner;
 
 // All our tags are block elements, so we just return them.
 exports.aceRegisterBlockElements = function(){
@@ -70,13 +69,24 @@ exports.aceKeyEvent = function(hook, context) {
   var evt = context.evt;
 
   var handleShortcut = findHandlerFor(evt);
+  var mergeEvent = mergeLines.getMergeEventInfo(context);
+  // Cmd+[ or Cmd+]
   if (handleShortcut) {
     evt.preventDefault();
     handleShortcut(context);
     eventProcessed = true;
-  }else if(keyShouldBeIgnored(context)){
-    evt.preventDefault();
-    eventProcessed = true;
+  }
+  // BACKSPACE or DELETE
+  else if (mergeEvent.isMerge) {
+    // cannot merge lines, so do not process keys
+    if (mergeEvent.blockMerge) {
+      evt.preventDefault();
+      eventProcessed = true;
+    }
+    // can merge lines, but need to adjust line type (when removing an empty line)
+    else if (mergeEvent.adjustLine) {
+      mergeLines.makeLineAdjustment(mergeEvent, context);
+    }
   }
 
   return eventProcessed;
