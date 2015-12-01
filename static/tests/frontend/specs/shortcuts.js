@@ -84,6 +84,30 @@ describe("ep_script_elements: shortcuts", function() {
           return $lineWhereCaretIs.get(0) === $firstScene.get(0);
         }).done(done);
       });
+
+      context("and there is no content before first scene", function() {
+        beforeEach(function(cb) {
+          var inner$ = helper.padInner$;
+
+          // remove first line
+          inner$("div").first().remove();
+
+          cb();
+        });
+
+        it("moves caret to heading of first scene when Cmd+[ is pressed", function(done) {
+          pressShortcutToPreviousScene();
+
+          // wait for caret to be moved to correct scene
+          helper.waitFor(function() {
+            var $lineWhereCaretIs = utils.getLineWhereCaretIs();
+            var $firstScene = utils.getLine(0); // 1st scene is now on first line (0)
+
+            // we need to compare DOM elements instead of jQuery ones
+            return $lineWhereCaretIs.get(0) === $firstScene.get(0);
+          }).done(done);
+        });
+      });
     });
 
     context("and caret is on line after the last scene heading", function() {

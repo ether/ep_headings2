@@ -42,7 +42,7 @@ function moveCaretToAdjacentScene(context, findSceneHeading) {
   // search for target scene
   var targetScene = findSceneHeading(rep, attributeManager);
 
-  if (targetScene) {
+  if (targetScene !== undefined) {
     // found one, can move caret to it
     placeCaretOnLine(targetScene, editorInfo);
 
