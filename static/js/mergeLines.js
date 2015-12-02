@@ -1,97 +1,103 @@
 var BACKSPACE = 8;
 var DELETE = 46;
 
-exports.getMergeEventInfo = function(context) {
-  var mergeEventInfo = {
-    isMerge: false,
-    blockMerge: false,
-    adjustLine: false,
-  }
-
+exports.findHandlerFor = function(context) {
   var editorInfo       = context.editorInfo;
   var attributeManager = context.documentAttributeManager;
   var evt              = context.evt;
   var rep              = context.rep;
-  var isMergeKey       = evt.type === "keydown" && (evt.keyCode === BACKSPACE || evt.keyCode === DELETE);
 
   // if text is selected, we simply ignore, as it is not a merge event
-  if (isMergeKey && !textSelected(editorInfo)) {
+  if (!textSelected(editorInfo)) {
     // HACK: we need to get current position after calling synchronizeEditorWithUserSelection(), otherwise
     // some tests might fail
     var currentLine   = rep.selStart[0];
-    var nextLine      = currentLine + 1;
-    var previousLine  = currentLine - 1;
     var caretPosition = getCaretPosition(currentLine, rep, editorInfo, attributeManager);
 
     var atFirstLineOfPad = currentLineIsFirstLineOfPad(rep);
     var atLastLineOfPad  = currentLineIsLastLineOfPad(rep);
 
-    if (evt.keyCode === BACKSPACE && !atFirstLineOfPad) {
-      var currentLineIsEmpty = lineIsEmpty(currentLine, rep, attributeManager);
-      var currentLineHasDifferentTypeOfPreviousLine = thisLineTypeIsDifferentFromPreviousLine(currentLine, attributeManager);
+    if (evt.keyCode === BACKSPACE && evt.type === "keydown" && caretPosition.beginningOfLine && !atFirstLineOfPad) {
+      return handleBackspace;
+    } else if (evt.keyCode === DELETE && evt.type === "keydown" && caretPosition.endOfLine && !atLastLineOfPad) {
+      return handleDelete;
+    }
+  }
+}
 
-      mergeEventInfo.isMerge = caretPosition.beginningOfLine;
+var handleBackspace = function(context) {
+  var blockBackspace = false;
 
-      if (caretPosition.beginningOfLine && !currentLineIsEmpty && currentLineHasDifferentTypeOfPreviousLine) {
-        // we only block merge if user is not removing previous line
-        // (pressing BACKSPACE on a non-empty line when previous line is empty).
-        // Otherwise, we allow merge but we'll need to adjust line attribute after merge
-        // (see adjustLines() for more detail)
-        var previousLineIsEmpty = lineIsEmpty(previousLine, rep, attributeManager);
-        if (previousLineIsEmpty) {
-          mergeEventInfo.adjustLine = {
-            // previous line will be removed, need to adjust its type to current line type
-            lineToBeChanged: previousLine,
-            changeLineTo: attributeManager.getAttributeOnLine(currentLine, "script_element")
-          };
-        } else {
-          mergeEventInfo.blockMerge = true;
-        }
-      }
-    } else if (evt.keyCode === DELETE && !atLastLineOfPad) {
-      var nextLineIsEmpty = lineIsEmpty(nextLine, rep, attributeManager);
-      var currentLineHasDifferentTypeOfNextLine = thisLineTypeIsDifferentFromPreviousLine(nextLine, attributeManager);
+  var editorInfo       = context.editorInfo;
+  var attributeManager = context.documentAttributeManager;
+  var rep              = context.rep;
 
-      mergeEventInfo.isMerge = caretPosition.endOfLine;
+  var currentLine  = rep.selStart[0];
+  var previousLine = currentLine - 1;
 
-      if (caretPosition.endOfLine && currentLineHasDifferentTypeOfNextLine) {
-        var currentLineIsEmpty = lineIsEmpty(currentLine, rep, attributeManager);
+  var currentLineIsEmpty = lineIsEmpty(currentLine, rep, attributeManager);
+  var currentLineHasDifferentTypeOfPreviousLine = thisLineTypeIsDifferentFromPreviousLine(currentLine, attributeManager);
 
-        // Scenarios that allow different line types to be merged:
-        // 1. if user is deleting next line (by pressing DELETE at a line where next line is empty);
-        // 2. if user is deleting current line (by pressing DELETE at an empty line where next line is not empty);
-        // In any of those scenarios, we manually process the deletion event, and on both we need to prepare
-        // line attributes for the UNDO operation -- otherwise, if user performs UNDO, we will loose
-        // line types
-        var deletingNextLine    = nextLineIsEmpty;
-        var deletingCurrentLine = !nextLineIsEmpty && currentLineIsEmpty;
-
-        if (deletingNextLine) {
-          prepareLineAttributesForUndo(nextLine, attributeManager);
-          performDelete(editorInfo);
-        } else if (deletingCurrentLine) {
-          // current line will be replaced by next line; make sure we copy type of next line to
-          // current line before performing the deletion
-          adjustLineAttributeOfLineToBeKept(currentLine, nextLine, attributeManager);
-
-          prepareLineAttributesForUndo(nextLine, attributeManager);
-          performDelete(editorInfo);
-        }
-
-        mergeEventInfo.blockMerge = true;
-      }
+  if (!currentLineIsEmpty && currentLineHasDifferentTypeOfPreviousLine) {
+    // we only block merge if user is not removing previous line
+    // (pressing BACKSPACE on a non-empty line when previous line is empty).
+    // Otherwise, we allow merge but we'll need to adjust line attribute after merge
+    // (see adjustLines() for more detail)
+    var previousLineIsEmpty = lineIsEmpty(previousLine, rep, attributeManager);
+    if (previousLineIsEmpty) {
+      // previous line will be replaced by current line; make sure we copy type of current line to
+      // previous line before performing the deletion
+      adjustLineAttributeOfLineToBeKept(previousLine, currentLine, attributeManager);
+    } else {
+      blockBackspace = true;
+      // mergeEventInfo.blockMerge = true;
     }
   }
 
-  return mergeEventInfo;
+  return blockBackspace;
 }
 
-exports.makeLineAdjustment = function(mergeEventInfo, context) {
-  var attributeManager = context.documentAttributeManager;
-  var changeLineTo     = mergeEventInfo.adjustLine.changeLineTo;
-  var lineToBeChanged  = mergeEventInfo.adjustLine.lineToBeChanged;
+var handleDelete = function(context) {
+  var blockDelete = false;
 
-  changeLineAttribute(lineToBeChanged, changeLineTo, attributeManager);
+  var editorInfo       = context.editorInfo;
+  var attributeManager = context.documentAttributeManager;
+  var rep              = context.rep;
+
+  var currentLine = rep.selStart[0];
+  var nextLine    = currentLine + 1;
+
+  var currentLineHasDifferentTypeOfNextLine = thisLineTypeIsDifferentFromPreviousLine(nextLine, attributeManager);
+
+  if (currentLineHasDifferentTypeOfNextLine) {
+    var currentLineIsEmpty = lineIsEmpty(currentLine, rep, attributeManager);
+    var nextLineIsEmpty    = lineIsEmpty(nextLine, rep, attributeManager);
+
+    // Scenarios that allow different line types to be merged:
+    // 1. if user is deleting next line (by pressing DELETE at a line where next line is empty);
+    // 2. if user is deleting current line (by pressing DELETE at an empty line where next line is not empty);
+    // In any of those scenarios, we manually process the deletion event, and on both we need to prepare
+    // line attributes for the UNDO operation -- otherwise, if user performs UNDO, we will loose
+    // line types
+    var deletingNextLine    = nextLineIsEmpty;
+    var deletingCurrentLine = !nextLineIsEmpty && currentLineIsEmpty;
+
+    if (deletingNextLine) {
+      prepareLineAttributesForUndo(nextLine, attributeManager);
+      performDelete(editorInfo);
+    } else if (deletingCurrentLine) {
+      // current line will be replaced by next line; make sure we copy type of next line to
+      // current line before performing the deletion
+      adjustLineAttributeOfLineToBeKept(currentLine, nextLine, attributeManager);
+
+      prepareLineAttributesForUndo(nextLine, attributeManager);
+      performDelete(editorInfo);
+    }
+
+    blockDelete = true;
+  }
+
+  return blockDelete;
 }
 
 var changeLineAttribute = function(line, lineAttribute, attributeManager) {

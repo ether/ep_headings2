@@ -2,7 +2,7 @@ var $              = require('ep_etherpad-lite/static/js/rjquery').$;
 var _              = require('ep_etherpad-lite/static/js/underscore');
 var tags           = require('ep_script_elements/static/js/shared').tags;
 var sceneTag       = require('ep_script_elements/static/js/shared').sceneTag;
-var findHandlerFor = require('./shortcuts').findHandlerFor;
+var shortcuts      = require('./shortcuts');
 var mergeLines     = require('./mergeLines');
 var padInner       = require('./utils').getPadInner;
 
@@ -68,8 +68,9 @@ exports.aceKeyEvent = function(hook, context) {
   var eventProcessed = false;
   var evt = context.evt;
 
-  var handleShortcut = findHandlerFor(evt);
-  var mergeEvent = mergeLines.getMergeEventInfo(context);
+  var handleShortcut = shortcuts.findHandlerFor(evt);
+  var handleMerge    = mergeLines.findHandlerFor(context);
+
   // Cmd+[ or Cmd+]
   if (handleShortcut) {
     evt.preventDefault();
@@ -77,15 +78,12 @@ exports.aceKeyEvent = function(hook, context) {
     eventProcessed = true;
   }
   // BACKSPACE or DELETE
-  else if (mergeEvent.isMerge) {
+  else if (handleMerge) {
+    var mergeShouldBeBlocked = handleMerge(context);
     // cannot merge lines, so do not process keys
-    if (mergeEvent.blockMerge) {
+    if (mergeShouldBeBlocked) {
       evt.preventDefault();
       eventProcessed = true;
-    }
-    // can merge lines, but need to adjust line type (when removing an empty line)
-    else if (mergeEvent.adjustLine) {
-      mergeLines.makeLineAdjustment(mergeEvent, context);
     }
   }
 
