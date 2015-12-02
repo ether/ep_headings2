@@ -6,6 +6,22 @@ ep_script_elements_test_helper.utils = {
   action: function(text) {
     return "<action>" + text + "</action><br/>";
   },
+  parenthetical: function(text) {
+    return "<parenthetical>" + text + "</parenthetical><br/>";
+  },
+  createScriptWith: function(scriptContent, lastLineText, cb) {
+    var inner$ = helper.padInner$;
+
+    // set script content
+    var $firstLine = inner$("div").first();
+    $firstLine.html(scriptContent);
+
+    // wait for Etherpad to finish processing the lines
+    helper.waitFor(function(){
+      var $lastLine = inner$("div").last();
+      return $lastLine.text() === lastLineText;
+    }, 2000).done(cb);
+  },
 
   cleanPad: function(callback) {
     var inner$ = helper.padInner$;

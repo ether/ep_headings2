@@ -191,27 +191,14 @@ ep_script_elements_test_helper.shortcuts = {
     var scene2 = utils.heading("Scene 2") + utils.action("Action 2.1") + utils.action("Action 2.2");
     var scene3 = utils.heading("Scene 3") + utils.action("Action 3.1") + utils.action("Action 3.2");
     var script = beforeScene1 + scene1 + scene2 + scene3;
-    this.createScriptWith(script, "Action 3.2", cb);
+    utils.createScriptWith(script, "Action 3.2", cb);
   },
   createScriptWithNoScene: function(cb) {
     var utils = ep_script_elements_test_helper.utils;
 
     // build script with only 3 actions, no scene at all
     var script = utils.action("Action 1") + utils.action("Action 2") + utils.action("Action 3");
-    this.createScriptWith(script, "Action 3", cb);
-  },
-  createScriptWith: function(scriptContent, lastLineText, cb) {
-    var inner$ = helper.padInner$;
-
-    // set script content
-    var $firstLine = inner$("div").first();
-    $firstLine.html(scriptContent);
-
-    // wait for Etherpad to finish processing the lines
-    helper.waitFor(function(){
-      var $lastLine = inner$("div").last();
-      return $lastLine.text() === lastLineText;
-    }, 2000).done(cb);
+    utils.createScriptWith(script, "Action 3", cb);
   },
 
   pressShortcutToNextScene: function() {
