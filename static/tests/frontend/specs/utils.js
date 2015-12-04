@@ -9,6 +9,21 @@ ep_script_elements_test_helper.utils = {
   parenthetical: function(text) {
     return "<parenthetical>" + text + "</parenthetical><br/>";
   },
+  character: function(text) {
+    return "<character>" + text + "</character><br/>";
+  },
+  dialogue: function(text) {
+    return "<dialogue>" + text + "</dialogue><br/>";
+  },
+  shot: function(text) {
+    return "<shot>" + text + "</shot><br/>";
+  },
+  transition: function(text) {
+    return "<transition>" + text + "</transition><br/>";
+  },
+  general: function(text) {
+    return text + "<br/>";
+  },
   createScriptWith: function(scriptContent, lastLineText, cb) {
     var inner$ = helper.padInner$;
 

@@ -1,4 +1,4 @@
-describe("ep_script_elements", function(){
+describe("ep_script_elements - dropdown", function(){
   var utils;
   //create a new pad before each test run
   beforeEach(function(cb){

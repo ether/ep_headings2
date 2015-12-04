@@ -1,4 +1,4 @@
-describe("ep_script_elements: shortcuts", function() {
+describe("ep_script_elements - shortcuts", function() {
   var utils, pressShortcutToNextScene, pressShortcutToPreviousScene;
 
   beforeEach(function(cb) {
