@@ -7,8 +7,11 @@ exports.findHandlerFor = function(context) {
   var evt              = context.evt;
   var rep              = context.rep;
 
+  // check key pressed before anything else to be more efficient
+  var isMergeKey = (evt.keyCode === BACKSPACE || evt.keyCode === DELETE) && evt.type === "keydown";
+
   // if text is selected, we simply ignore, as it is not a merge event
-  if (!textSelected(editorInfo)) {
+  if (isMergeKey && !textSelected(editorInfo)) {
     // HACK: we need to get current position after calling synchronizeEditorWithUserSelection(), otherwise
     // some tests might fail
     var currentLine   = rep.selStart[0];
@@ -17,9 +20,9 @@ exports.findHandlerFor = function(context) {
     var atFirstLineOfPad = currentLineIsFirstLineOfPad(rep);
     var atLastLineOfPad  = currentLineIsLastLineOfPad(rep);
 
-    if (evt.keyCode === BACKSPACE && evt.type === "keydown" && caretPosition.beginningOfLine && !atFirstLineOfPad) {
+    if (evt.keyCode === BACKSPACE && caretPosition.beginningOfLine && !atFirstLineOfPad) {
       return handleBackspace;
-    } else if (evt.keyCode === DELETE && evt.type === "keydown" && caretPosition.endOfLine && !atLastLineOfPad) {
+    } else if (evt.keyCode === DELETE && caretPosition.endOfLine && !atLastLineOfPad) {
       return handleDelete;
     }
   }
