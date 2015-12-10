@@ -77,8 +77,7 @@ shot{
 #innerdocbody > div:first-of-type > character,
 #innerdocbody > div:first-of-type > transition,
 #innerdocbody > div:first-of-type > shot {
-  /* cannot be zero, otherwise page breaks will have a different behavior of Final Draft */
-  margin-top: 1px;
+  margin-top: 0px;
 }
 
 /* If available width is not even enough to have the regular 61
