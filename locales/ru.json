@@ -1,0 +1,11 @@
+{
+  "ep_headings.style" : "Стили",
+  "ep_headings.normal" : "Обычный текст",
+  "ep_headings.h1" : "Заголовок 1",
+  "ep_headings.h2" : "Заголовок 2",
+  "ep_headings.h3" : "Заголовок 3",
+  "ep_headings.h4" : "Заголовок 4",
+  "ep_headings.h5" : "Заголовок 5",
+  "ep_headings.h6" : "Заголовок 6",
+  "ep_headings.code" : "Код"
+}
