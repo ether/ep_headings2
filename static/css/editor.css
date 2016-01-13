@@ -1,7 +1,10 @@
+/* BUGFIX: we cannot have multiple counter-resets on the code. So this command was moved to
+           src/static/custom/pad.css with the other counter-resets, so we ensure all counters
+           are correctly created and reset.
 body{
-  /* scene numbering: */
   counter-reset: scene;
 }
+*/
 
 heading{
   display:block;
