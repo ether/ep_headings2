@@ -202,10 +202,14 @@ ep_script_elements_test_helper.shortcuts = {
   },
 
   pressShortcutToNextScene: function() {
-    ep_script_elements_test_helper.shortcuts.buildShortcut(221); // Cmd+]
+    var mac  = ep_script_elements_test_helper.shortcuts.isMac();
+    var nextScene = mac ? 221 : 220;
+    ep_script_elements_test_helper.shortcuts.buildShortcut(nextScene); // Cmd+]
   },
   pressShortcutToPreviousScene: function() {
-    ep_script_elements_test_helper.shortcuts.buildShortcut(219); // Cmd+[
+    var mac  = ep_script_elements_test_helper.shortcuts.isMac();
+    var previousScene = mac ? 219 : 221;
+    ep_script_elements_test_helper.shortcuts.buildShortcut(previousScene); // Cmd+[
   },
   buildShortcut: function(keyCode) {
     var inner$ = helper.padInner$;
@@ -218,5 +222,10 @@ ep_script_elements_test_helper.shortcuts = {
     e.ctrlKey = true;
     e.keyCode = keyCode;
     inner$("#innerdocbody").trigger(e);
+  },
+  isMac: function() {
+    var inner$ = helper.padInner$;
+    var isMac = inner$(window)[0].bowser.mac ? true : false
+    return isMac;
   },
 };
