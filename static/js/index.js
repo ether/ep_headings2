@@ -133,7 +133,7 @@ function doInsertScriptElement(level){
   var firstLine, lastLine;
 
   firstLine = rep.selStart[0];
-  lastLine = Math.max(firstLine, rep.selEnd[0] - ((rep.selEnd[1] === 0) ? 1 : 0));
+  lastLine = getLastLine(firstLine, rep);
   _(_.range(firstLine, lastLine + 1)).each(function(i){
     if(level >= 0){
       documentAttributeManager.setAttributeOnLine(i, 'script_element', tags[level]);
@@ -143,6 +143,32 @@ function doInsertScriptElement(level){
   });
 }
 
+
+function getLastLine(firstLine, rep){
+  var lastLineSelected = rep.selEnd[0];
+
+  if (lastLineSelected > firstLine){
+    // Ignore last line if the selected text of it it is empty
+    if(lastLineSelectedIsEmpty(rep, lastLineSelected)){
+      lastLineSelected--;
+    }
+  }
+  return lastLineSelected;
+}
+
+function lastLineSelectedIsEmpty(rep, lastLineSelected){
+  var line = rep.lines.atIndex(lastLineSelected);
+  // when we've a line with line attribute, the first char line position
+  // in a line is 1 because of the *, otherwise is 0
+  var firstCharLinePosition = lineHasMarker(line) ? 1 : 0;
+  var lastColumnSelected = rep.selEnd[1];
+
+  return lastColumnSelected === firstCharLinePosition;
+}
+
+function lineHasMarker(line){
+  return line.lineMarker === 1;
+}
 
 // Once ace is initialized, we set ace_doInsertScriptElement and bind it to the context
 // and we set ace_removeSceneTagFromSelection and bind it to the context
