@@ -123,26 +123,37 @@ exports.aceDomLineProcessLineAttributes = function(name, context){
 // Passing a level >= 0 will set a script element on the selected lines, level < 0
 // will remove it
 function doInsertScriptElement(level){
-  var rep = this.rep,
-    documentAttributeManager = this.documentAttributeManager;
-  if (!(rep.selStart && rep.selEnd) || (level >= 0 && tags[level] === undefined))
-  {
-    return;
-  }
+  var rep = this.rep;
+  var attributeManager = this.documentAttributeManager;
 
-  var firstLine, lastLine;
+  // if there's no text selected or type is unknown
+  if (!(rep.selStart && rep.selEnd) || (level >= 0 && tags[level] === undefined)) return;
 
-  firstLine = rep.selStart[0];
-  lastLine = getLastLine(firstLine, rep);
-  _(_.range(firstLine, lastLine + 1)).each(function(i){
-    if(level >= 0){
-      documentAttributeManager.setAttributeOnLine(i, 'script_element', tags[level]);
-    }else{
-      documentAttributeManager.removeAttributeOnLine(i, 'script_element');
-    }
+  var firstLine = rep.selStart[0];
+  var lastLine = getLastLine(firstLine, rep);
+
+  var action = (level >= 0) ? addAttribute : removeAttribute;
+
+  _(_.range(firstLine, lastLine + 1)).each(function(i) {
+    action(i, attributeManager, tags[level]);
   });
+
+  // if first line was split between pages, we need to replicate the change to its other half
+  if (lineIsSecondHalfOfSliptLine(firstLine, attributeManager)) {
+    action(firstLine-1, attributeManager, tags[level]);
+  }
 }
 
+function lineIsSecondHalfOfSliptLine(lineNumber, attributeManager) {
+  return lineNumber > 0 && attributeManager.getAttributeOnLine(lineNumber-1, "splitPageBreak");
+}
+
+function addAttribute(lineNumber, attributeManager, value) {
+  attributeManager.setAttributeOnLine(lineNumber, 'script_element', value);
+}
+function removeAttribute(lineNumber, attributeManager) {
+  attributeManager.removeAttributeOnLine(lineNumber, 'script_element');
+}
 
 function getLastLine(firstLine, rep){
   var lastLineSelected = rep.selEnd[0];

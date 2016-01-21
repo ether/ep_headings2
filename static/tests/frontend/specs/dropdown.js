@@ -1,22 +1,29 @@
+// Letter
+// var GENERALS_PER_PAGE = 54;
+
+// A4
+var GENERALS_PER_PAGE = 58;
+
 describe("ep_script_elements - dropdown", function(){
   var utils;
+  before(function(){
+    utils = ep_script_elements_test_helper.utils;
+  });
+
   //create a new pad before each test run
   beforeEach(function(cb){
-    utils = ep_script_elements_test_helper.utils;
     helper.newPad(cb);
     this.timeout(60000);
   });
 
-  it("Option select is changed when script element is changed", function(done) {
-    var chrome$ = helper.padChrome$;
+  it("changes option select when script element is changed", function(done) {
     var inner$ = helper.padInner$;
 
     var $firstTextElement = inner$("div").first();
     $firstTextElement.sendkeys('First Line!');
 
     // sets first line to heading
-    chrome$('#script_element-selection').val('0');
-    chrome$('#script_element-selection').change();
+    utils.changeToElement(utils.HEADING);
 
     helper.waitFor(function(){
       // wait for element to be processed and changed
@@ -25,16 +32,14 @@ describe("ep_script_elements - dropdown", function(){
     }).done(done);
   });
 
-  it("Style is cleared when General is selected", function(done) {
-    var chrome$ = helper.padChrome$;
+  it("clears style when General is selected", function(done) {
     var inner$ = helper.padInner$;
 
     var $firstTextElement = inner$("div").first();
     $firstTextElement.sendkeys('First Line!');
 
     // sets first line to heading
-    chrome$('#script_element-selection').val('0');
-    chrome$('#script_element-selection').change();
+    utils.changeToElement(utils.HEADING);
 
     helper.waitFor(function(){
       // wait for element to be processed and changed
@@ -42,8 +47,7 @@ describe("ep_script_elements - dropdown", function(){
       return $firstTextElement.find("heading").length === 1;
     }).done(function(){
       // sets first line to general
-      chrome$('#script_element-selection').val('-1');
-      chrome$('#script_element-selection').change();
+      utils.changeToElement(utils.GENERAL);
 
       helper.waitFor(function(){
         // wait for element to be processed and changed
@@ -130,5 +134,76 @@ describe("ep_script_elements - dropdown", function(){
       });
     });
 
+  });
+
+  context("when pad has a split element between two pages", function() {
+    var FIRST_HALF = GENERALS_PER_PAGE - 3;
+    var SECOND_HALF = GENERALS_PER_PAGE - 2;
+
+    beforeEach(function(done) {
+      var inner$ = helper.padInner$;
+
+      var line1 = utils.buildStringWithLength(60, "1") + ".";
+      var line2 = utils.buildStringWithLength(60, "2") + ".";
+      var line3 = utils.buildStringWithLength(60, "3") + ".";
+      var line4 = utils.buildStringWithLength(60, "4") + ".";
+      var lastLineText = line1 + line2 + line3 + line4;
+
+      var singleLineGenerals = utils.buildScriptWithGenerals("general", GENERALS_PER_PAGE - 3);
+      var multiLineGeneral   = utils.general(lastLineText);
+      var script             = singleLineGenerals + multiLineGeneral;
+
+      utils.createScriptWith(script, lastLineText, function() {
+        // wait for line to be split by pagination
+        helper.waitFor(function() {
+          var $splitElementsWithPageBreaks = inner$("div splitPageBreak");
+          return $splitElementsWithPageBreaks.length === 1;
+        }).done(done);
+      });
+    });
+
+    it("changes 2nd half of split element when 1st half is changed", function(done) {
+      var inner$ = helper.padInner$;
+
+      var $firstHalfOfMultiLineElement = inner$("div").last().prev();
+      $firstHalfOfMultiLineElement.sendkeys('{selectall}{leftarrow}');
+
+      // sets half to action
+      utils.changeToElement(utils.ACTION, function() {
+        helper.waitFor(function(){
+          // wait for element to be processed and changed
+          $firstHalfOfMultiLineElement = inner$("div").last().prev();
+          return $firstHalfOfMultiLineElement.find("action").length === 1;
+        }).done(function() {
+          // 2nd half should be an action too
+          $secondHalfOfMultiLineElement = inner$("div").last();
+          expect($secondHalfOfMultiLineElement.find("action").length).to.be(1);
+
+          done();
+        });
+      }, FIRST_HALF);
+    });
+
+    it("changes 1st half of split element when 2nd half is changed", function(done) {
+      var inner$ = helper.padInner$;
+
+      var $secondHalfOfMultiLineElement = inner$("div").last();
+      $secondHalfOfMultiLineElement.sendkeys('{selectall}{rightarrow}');
+
+      // sets half to action
+      utils.changeToElement(utils.ACTION, function() {
+        helper.waitFor(function(){
+          // wait for element to be processed and changed
+          $secondHalfOfMultiLineElement = inner$("div").last();
+          return $secondHalfOfMultiLineElement.find("action").length === 1;
+        }).done(function() {
+          // 1st half should be an action too
+          $firstHalfOfMultiLineElement = inner$("div").last().prev();
+          expect($firstHalfOfMultiLineElement.find("action").length).to.be(1);
+
+          done();
+        });
+      }, SECOND_HALF);
+    });
   });
 });

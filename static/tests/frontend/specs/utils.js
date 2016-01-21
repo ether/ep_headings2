@@ -38,6 +38,57 @@ ep_script_elements_test_helper.utils = {
     }, 2000).done(cb);
   },
 
+  /**** vars and functions to change element type of a line: ****/
+  GENERAL: 'general',
+  HEADING: 'heading',
+  ACTION: 'action',
+  CHARACTER: 'character',
+  PARENTHETICAL: 'parenthetical',
+  DIALOGUE: 'dialogue',
+  TRANSITION: 'transition',
+  SHOT: 'shot',
+  TARGET_ELEMENT: {
+    'general'       : { val : '-1' },
+    'heading'       : { val : '0' },
+    'action'        : { val : '1' },
+    'character'     : { val : '2' },
+    'parenthetical' : { val : '3' },
+    'dialogue'      : { val : '4' },
+    'transition'    : { val : '5' },
+    'shot'          : { val : '6' }
+  },
+  changeToElement: function(tag, callback, lineNum){
+    lineNum = lineNum || 0;
+    var chrome$ = helper.padChrome$;
+    var inner$ = helper.padInner$;
+    var targetElement = ep_script_elements_test_helper.utils.TARGET_ELEMENT[tag];
+
+    chrome$('#script_element-selection').val(targetElement.val);
+    chrome$('#script_element-selection').change();
+
+    helper.waitFor(function() {
+      var $textElement = ep_script_elements_test_helper.utils.getLine(lineNum);
+      return tag === 'general' || $textElement.find(tag).length > 0;
+    }
+    // this helper.waitFor needs a little more time to finish, so we give it 2s
+    , 2000).done(callback);
+  },
+
+  buildStringWithLength: function(length, text) {
+    return text.repeat(length);
+  },
+
+  buildScriptWithGenerals: function(text, howMany) {
+    var utils = ep_script_page_view_test_helper.utils;
+
+    var script = "";
+    for (var i = 0; i < howMany; i++) {
+      script += utils.general(text);
+    }
+
+    return script;
+  },
+
   cleanPad: function(callback) {
     var inner$ = helper.padInner$;
     var $padContent = inner$("#innerdocbody");
