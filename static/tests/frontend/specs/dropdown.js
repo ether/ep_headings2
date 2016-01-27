@@ -141,6 +141,8 @@ describe("ep_script_elements - dropdown", function(){
     var SECOND_HALF = GENERALS_PER_PAGE - 2;
 
     beforeEach(function(done) {
+      this.timeout(3000);
+
       var inner$ = helper.padInner$;
 
       var line1 = utils.buildStringWithLength(60, "1") + ".";
@@ -158,7 +160,7 @@ describe("ep_script_elements - dropdown", function(){
         helper.waitFor(function() {
           var $splitElementsWithPageBreaks = inner$("div splitPageBreak");
           return $splitElementsWithPageBreaks.length === 1;
-        }).done(done);
+        }, 2000).done(done);
       });
     });
 
@@ -171,15 +173,22 @@ describe("ep_script_elements - dropdown", function(){
       // sets half to action
       utils.changeToElement(utils.ACTION, function() {
         helper.waitFor(function(){
-          // wait for element to be processed and changed
-          $firstHalfOfMultiLineElement = inner$("div").last().prev();
-          return $firstHalfOfMultiLineElement.find("action").length === 1;
-        }).done(function() {
-          // 2nd half should be an action too
+          // wait for 2nd half to be an action too
           $secondHalfOfMultiLineElement = inner$("div").last();
-          expect($secondHalfOfMultiLineElement.find("action").length).to.be(1);
+          return $secondHalfOfMultiLineElement.find("action").length === 1;
+        }).done(function() {
+          /* ******************* now test the other way around (action => general) ******************* */
+          var $firstHalfOfMultiLineElement = inner$("div").last().prev();
+          $firstHalfOfMultiLineElement.sendkeys('{selectall}{leftarrow}');
 
-          done();
+          // sets half to general
+          utils.changeToElement(utils.GENERAL, function() {
+            helper.waitFor(function(){
+              // wait for 2nd half to be a general too
+              $secondHalfOfMultiLineElement = inner$("div").last();
+              return $secondHalfOfMultiLineElement.find("action").length === 0;
+            }).done(done);
+          }, FIRST_HALF);
         });
       }, FIRST_HALF);
     });
@@ -193,15 +202,22 @@ describe("ep_script_elements - dropdown", function(){
       // sets half to action
       utils.changeToElement(utils.ACTION, function() {
         helper.waitFor(function(){
-          // wait for element to be processed and changed
-          $secondHalfOfMultiLineElement = inner$("div").last();
-          return $secondHalfOfMultiLineElement.find("action").length === 1;
-        }).done(function() {
-          // 1st half should be an action too
+          // wait for 1st half to be an action too
           $firstHalfOfMultiLineElement = inner$("div").last().prev();
-          expect($firstHalfOfMultiLineElement.find("action").length).to.be(1);
+          return $firstHalfOfMultiLineElement.find("action").length === 1;
+        }).done(function() {
+          /* ******************* now test the other way around (action => general) ******************* */
+          var $secondHalfOfMultiLineElement = inner$("div").last();
+          $secondHalfOfMultiLineElement.sendkeys('{selectall}{rightarrow}');
 
-          done();
+          // sets half to general
+          utils.changeToElement(utils.GENERAL, function() {
+            helper.waitFor(function(){
+              // wait for 1st half to be a general too
+              $firstHalfOfMultiLineElement = inner$("div").last().prev();
+              return $firstHalfOfMultiLineElement.find("action").length === 0;
+            }).done(done);
+          }, SECOND_HALF);
         });
       }, SECOND_HALF);
     });

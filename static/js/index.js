@@ -138,19 +138,26 @@ function doInsertScriptElement(level){
     action(i, attributeManager, tags[level]);
   });
 
-  // if first line was split between pages, we need to replicate the change to its other half
-  if (lineIsSecondHalfOfSliptLine(firstLine, attributeManager)) {
+  // if line is split between pages, we need to replicate the change to its other half
+  if (lineIsFirstHalfOfSliptLine(firstLine, attributeManager)) {
+    action(firstLine+1, attributeManager, tags[level]);
+  } else if (lineIsSecondHalfOfSliptLine(firstLine, attributeManager)) {
     action(firstLine-1, attributeManager, tags[level]);
   }
 }
 
+function lineIsFirstHalfOfSliptLine(lineNumber, attributeManager) {
+  return attributeManager.getAttributeOnLine(lineNumber, "splitFirstHalf");
+}
+
 function lineIsSecondHalfOfSliptLine(lineNumber, attributeManager) {
-  return lineNumber > 0 && attributeManager.getAttributeOnLine(lineNumber-1, "splitPageBreak");
+  return attributeManager.getAttributeOnLine(lineNumber, "splitSecondHalf");
 }
 
 function addAttribute(lineNumber, attributeManager, value) {
   attributeManager.setAttributeOnLine(lineNumber, 'script_element', value);
 }
+
 function removeAttribute(lineNumber, attributeManager) {
   attributeManager.removeAttributeOnLine(lineNumber, 'script_element');
 }
