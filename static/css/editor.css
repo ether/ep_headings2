@@ -43,10 +43,11 @@ parenthetical br{
 parenthetical{
   display:block;
   margin-left: 105px;
-  margin-right: 148px;
+  margin-right: 154px;
 }
 parenthetical:before {
   content: '(';
+  margin-left: -6px;
 }
 parenthetical:after {
   content: ')';
