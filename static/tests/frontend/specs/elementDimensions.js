@@ -34,7 +34,10 @@ describe("ep_script_elements - element dimensions", function(){
 
   it("displays parentheticals with 25 chars per line", function(done) {
     var elementLine = 3;
-    var maxChars = 25;
+    // parentheticals have a different behavior on tests because the ")" in the end of
+    // line is moved to next line when parenthetical reaches the char limit. So instead of
+    // testing it with its max (25), we test with max-1
+    var maxChars = 24;
     dimensions.testElementCanHoldCharsPerLine("parenthetical", elementLine, maxChars, done);
   });
 
