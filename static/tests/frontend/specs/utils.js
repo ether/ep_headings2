@@ -169,4 +169,24 @@ ep_script_elements_test_helper.utils = {
     e.keyCode = CODE;
     inner$("#innerdocbody").trigger(e);
   },
+
+  buildUndoRedo: function(isRedo) {
+    var inner$ = helper.padInner$;
+    if(inner$(window)[0].bowser.firefox || inner$(window)[0].bowser.modernIE){ // if it's a mozilla or IE
+      var evtType = "keypress";
+    }else{
+      var evtType = "keydown";
+    }
+    var e = inner$.Event(evtType);
+    e.ctrlKey = true;
+    e.shiftKey = isRedo;
+    e.which = "z".charCodeAt(0);
+    inner$("#innerdocbody").trigger(e);
+  },
+  undo: function() {
+    ep_script_elements_test_helper.utils.buildUndoRedo(false);
+  },
+  redo: function() {
+    ep_script_elements_test_helper.utils.buildUndoRedo(true);
+  },
 };

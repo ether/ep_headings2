@@ -4,13 +4,14 @@ var tags           = require('ep_script_elements/static/js/shared').tags;
 var sceneTag       = require('ep_script_elements/static/js/shared').sceneTag;
 var shortcuts      = require('./shortcuts');
 var mergeLines     = require('./mergeLines');
+var undoPagination = require('./undoPagination');
 var padInner       = require('./utils').getPadInner;
 
 var cssFiles = ['ep_script_elements/static/css/editor.css'];
 
 // All our tags are block elements, so we just return them.
 exports.aceRegisterBlockElements = function(){
-  return tags;
+  return _.flatten([undoPagination.UNDO_FIX_TAG, tags]);
 }
 
 // Bind the event handler to the toolbar buttons
@@ -92,22 +93,32 @@ exports.aceKeyEvent = function(hook, context) {
 
 // Our script element attribute will result in a script_element:heading... :transition class
 exports.aceAttribsToClasses = function(hook, context){
-  if(context.key == 'script_element'){
-    return ['script_element:' + context.value ];
+  if (context.key == 'script_element') {
+    return [ 'script_element:' + context.value ];
+  } else if (context.key === undoPagination.UNDO_FIX_ATTRIB) {
+    return [ undoPagination.UNDO_FIX_ATTRIB ];
   }
 }
 
-// Here we convert the class script_element:heading into a tag
 exports.aceDomLineProcessLineAttributes = function(name, context){
   var cls = context.cls;
-  var domline = context.domline;
+
+  var lineModifier = processScriptElementAttribute(cls);
+  if (lineModifier.length === 0) {
+    lineModifier = processUndoFixAttribute(cls);
+  }
+
+  return lineModifier;
+};
+
+// Here we convert the class script_element:heading into a tag
+var processScriptElementAttribute = function(cls) {
   var scriptElementType = /(?:^| )script_element:([A-Za-z0-9]*)/.exec(cls);
   var tagIndex;
 
   if (scriptElementType) tagIndex = _.indexOf(tags, scriptElementType[1]);
 
-  if (tagIndex !== undefined && tagIndex >= 0){
-
+  if (tagIndex !== undefined && tagIndex >= 0) {
     var tag = tags[tagIndex];
     var modifier = {
       preHtml: '<' + tag + '>',
@@ -116,8 +127,23 @@ exports.aceDomLineProcessLineAttributes = function(name, context){
     };
     return [modifier];
   }
+
   return [];
-};
+}
+
+var processUndoFixAttribute = function(cls) {
+  if (cls.includes(undoPagination.UNDO_FIX_ATTRIB)) {
+    var tag = undoPagination.UNDO_FIX_TAG;
+    var modifier = {
+      preHtml: '<' + tag + '>',
+      postHtml: '</' + tag + '>',
+      processedMarker: true
+    };
+    return [modifier];
+  }
+
+  return [];
+}
 
 // Find out which lines are selected and assign them the script element attribute.
 // Passing a level >= 0 will set a script element on the selected lines, level < 0
@@ -125,25 +151,31 @@ exports.aceDomLineProcessLineAttributes = function(name, context){
 function doInsertScriptElement(level){
   var rep = this.rep;
   var attributeManager = this.documentAttributeManager;
+  var newValue = tags[level];
 
   // if there's no text selected or type is unknown
-  if (!(rep.selStart && rep.selEnd) || (level >= 0 && tags[level] === undefined)) return;
+  if (!(rep.selStart && rep.selEnd) || (level >= 0 && newValue === undefined)) return;
 
   var firstLine = rep.selStart[0];
   var lastLine = getLastLine(firstLine, rep);
+  var isRemovingAttribute = (level < 0);
 
-  var action = (level >= 0) ? addAttribute : removeAttribute;
+  var action = isRemovingAttribute ? removeAttribute : addAttribute;
 
-  _(_.range(firstLine, lastLine + 1)).each(function(i) {
-    action(i, attributeManager, tags[level]);
+  _(_.range(firstLine, lastLine + 1)).each(function(lineNumber) {
+    action(lineNumber, attributeManager, newValue);
+
+    // Bug fix: when user changes element to general and then undoes this change, the UNDO might
+    // not work properly if line has a page break. So we need to make an adjustment to avoid that
+    undoPagination.fix(lineNumber, isRemovingAttribute, attributeManager);
+
+    // if line is split between pages, we need to replicate the change to its other half
+    if (lineIsFirstHalfOfSliptLine(lineNumber, attributeManager)) {
+      action(lineNumber+1, attributeManager, newValue);
+    } else if (lineIsSecondHalfOfSliptLine(lineNumber, attributeManager)) {
+      action(lineNumber-1, attributeManager, newValue);
+    }
   });
-
-  // if line is split between pages, we need to replicate the change to its other half
-  if (lineIsFirstHalfOfSliptLine(firstLine, attributeManager)) {
-    action(firstLine+1, attributeManager, tags[level]);
-  } else if (lineIsSecondHalfOfSliptLine(firstLine, attributeManager)) {
-    action(firstLine-1, attributeManager, tags[level]);
-  }
 }
 
 function lineIsFirstHalfOfSliptLine(lineNumber, attributeManager) {
