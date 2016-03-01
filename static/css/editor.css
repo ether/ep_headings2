@@ -75,6 +75,11 @@ shot{
   text-transform: uppercase;
 }
 
+/*hack to force display the element without losing the default font when it is pasted with ctrl+shift+v */
+heading, action, character, parenthetical, dialogue, transition, shot{
+  font-family: monospace;
+}
+
 /* Removes top margin for first element on script: */
 #innerdocbody > div:first-of-type > heading,
 #innerdocbody > div:first-of-type > action,
