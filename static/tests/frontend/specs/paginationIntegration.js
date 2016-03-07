@@ -1,4 +1,4 @@
-describe("ep_script_elements - pagination integration tests", function() {
+describe("ep_script_elements - integration with ep_script_page_view", function() {
   var utils, padId;
   before(function() {
     utils = ep_script_elements_test_helper.utils;
