@@ -53,9 +53,9 @@ describe("ep_script_elements - element dimensions", function(){
     dimensions.testElementCanHoldCharsPerLine("shot", elementLine, maxChars, done);
   });
 
-  it("displays transitions with 15 chars per line", function(done) {
+  it("displays transitions with 16 chars per line", function(done) {
     var elementLine = 6;
-    var maxChars = 15;
+    var maxChars = 16;
     dimensions.testElementCanHoldCharsPerLine("transition", elementLine, maxChars, done);
   });
 
@@ -81,7 +81,7 @@ ep_script_elements_test_helper.dimensions = {
     var parenthetical = utils.parenthetical("&nbsp;"/*(25)*/);
     var dialogue      = utils.dialogue("&nbsp;"/*(35)*/);
     var shot          = utils.shot("&nbsp;"/*(61)*/);
-    var transition    = utils.transition("&nbsp;"/*(15)*/);
+    var transition    = utils.transition("&nbsp;"/*(16)*/);
     // build also a general at the end of script
     var general       = utils.general("last line");
 

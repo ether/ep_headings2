@@ -62,8 +62,8 @@ dialogue{
 
 transition{
   display:block;
-  margin-left: 294px;
-  margin-right: 39px;
+  margin-left: 291px;
+  margin-right: 36px;
   margin-top: 16px;
   text-align: right;
   text-transform: uppercase;
@@ -108,7 +108,7 @@ heading, action, character, parenthetical, dialogue, transition, shot{
   }
 
   transition{
-    margin-left: 69%;
+    margin-left: 64%;
     margin-right: 9%;
   }
 }
