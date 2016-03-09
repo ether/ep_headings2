@@ -26,6 +26,7 @@ ep_script_elements_test_helper.utils = {
   },
   createScriptWith: function(scriptContent, lastLineText, cb) {
     var inner$ = helper.padInner$;
+    var utils = ep_script_elements_test_helper.utils;
 
     // set script content
     var $firstLine = inner$("div").first();
@@ -34,7 +35,7 @@ ep_script_elements_test_helper.utils = {
     // wait for Etherpad to finish processing the lines
     helper.waitFor(function(){
       var $lastLine = inner$("div").last();
-      return $lastLine.text() === lastLineText;
+      return utils.cleanText($lastLine.text()) === lastLineText;
     }, 2000).done(cb);
   },
 
@@ -72,6 +73,10 @@ ep_script_elements_test_helper.utils = {
     }
     // this helper.waitFor needs a little more time to finish, so we give it 2s
     , 2000).done(callback);
+  },
+
+  cleanText: function(text) {
+    return text.replace(/\s/gi, " ");
   },
 
   buildStringWithLength: function(length, text) {

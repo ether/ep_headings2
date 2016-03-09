@@ -68,7 +68,7 @@ describe("ep_script_elements - integration with ep_script_page_view", function()
             // wait for pagination to move last general to top of page
             helper.waitFor(function() {
               var $lineAfterPageBreak = inner$("div:has(nonSplitPageBreak)").next();
-              return $lineAfterPageBreak.text() === lastLineText;
+              return utils.cleanText($lineAfterPageBreak.text()) === lastLineText;
             }).done(done);
           }, LINE_OF_TRANSITION);
         });
@@ -168,7 +168,7 @@ describe("ep_script_elements - integration with ep_script_page_view", function()
             // wait for pagination to move last general to top of page
             helper.waitFor(function() {
               var $lineAfterPageBreak = inner$("div:has(nonSplitPageBreak)").next();
-              return $lineAfterPageBreak.text() === lastLineText;
+              return utils.cleanText($lineAfterPageBreak.text()) === lastLineText;
             }).done(done);
           }, LINE_OF_ACTION);
         });
@@ -238,7 +238,7 @@ describe("ep_script_elements - integration with ep_script_page_view", function()
                 // back to 1st page
                 helper.waitFor(function() {
                   var $lineAfterPageBreak = inner$("div:has(nonSplitPageBreak)").next();
-                  return $lineAfterPageBreak.text() === lastLineText;
+                  return utils.cleanText($lineAfterPageBreak.text()) === lastLineText;
                 }).done(done);
               });
             });
@@ -257,10 +257,10 @@ describe("ep_script_elements - integration with ep_script_page_view", function()
 
       var inner$ = helper.padInner$;
 
-      var line1 = utils.buildStringWithLength(60, "1") + ".";
-      var line2 = utils.buildStringWithLength(60, "2") + ".";
-      var line3 = utils.buildStringWithLength(60, "3") + ".";
-      var line4 = utils.buildStringWithLength(60, "4") + ".";
+      var line1 = utils.buildStringWithLength(59, "1") + ". ";
+      var line2 = utils.buildStringWithLength(59, "2") + ". ";
+      var line3 = utils.buildStringWithLength(59, "3") + ". ";
+      var line4 = utils.buildStringWithLength(59, "4") + ". ";
       var lastLineText = line1 + line2 + line3 + line4;
 
       var singleLineGenerals = utils.buildScriptWithGenerals("general", GENERALS_PER_PAGE - 3);
