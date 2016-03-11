@@ -15,12 +15,13 @@ var ELEMENTS_WITH_MARGINS = [
 ];
 
 var DEFAULT_MARGINS = {
-  // WARNING: if you change ANY of these values here, you need to change on the CSS too
+  // these values were originally set on CSS
   "character":     { left: 152, right: 16 },
   "parenthetical": { left: 105, right: 154 },
   "dialogue":      { left: 77,  right: 111 },
   "transition":    { left: 291, right: 36 },
 };
+exports.DEFAULT_MARGINS = DEFAULT_MARGINS;
 
 var DEFAULT_CHAR_WIDTH = 7.2; // this was calculated using 100% zoom on Chrome
 
