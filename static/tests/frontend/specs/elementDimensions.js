@@ -114,7 +114,7 @@ ep_script_elements_test_helper.dimensions = {
     // add one char and verify if it has one more line now
     $element.sendkeys('X');
     var $element = utils.getLine(elementLine);
-    expect($element.height()).to.be(2*previousHeight);
+    expect($element.height()).to.be.greaterThan(previousHeight);
 
     done();
   }

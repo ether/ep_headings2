@@ -30,8 +30,6 @@ action{
 
 character{
   display:block;
-  margin-left: 152px;
-  margin-right: 16px;
   margin-top: 16px;
   text-transform: uppercase;
 }
@@ -42,8 +40,6 @@ parenthetical br{
 }
 parenthetical{
   display:block;
-  margin-left: 105px;
-  margin-right: 154px;
 }
 parenthetical:before {
   content: '(';
@@ -56,8 +52,6 @@ parenthetical:after {
 
 dialogue{
   display:block;
-  margin-left: 77px;
-  margin-right: 111px;
 }
 
 transition{

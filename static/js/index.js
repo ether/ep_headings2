@@ -5,6 +5,7 @@ var sceneTag       = require('ep_script_elements/static/js/shared').sceneTag;
 var shortcuts      = require('./shortcuts');
 var mergeLines     = require('./mergeLines');
 var undoPagination = require('./undoPagination');
+var fixSmallZooms  = require('./fixSmallZooms');
 var padInner       = require('./utils').getPadInner;
 
 var cssFiles = ['ep_script_elements/static/css/editor.css'];
@@ -16,7 +17,8 @@ exports.aceRegisterBlockElements = function(){
 
 // Bind the event handler to the toolbar buttons
 exports.postAceInit = function(hook, context){
-  listeningChangeElementByShortCut();
+  listenToChangeElementByShortCut();
+  fixSmallZooms.init();
 
   var script_element_selection = $('#script_element-selection');
   script_element_selection.on('change', function(){
@@ -45,7 +47,7 @@ function updateDropdownWithValueChosen(){
   updateDropdownToCaretLine(this);
 }
 
-function listeningChangeElementByShortCut(){
+function listenToChangeElementByShortCut(){
   var $innerDocument = padInner().find("#innerdocbody");
   // ep_script_element_transition triggers 'elementChange' event when element is
   // changed by shortcut CMD+NUM, which means the type of current line was changed,
