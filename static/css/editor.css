@@ -6,9 +6,9 @@ body{
 }
 */
 
+/* WARNING there are other styles for script elements dynamically set on fixSmallZooms.js */
 heading{
   display:block;
-  margin-top: 32px;
   text-transform: uppercase;
 }
 heading:before {
@@ -25,12 +25,10 @@ heading:before {
 
 action{
   display:block;
-  margin-top: 16px;
 }
 
 character{
   display:block;
-  margin-top: 16px;
   text-transform: uppercase;
 }
 
@@ -56,14 +54,12 @@ dialogue{
 
 transition{
   display:block;
-  margin-top: 16px;
   text-align: right;
   text-transform: uppercase;
 }
 
 shot{
   display:block;
-  margin-top: 32px;
   text-transform: uppercase;
 }
 
