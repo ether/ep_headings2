@@ -29,7 +29,7 @@ var DEFAULT_MARGINS = {
   "character":     { vertical: { top: 1*DEFAULT_LINE_HEIGHT },
                      horizontal: { left: 152, right: 16  } },
   "transition":    { vertical: { top: 1*DEFAULT_LINE_HEIGHT },
-                     horizontal: { left: 291, right: 36  } },
+                     horizontal: { left: 290, right: 36  } },
   "parenthetical": { horizontal: { left: 105, right: 154 } },
   "dialogue":      { horizontal: { left: 77,  right: 111 } },
 };
