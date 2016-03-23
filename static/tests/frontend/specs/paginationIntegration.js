@@ -24,7 +24,7 @@ describe("ep_script_elements - integration with ep_script_page_view", function()
         helper.waitFor(function() {
           var $linesWithPageBreaks = inner$("div nonSplitPageBreak");
           return $linesWithPageBreaks.length === 1;
-        }, 2000).done(function() {
+        }, 3000).done(function() {
           // reload the pad so tests for UNDO work properly.
           // But first need to wait for changes of pagination to be saved
           setTimeout(function() {
@@ -252,6 +252,16 @@ describe("ep_script_elements - integration with ep_script_page_view", function()
     var FIRST_HALF = GENERALS_PER_PAGE - 3;
     var SECOND_HALF = GENERALS_PER_PAGE - 2;
 
+    var getFirstHalfOfMultiLineElement = function() {
+      return getSecondHalfOfMultiLineElement().prev();
+    }
+
+    var getSecondHalfOfMultiLineElement = function() {
+      var inner$ = helper.padInner$;
+
+      return inner$("div").last().prev();
+    }
+
     beforeEach(function(done) {
       this.timeout(60000);
 
@@ -261,18 +271,20 @@ describe("ep_script_elements - integration with ep_script_page_view", function()
       var line2 = utils.buildStringWithLength(59, "2") + ". ";
       var line3 = utils.buildStringWithLength(59, "3") + ". ";
       var line4 = utils.buildStringWithLength(59, "4") + ". ";
-      var lastLineText = line1 + line2 + line3 + line4;
+      var longText = line1 + line2 + line3 + line4;
+      var lastLineText = "last general";
 
       var singleLineGenerals = utils.buildScriptWithGenerals("general", GENERALS_PER_PAGE - 3);
-      var multiLineGeneral   = utils.general(lastLineText);
-      var script             = singleLineGenerals + multiLineGeneral;
+      var multiLineGeneral   = utils.general(longText);
+      var lastGeneral        = utils.general(lastLineText);
+      var script             = singleLineGenerals + multiLineGeneral + lastGeneral;
 
       utils.createScriptWith(script, lastLineText, function() {
         // wait for line to be split by pagination
         helper.waitFor(function() {
           var $splitElementsWithPageBreaks = inner$("div splitPageBreak");
           return $splitElementsWithPageBreaks.length === 1;
-        }, 2000).done(function() {
+        }, 3000).done(function() {
           // reload the pad so tests for UNDO work properly.
           // But first need to wait for changes of pagination to be saved
           setTimeout(function() {
@@ -286,14 +298,14 @@ describe("ep_script_elements - integration with ep_script_page_view", function()
       beforeEach(function(done) {
         var inner$ = helper.padInner$;
 
-        var $firstHalfOfMultiLineElement = inner$("div").last().prev();
+        var $firstHalfOfMultiLineElement = getFirstHalfOfMultiLineElement();
         $firstHalfOfMultiLineElement.sendkeys('{selectall}{leftarrow}');
 
         // sets half to action
         utils.changeToElement(utils.ACTION, function() {
           // wait for 2nd half to be an action too
           helper.waitFor(function() {
-            $secondHalfOfMultiLineElement = inner$("div").last();
+            $secondHalfOfMultiLineElement = getSecondHalfOfMultiLineElement();
             return $secondHalfOfMultiLineElement.find("action").length === 1;
           }).done(done);
         }, FIRST_HALF);
@@ -302,7 +314,7 @@ describe("ep_script_elements - integration with ep_script_page_view", function()
       it("changes 2nd half of split element too", function(done) {
         var inner$ = helper.padInner$;
 
-        $secondHalfOfMultiLineElement = inner$("div").last();
+        $secondHalfOfMultiLineElement = getSecondHalfOfMultiLineElement();
         var hasAction = $secondHalfOfMultiLineElement.find("action").length === 1;
 
         expect(hasAction).to.be(true);
@@ -324,7 +336,7 @@ describe("ep_script_elements - integration with ep_script_page_view", function()
 
           // wait until both halves are changed to general
           helper.waitFor(function() {
-            $secondHalfOfMultiLineElement = inner$("div").last();
+            $secondHalfOfMultiLineElement = getSecondHalfOfMultiLineElement();
             $firstHalfOfMultiLineElement = $secondHalfOfMultiLineElement.prev();
             var secondHalfIsGeneral = $secondHalfOfMultiLineElement.find("action").length === 0;
             var firstHalfIsGeneral = $firstHalfOfMultiLineElement.find("action").length === 0;
@@ -339,7 +351,7 @@ describe("ep_script_elements - integration with ep_script_page_view", function()
 
             // wait until both halves are changed to general
             helper.waitFor(function() {
-              $secondHalfOfMultiLineElement = inner$("div").last();
+              $secondHalfOfMultiLineElement = getSecondHalfOfMultiLineElement();
               $firstHalfOfMultiLineElement = $secondHalfOfMultiLineElement.prev();
               var secondHalfIsGeneral = $secondHalfOfMultiLineElement.find("action").length === 0;
               var firstHalfIsGeneral = $firstHalfOfMultiLineElement.find("action").length === 0;
@@ -357,7 +369,7 @@ describe("ep_script_elements - integration with ep_script_page_view", function()
 
             // wait until REDO is complete (and both halves are actions again)
             helper.waitFor(function() {
-              $secondHalfOfMultiLineElement = inner$("div").last();
+              $secondHalfOfMultiLineElement = getSecondHalfOfMultiLineElement();
               $firstHalfOfMultiLineElement = $secondHalfOfMultiLineElement.prev();
               var secondHalfIsAction = $secondHalfOfMultiLineElement.find("action").length === 1;
               var firstHalfIsAction = $firstHalfOfMultiLineElement.find("action").length === 1;
@@ -372,7 +384,7 @@ describe("ep_script_elements - integration with ep_script_page_view", function()
         beforeEach(function(done) {
           var inner$ = helper.padInner$;
 
-          var $firstHalfOfMultiLineElement = inner$("div").last().prev();
+          var $firstHalfOfMultiLineElement = getFirstHalfOfMultiLineElement();
           $firstHalfOfMultiLineElement.sendkeys('{selectall}{leftarrow}');
 
           // sets half to general
@@ -384,7 +396,7 @@ describe("ep_script_elements - integration with ep_script_page_view", function()
 
           // wait for 2nd half to be a general too
           helper.waitFor(function() {
-            $secondHalfOfMultiLineElement = inner$("div").last();
+            $secondHalfOfMultiLineElement = getSecondHalfOfMultiLineElement();
             return $secondHalfOfMultiLineElement.find("action").length === 0;
           }).done(done);
         });
@@ -403,7 +415,7 @@ describe("ep_script_elements - integration with ep_script_page_view", function()
 
             // wait until both halves are changed to action
             helper.waitFor(function() {
-              $secondHalfOfMultiLineElement = inner$("div").last();
+              $secondHalfOfMultiLineElement = getSecondHalfOfMultiLineElement();
               $firstHalfOfMultiLineElement = $secondHalfOfMultiLineElement.prev();
               var secondHalfIsAction = $secondHalfOfMultiLineElement.find("action").length === 1;
               var firstHalfIsAction = $firstHalfOfMultiLineElement.find("action").length === 1;
@@ -418,7 +430,7 @@ describe("ep_script_elements - integration with ep_script_page_view", function()
 
               // wait until both halves are changed to action
               helper.waitFor(function() {
-                $secondHalfOfMultiLineElement = inner$("div").last();
+                $secondHalfOfMultiLineElement = getSecondHalfOfMultiLineElement();
                 $firstHalfOfMultiLineElement = $secondHalfOfMultiLineElement.prev();
                 var secondHalfIsAction = $secondHalfOfMultiLineElement.find("action").length === 1;
                 var firstHalfIsAction = $firstHalfOfMultiLineElement.find("action").length === 1;
@@ -435,7 +447,7 @@ describe("ep_script_elements - integration with ep_script_page_view", function()
 
               // wait until REDO is complete (and both halves are generals again)
               helper.waitFor(function() {
-                $secondHalfOfMultiLineElement = inner$("div").last();
+                $secondHalfOfMultiLineElement = getSecondHalfOfMultiLineElement();
                 $firstHalfOfMultiLineElement = $secondHalfOfMultiLineElement.prev();
                 var secondHalfIsGeneral = $secondHalfOfMultiLineElement.find("action").length === 0;
                 var firstHalfIsGeneral = $firstHalfOfMultiLineElement.find("action").length === 0;
@@ -452,14 +464,14 @@ describe("ep_script_elements - integration with ep_script_page_view", function()
       beforeEach(function(done) {
         var inner$ = helper.padInner$;
 
-        var $secondHalfOfMultiLineElement = inner$("div").last();
+        var $secondHalfOfMultiLineElement = getSecondHalfOfMultiLineElement();
         $secondHalfOfMultiLineElement.sendkeys('{selectall}{rightarrow}');
 
         // sets half to action
         utils.changeToElement(utils.ACTION, function() {
           // wait for 2nd half to be an action too
           helper.waitFor(function() {
-            $firstHalfOfMultiLineElement = inner$("div").last().prev();
+            $firstHalfOfMultiLineElement = getFirstHalfOfMultiLineElement();
             return $firstHalfOfMultiLineElement.find("action").length === 1;
           }).done(done);
         }, SECOND_HALF);
@@ -468,7 +480,7 @@ describe("ep_script_elements - integration with ep_script_page_view", function()
       it("changes 1st half of split element too", function(done) {
         var inner$ = helper.padInner$;
 
-        $firstHalfOfMultiLineElement = inner$("div").last().prev();
+        $firstHalfOfMultiLineElement = getFirstHalfOfMultiLineElement();
         var hasAction = $firstHalfOfMultiLineElement.find("action").length === 1;
 
         expect(hasAction).to.be(true);
@@ -490,7 +502,7 @@ describe("ep_script_elements - integration with ep_script_page_view", function()
 
           // wait until both halves are changed to general
           helper.waitFor(function() {
-            $secondHalfOfMultiLineElement = inner$("div").last();
+            $secondHalfOfMultiLineElement = getSecondHalfOfMultiLineElement();
             $firstHalfOfMultiLineElement = $secondHalfOfMultiLineElement.prev();
             var secondHalfIsGeneral = $secondHalfOfMultiLineElement.find("action").length === 0;
             var firstHalfIsGeneral = $firstHalfOfMultiLineElement.find("action").length === 0;
@@ -504,7 +516,7 @@ describe("ep_script_elements - integration with ep_script_page_view", function()
         beforeEach(function(done) {
           var inner$ = helper.padInner$;
 
-          var $secondHalfOfMultiLineElement = inner$("div").last();
+          var $secondHalfOfMultiLineElement = getSecondHalfOfMultiLineElement();
           $secondHalfOfMultiLineElement.sendkeys('{selectall}{rightarrow}');
 
           // sets half to general
@@ -516,7 +528,7 @@ describe("ep_script_elements - integration with ep_script_page_view", function()
 
           // wait for 1st half to be a general too
           helper.waitFor(function() {
-            $firstHalfOfMultiLineElement = inner$("div").last().prev();
+            $firstHalfOfMultiLineElement = getFirstHalfOfMultiLineElement();
             return $firstHalfOfMultiLineElement.find("action").length === 0;
           }).done(done);
         });
@@ -535,7 +547,7 @@ describe("ep_script_elements - integration with ep_script_page_view", function()
 
             // wait until both halves are changed to action
             helper.waitFor(function() {
-              $secondHalfOfMultiLineElement = inner$("div").last();
+              $secondHalfOfMultiLineElement = getSecondHalfOfMultiLineElement();
               $firstHalfOfMultiLineElement = $secondHalfOfMultiLineElement.prev();
               var secondHalfIsAction = $secondHalfOfMultiLineElement.find("action").length === 1;
               var firstHalfIsAction = $firstHalfOfMultiLineElement.find("action").length === 1;
