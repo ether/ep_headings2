@@ -12,7 +12,12 @@ describe("ep_script_elements - dropdown", function(){
 
   //create a new pad before each test run
   beforeEach(function(cb){
-    helper.newPad(cb);
+    helper.newPad(function(){
+      helper.waitFor(function(){
+        var pluginIsNotLoaded = (undefined === helper.padChrome$.window.clientVars.plugins.plugins.ep_script_scene_marks);
+        return !pluginIsNotLoaded;
+      }).done(cb)
+    });
     this.timeout(60000);
   });
 

@@ -30,14 +30,14 @@ exports.postAceInit = function(hook, context){
       context.ace.callWithAce(function(ace){
         ace.ace_doInsertScriptElement(intValue);
         ace.ace_updateDropdownWithValueChosen();
+        // TODO  - listenToChangeElementByShortCut
+        //if change to a button different from heading removes sceneTag line attributes
+        if (l10nLabel !== "ep_script_elements.heading") {
+          ace.ace_removeSceneTagFromSelection();
+          ace.ace_removeSceneMarksFromSelection();
+        }
       },'insertscriptelement' , true);
       script_element_selection.val("dummy");
-    }
-    //if change to a button different from heading removes sceneTag line attributes
-    if (l10nLabel !== "ep_script_elements.heading") {
-      context.ace.callWithAce(function(ace){
-        ace.ace_removeSceneTagFromSelection();
-      },'removescenetag' , true);
     }
   })
 };
