@@ -18,13 +18,20 @@ exports.stylesForExport = function(hook, padId, cb){
 
 // line, apool,attribLine,text
 exports.getLineHTMLForExport = function (hook, context) {
-  var script_element = findAttrib(context.attribLine, context.apool, "script_element");
+  var attribLine = context.attribLine;
+  var apool = context.apool;
+  var hasSceneMark = hasAnySceneMark(attribLine, apool);
+  if (hasSceneMark){ // if it is a scene mark it is not a script element (including a general)
+    return;
+  }
+  var script_element = null;
+  script_element = findAttrib(attribLine, apool, "script_element");
   //try to find a scene line attributes. if it's found mount the HTML with it
   var dataAttributes = mountAdditionalSceneData(context);
   var text = context.lineContent;
   if (script_element) {
     text = text.substring(1);
-  } else {
+  } else { // if it is not a script either a scene mark so it is a general
     script_element = "general";
   }
   //these dataAttributes refers do scene attributes like scene-name, scene-number, ...
@@ -60,4 +67,11 @@ function mountAdditionalSceneData(context) {
 function formatTagOutput(key, value) {
   value =  Security.escapeHTML(value);
   return  " "+key+"=\""+value+"\"";
+}
+
+var hasAnySceneMark = function(attribLine, apool){
+  var hasAct = findAttrib(attribLine, apool, "act_scene_mark");
+  var hasSequence = findAttrib(attribLine, apool, "sequence_scene_mark");
+  var hasDramaticUnit = findAttrib(attribLine, apool, "dramatic_scene_mark");
+  return (hasAct || hasSequence || hasDramaticUnit);
 }

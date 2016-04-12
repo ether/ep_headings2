@@ -1,3 +1,4 @@
+// TODO - to implement
 describe("ep_script_elements - undo scene marks", function(){
 
   var utils;
@@ -25,7 +26,7 @@ describe("ep_script_elements - undo scene marks", function(){
         }).done(cb);
       }, 2000);
 
-      it("displays a heading with scene marks", function(done){
+      xit("displays a heading with scene marks", function(done){
           utils.undo();
           helper.waitFor(function(){
             var inner$ = helper.padInner$;
