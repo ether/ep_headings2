@@ -11,7 +11,8 @@
         "aceAttribsToClasses": "ep_script_elements/static/js/index",
         "aceRegisterBlockElements": "ep_script_elements/static/js/index",
         "collectContentPre": "ep_script_elements/static/js/shared",
-        "collectContentPost": "ep_script_elements/static/js/shared"
+        "collectContentPost": "ep_script_elements/static/js/shared",
+        "acePostWriteDomLineHTML": "ep_script_elements/static/js/index"
       },
       "hooks": {
         "collectContentPre": "ep_script_elements/static/js/shared",

@@ -24,11 +24,6 @@ ep_script_elements_test_helper.utils = {
   general: function(text) {
     return text + "<br/>";
   },
-  sequence: function(){
-    return "<line_with_scene_marks><sequence>" +
-    "<sequence_name class='something'><empty/></sequence_name>" +
-    "</sequence></line_with_scene_marks>";
-  },
   createScriptWith: function(scriptContent, lastLineText, cb) {
     var inner$ = helper.padInner$;
     var utils = ep_script_elements_test_helper.utils;

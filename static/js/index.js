@@ -7,6 +7,8 @@ var mergeLines     = require('./mergeLines');
 var undoPagination = require('./undoPagination');
 var fixSmallZooms  = require('./fixSmallZooms');
 var padInner       = require('./utils').getPadInner;
+var sceneMarkTags  = require('./utils').sceneMarkTags;
+var SCENE_MARK_TYPE = require('./utils').SCENE_MARK_TYPE;
 
 var cssFiles = ['ep_script_elements/static/css/editor.css'];
 
@@ -113,6 +115,26 @@ exports.aceDomLineProcessLineAttributes = function(name, context){
   return lineModifier;
 };
 
+exports.acePostWriteDomLineHTML = function(hook, context){
+  var $node = $(context.node);
+  var sceneMarkTagsAndHeading = _.union(sceneMarkTags, ['heading']);
+  var sceneMarkTagAndHeadingIndex = isTypeTag($node, sceneMarkTagsAndHeading);
+  if(sceneMarkTagAndHeadingIndex > -1 ){
+    $node.addClass(SCENE_MARK_TYPE[sceneMarkTagAndHeadingIndex]);
+  }
+}
+
+var isTypeTag = function($node, sceneMarkTagsAndHeading){
+  var sceneMarkTagIndex = -1;
+  _.each(sceneMarkTagsAndHeading, function(tag){
+    var nodeHasTag = $node.find(tag).length;
+    if (nodeHasTag) {
+      sceneMarkTagIndex = _.indexOf(sceneMarkTagsAndHeading, tag);
+    }
+  });
+  return sceneMarkTagIndex;
+}
+
 // Here we convert the class script_element:heading into a tag
 var processScriptElementAttribute = function(cls) {
   var scriptElementType = /(?:^| )script_element:([A-Za-z0-9]*)/.exec(cls);
@@ -122,8 +144,9 @@ var processScriptElementAttribute = function(cls) {
 
   if (tagIndex !== undefined && tagIndex >= 0) {
     var tag = tags[tagIndex];
+    var sceneMarkIcon = buildSceneMarkIconIfTagIsHeading(tag);
     var modifier = {
-      preHtml: '<' + tag + '>',
+      preHtml: '<' + tag + '>' + sceneMarkIcon,
       postHtml: '</' + tag + '>',
       processedMarker: true
     };
@@ -131,6 +154,14 @@ var processScriptElementAttribute = function(cls) {
   }
 
   return [];
+}
+
+var buildSceneMarkIconIfTagIsHeading = function(tag){
+  var sceneMarkIcon = "";
+  if (tag == "heading"){
+    sceneMarkIcon = "<span class='scene_mark_button__heading'><empty/></span>";
+  }
+  return sceneMarkIcon;
 }
 
 var processUndoFixAttribute = function(cls) {
