@@ -1,3 +1,4 @@
+var _                = require('ep_etherpad-lite/static/js/underscore');
 var actTags          = ["act_name", "act_summary"];
 var sequenceTags     = ["sequence_name", "sequence_summary"];
 var dramaticUnitTags = ["dramatic_unit_name", "dramatic_unit_summary", "dramatic_unit_tone", "dramatic_unit_cadence", "dramatic_unit_subtext"];
