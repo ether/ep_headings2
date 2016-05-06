@@ -72,6 +72,5 @@ function formatTagOutput(key, value) {
 var hasAnySceneMark = function(attribLine, apool){
   var hasAct = findAttrib(attribLine, apool, "act_scene_mark");
   var hasSequence = findAttrib(attribLine, apool, "sequence_scene_mark");
-  var hasDramaticUnit = findAttrib(attribLine, apool, "dramatic_scene_mark");
-  return (hasAct || hasSequence || hasDramaticUnit);
+  return (hasAct || hasSequence);
 }

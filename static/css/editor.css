@@ -125,30 +125,6 @@ div.withAct + div.withSeq + div.withSeq + div.withHeading .scene_mark_button__he
   content: "A";
 }
 
-/* --- when there are dramatic unit ---
-   This case happens when it is exported a script with a dramatic unit. Even not showing the dramatic unit on the pad
-   they are present in the html. This rules are the same as above but it includes the dramatic unit elements
- */
-
-div.withSeq:not(.hidden) + div.withSeq + div.withDU + div.withDU + div.withDU + div.withDU + div.withDU + div.withHeading .scene_mark_button__heading::before {
-  content: "";
-  border: 0; /*fix to avoid strange border*/
-}
-/*show sequence icon on heading*/
-div.withSeq + div.withSeq + div.withDU + div.withDU + div.withDU + div.withDU + div.withDU + div.withHeading .scene_mark_button__heading::before {
-  content: "S";
-}
-/*when the act is not hidden the heading icon should not be visible*/
-div.withAct:not(.hidden) + div.withSeq + div.withSeq + div.withDU + div.withDU + div.withDU + div.withDU + div.withDU + div.withHeading .scene_mark_button__heading::before {
-  content: "";
-  border: 0; /*fix to avoid strange border*/
-}
-
-/* override the sequence icon with the act icon*/
-div.withAct + div.withSeq + div.withSeq + div.withDU + div.withDU + div.withDU + div.withDU + div.withDU + div.withHeading .scene_mark_button__heading::before {
-  content: "A";
-}
-
 
 .scene_mark_button__heading::before{
   display: inline-block;
