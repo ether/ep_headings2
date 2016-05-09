@@ -11,7 +11,17 @@ var utils = require("./utils");
 var DEFAULT_CHAR_WIDTH = 7.2;
 var DEFAULT_LINE_HEIGHT = 16.0;
 
+// when there are a sequence before a heading there is not space between them
+var noSpaceBetweenSeqAndHeading = "div.withSeq:not(.hidden) + div.withHeading heading{ margin-top: 0}";
+
+// when there is an act before a sequence, the sequence has not margin top
+var noSpaceBetweenSeqAndAct = "div.withAct:not(.hidden) + div.withSeq sequence_name{ margin-top: 0};"
+
+// these scene marks rules overrides the default ones, when these specific two scenarios above are applicable
+var sceneMarksSpecialRules = noSpaceBetweenSeqAndHeading + noSpaceBetweenSeqAndAct;
 var ELEMENTS_WITH_MARGINS = [
+  "act_name",
+  "sequence_name",
   "heading",
   "action",
   "character",
@@ -23,6 +33,8 @@ var ELEMENTS_WITH_MARGINS = [
 
 var DEFAULT_MARGINS = {
   // these values were originally set on CSS
+  "act_name":      { vertical: { top: 2*DEFAULT_LINE_HEIGHT } },
+  "sequence_name": { vertical: { top: 2*DEFAULT_LINE_HEIGHT } },
   "heading":       { vertical: { top: 2*DEFAULT_LINE_HEIGHT } },
   "shot":          { vertical: { top: 2*DEFAULT_LINE_HEIGHT } },
   "action":        { vertical: { top: 1*DEFAULT_LINE_HEIGHT } },
@@ -62,7 +74,7 @@ var updateMargins = function() {
   }).join("\n");
 
   // we don't want to affect mobile screens
-  var style = "@media (min-width : 464px) { " + elementStyles + " }";
+  var style = "@media (min-width : 464px) { " + elementStyles + sceneMarksSpecialRules + " }";
 
   // overwrite current style for element margins
   utils.getPadInner().find("head").append("<style>" + style + "</style>");
