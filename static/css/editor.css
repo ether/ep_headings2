@@ -21,6 +21,9 @@ heading:before {
   /* scene numbering: */
   counter-increment: scene;
   content: counter(scene) " ";
+  /*make the number below the act/seq icon*/
+  position: relative;
+  z-index: 0;
 }
 
 action{
@@ -112,6 +115,8 @@ div.withSeq:not(.hidden) + div.withSeq + div.withHeading .scene_mark_button__hea
 /*show sequence icon on heading, when the scene mark is not visible*/
 div.withSeq + div.withSeq + div.withHeading .scene_mark_button__heading::before {
   content: "S";
+  position: relative;
+  z-index: 2;
 }
 /*when the act is not hidden the heading icon should not be visible*/
 div.withAct:not(.hidden) + div.withSeq + div.withSeq + div.withHeading .scene_mark_button__heading::before {
@@ -123,6 +128,8 @@ div.withAct:not(.hidden) + div.withSeq + div.withSeq + div.withHeading .scene_ma
 /* show act icon on heading, when the scene is not visible */
 div.withAct + div.withSeq + div.withSeq + div.withHeading .scene_mark_button__heading::before {
   content: "A";
+  position: relative;
+  z-index: 2;
 }
 
 
