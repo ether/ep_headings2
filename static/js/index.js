@@ -9,6 +9,7 @@ var fixSmallZooms  = require('./fixSmallZooms');
 var padInner       = require('./utils').getPadInner;
 var sceneMarkTags  = require('./utils').sceneMarkTags;
 var SCENE_MARK_TYPE = require('./utils').SCENE_MARK_TYPE;
+var addSceneMark   = require("ep_script_scene_marks/static/js/addSceneMark");
 
 var cssFiles = ['ep_script_elements/static/css/editor.css'];
 
@@ -294,7 +295,10 @@ function updateDropdownToCaretLine(context){
     var multipleLinesSelected  = isMultipleLinesSelected(rep);
     var sameElementOnSelection = isSameElementOnSelection(rep, attributeManager);
 
-    if (multipleLinesSelected && !sameElementOnSelection){
+    var lineNumber  = rep.selStart[0];
+    var isSceneMark = addSceneMark.lineNumberContainsSceneMark(lineNumber);
+
+    if (multipleLinesSelected && !sameElementOnSelection || isSceneMark){
       //set drop-down to "Style"
       setDropdownValue(-2);
     }else{
