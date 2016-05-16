@@ -132,7 +132,7 @@ describe("ep_script_elements - merge lines", function(){
             return $secondLine.text() === "Third Line!";
           }).done(function() {
             var $originalFirstLine = inner$("div").first();
-            var keptTypeOfFirstLine = $originalFirstLine.find("heading").length > 0;
+            var keptTypeOfFirstLine = $originalFirstLine.find("shot").length > 0;
             expect(keptTypeOfFirstLine).to.be(true);
 
             var $originalThirdLine = inner$("div").first().next();
@@ -161,7 +161,7 @@ describe("ep_script_elements - merge lines", function(){
             return $secondLine.text() === "Third Line!";
           }).done(function() {
             var $originalFirstLine = inner$("div").first();
-            var keptTypeOfFirstLine = $originalFirstLine.find("heading").length > 0;
+            var keptTypeOfFirstLine = $originalFirstLine.find("shot").length > 0;
             expect(keptTypeOfFirstLine).to.be(true);
 
             var $originalThirdLine = inner$("div").first().next();
@@ -197,7 +197,7 @@ describe("ep_script_elements - merge lines", function(){
               return $thirdLine.text() === "Third Line!";
             }).done(function() {
               var $originalFirstLine = inner$("div").first();
-              var keptTypeOfFirstLine = $originalFirstLine.find("heading").length > 0;
+              var keptTypeOfFirstLine = $originalFirstLine.find("shot").length > 0;
               expect(keptTypeOfFirstLine).to.be(true);
 
               var $originalSecondLine = inner$("div").first().next();
@@ -230,7 +230,7 @@ describe("ep_script_elements - merge lines", function(){
             return $secondLine.text() === "Third Line!";
           }).done(function() {
             var $originalFirstLine = inner$("div").first();
-            var keptTypeOfFirstLine = $originalFirstLine.find("heading").length > 0;
+            var keptTypeOfFirstLine = $originalFirstLine.find("shot").length > 0;
             expect(keptTypeOfFirstLine).to.be(true);
 
             var $originalThirdLine = inner$("div").first().next();
@@ -266,7 +266,7 @@ describe("ep_script_elements - merge lines", function(){
               return $thirdLine.text() === "Third Line!";
             }).done(function() {
               var $originalFirstLine = inner$("div").first();
-              var keptTypeOfFirstLine = $originalFirstLine.find("heading").length > 0;
+              var keptTypeOfFirstLine = $originalFirstLine.find("shot").length > 0;
               expect(keptTypeOfFirstLine).to.be(true);
 
               var $originalSecondLine = inner$("div").first().next();
@@ -301,7 +301,7 @@ describe("ep_script_elements - merge lines", function(){
             return $secondLine.text() === "Third Line!";
           }).done(function() {
             var $originalFirstLine = inner$("div").first();
-            var keptTypeOfFirstLine = $originalFirstLine.find("heading").length > 0;
+            var keptTypeOfFirstLine = $originalFirstLine.find("shot").length > 0;
             expect(keptTypeOfFirstLine).to.be(true);
 
             var $originalThirdLine = inner$("div").first().next();
@@ -337,7 +337,7 @@ describe("ep_script_elements - merge lines", function(){
               return $thirdLine.text() === "Third Line!";
             }).done(function() {
               var $originalFirstLine = inner$("div").first();
-              var keptTypeOfFirstLine = $originalFirstLine.find("heading").length > 0;
+              var keptTypeOfFirstLine = $originalFirstLine.find("shot").length > 0;
               expect(keptTypeOfFirstLine).to.be(true);
 
               var $originalSecondLine = inner$("div").first().next();
@@ -362,10 +362,10 @@ ep_script_elements_test_helper.mergeLines = {
   createScriptWithThreeDifferentElements: function(cb) {
     var utils = ep_script_elements_test_helper.utils;
 
-    var heading       = utils.heading("First Line!");
+    var shot          = utils.shot("First Line!");
     var action        = utils.action("Second Line!");
     var parenthetical = utils.parenthetical("Third Line!");
-    var script        = heading + action + parenthetical;
+    var script        = shot + action + parenthetical;
 
     utils.createScriptWith(script, "Third Line!", cb);
   },
