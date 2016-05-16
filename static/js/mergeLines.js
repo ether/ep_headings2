@@ -1,3 +1,5 @@
+var addSceneMark   = require("ep_script_scene_marks/static/js/addSceneMark");
+
 var BACKSPACE = 8;
 var DELETE = 46;
 
@@ -41,13 +43,17 @@ var handleBackspace = function(context) {
   var currentLineIsEmpty = lineIsEmpty(currentLine, rep, attributeManager);
   var currentLineHasDifferentTypeOfPreviousLine = thisLineTypeIsDifferentFromPreviousLine(currentLine, attributeManager);
 
+  var previousLineisASceneMark = addSceneMark.lineNumberContainsSceneMark(previousLine);
+
   if (!currentLineIsEmpty && currentLineHasDifferentTypeOfPreviousLine) {
     // we only block merge if user is not removing previous line
     // (pressing BACKSPACE on a non-empty line when previous line is empty).
     // Otherwise, we allow merge but we'll need to adjust line attribute after merge
     // (see adjustLines() for more detail)
     var previousLineIsEmpty = lineIsEmpty(previousLine, rep, attributeManager);
-    if (previousLineIsEmpty) {
+
+    // when the very previous line is a scene mark, we never merge even if it is empty
+    if (previousLineIsEmpty && !previousLineisASceneMark) {
       // previous line will be replaced by current line; make sure we copy type of current line to
       // previous line before performing the deletion
       adjustLineAttributeOfLineToBeKept(previousLine, currentLine, attributeManager);

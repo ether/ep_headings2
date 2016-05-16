@@ -355,6 +355,43 @@ describe("ep_script_elements - merge lines", function(){
       });
     });
   });
+
+  context("when element is a heading preceded by a sequence summary empty", function(){
+
+    beforeEach(function(cb){
+      utils.cleanPad(function(){
+        ep_script_elements_test_helper.mergeLines.createScriptWithHeadingAndSceneMark(cb);
+      });
+    });
+
+    context("and it presses backspace in the beginning of heading line", function(){
+
+      beforeEach(function(cb){
+        utils.placeCaretInTheBeginningOfLine(4, function(){
+          utils.pressKey(BACKSPACE);
+          cb();
+        });
+      });
+
+      // it doesn't test if it has a heading because, it can go to inside the upper tag
+      it("does nothing", function(done){
+
+        setTimeout(function() {
+          var inner$ = helper.padInner$;
+          var linesLength = inner$("div").length;
+          var sequenceSummaryText = inner$("sequence_summary").text();
+
+          expect(linesLength).to.be(6);
+          expect(utils.cleanText(sequenceSummaryText)).to.be(" ");
+
+          done();
+        }, 1000);
+      });
+
+    })
+
+  });
+
 });
 
 var ep_script_elements_test_helper = ep_script_elements_test_helper || {};
@@ -368,5 +405,21 @@ ep_script_elements_test_helper.mergeLines = {
     var script        = shot + action + parenthetical;
 
     utils.createScriptWith(script, "Third Line!", cb);
+  },
+  // we only create a heading, the rest is created automatically
+  createScriptWithHeadingAndSceneMark: function(cb){
+    var utils = ep_script_elements_test_helper.utils;
+    var sceneMarkUtils = ep_script_scene_marks_test_helper.utils;
+
+    var act      = sceneMarkUtils.act();
+    var sequence = sceneMarkUtils.emptySequence();
+    var heading  = utils.heading("Heading");
+    var action   = utils.action("action");
+    var script   = act + sequence + heading + action;
+
+    utils.createScriptWith(script, "action", function(){
+      sceneMarkUtils.clickOnSceneMarkButtonOfLine(4);
+      cb();
+    });
   },
 }
