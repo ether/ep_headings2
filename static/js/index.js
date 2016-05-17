@@ -8,8 +8,8 @@ var undoPagination = require('./undoPagination');
 var fixSmallZooms  = require('./fixSmallZooms');
 var padInner       = require('./utils').getPadInner;
 var sceneMarkTags  = require('./utils').sceneMarkTags;
-var SCENE_MARK_TYPE = require('./utils').SCENE_MARK_TYPE;
-var addSceneMark   = require("ep_script_scene_marks/static/js/addSceneMark");
+var SCENE_MARK_TYPE= require('./utils').SCENE_MARK_TYPE;
+var sceneMarkUtils = require("ep_script_scene_marks/static/js/utils");
 
 var cssFiles = ['ep_script_elements/static/css/editor.css'];
 
@@ -296,7 +296,7 @@ function updateDropdownToCaretLine(context){
     var sameElementOnSelection = isSameElementOnSelection(rep, attributeManager);
 
     var lineNumber  = rep.selStart[0];
-    var isSceneMark = addSceneMark.lineNumberContainsSceneMark(lineNumber);
+    var isSceneMark = sceneMarkUtils.lineNumberContainsSceneMark(lineNumber);
 
     if (multipleLinesSelected && !sameElementOnSelection || isSceneMark){
       //set drop-down to "Style"
