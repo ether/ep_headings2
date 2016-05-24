@@ -190,6 +190,14 @@ function doInsertScriptElement(level){
   // if there's no text selected or type is unknown
   if (!(rep.selStart && rep.selEnd) || (level >= 0 && newValue === undefined)) return;
 
+  var currentLine     = rep.selStart[0];
+  var lineIsSceneMark = sceneMarkUtils.lineNumberContainsSceneMark(currentLine);
+
+  // do not apply when element is a scene mark
+  if (lineIsSceneMark){
+    return;
+  }
+
   var firstLine = rep.selStart[0];
   var lastLine = getLastLine(firstLine, rep);
   var isRemovingAttribute = (level < 0);
