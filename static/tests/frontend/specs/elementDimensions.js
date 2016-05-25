@@ -15,25 +15,25 @@ describe("ep_script_elements - element dimensions", function(){
   });
 
   it("displays headings with 61 chars per line", function(done) {
-    var elementLine = 0;
+    var elementLine = 4;
     var maxChars = 61;
     dimensions.testElementCanHoldCharsPerLine("heading", elementLine, maxChars, done);
   });
 
   it("displays actions with 61 chars per line", function(done) {
-    var elementLine = 1;
+    var elementLine = 5;
     var maxChars = 61;
     dimensions.testElementCanHoldCharsPerLine("action", elementLine, maxChars, done);
   });
 
   it("displays characters with 38 chars per line", function(done) {
-    var elementLine = 2;
+    var elementLine = 6;
     var maxChars = 38;
     dimensions.testElementCanHoldCharsPerLine("character", elementLine, maxChars, done);
   });
 
   it("displays parentheticals with 25 chars per line", function(done) {
-    var elementLine = 3;
+    var elementLine = 7;
     // parentheticals have a different behavior on tests because the ")" in the end of
     // line is moved to next line when parenthetical reaches the char limit. So instead of
     // testing it with its max (25), we test with max-1
@@ -42,25 +42,25 @@ describe("ep_script_elements - element dimensions", function(){
   });
 
   it("displays dialogues with 35 chars per line", function(done) {
-    var elementLine = 4;
+    var elementLine = 8;
     var maxChars = 35;
     dimensions.testElementCanHoldCharsPerLine("dialogue", elementLine, maxChars, done);
   });
 
   it("displays shots with 61 chars per line", function(done) {
-    var elementLine = 5;
+    var elementLine = 9;
     var maxChars = 61;
     dimensions.testElementCanHoldCharsPerLine("shot", elementLine, maxChars, done);
   });
 
   it("displays transitions with 16 chars per line", function(done) {
-    var elementLine = 6;
+    var elementLine = 10;
     var maxChars = 16;
     dimensions.testElementCanHoldCharsPerLine("transition", elementLine, maxChars, done);
   });
 
   it("displays generals with 61 chars per line", function(done) {
-    var elementLine = 7;
+    var elementLine = 11;
     var maxChars = 61;
     var noInnerTag = true; // general has no <general> tag under <div>
     dimensions.testElementCanHoldCharsPerLine("general", elementLine, maxChars, done, noInnerTag);

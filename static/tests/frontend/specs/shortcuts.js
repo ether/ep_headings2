@@ -14,10 +14,10 @@ describe("ep_script_elements - shortcuts", function() {
 
   context("when script has more than one scene", function() {
     var ACTION_BEFORE_FIRST_SCENE = 0;
-    var FIRST_SCENE = 1;
-    var SECOND_SCENE = 4;
-    var THIRD_SCENE = LAST_SCENE = 7;
-    var FIRST_ACTION_OF_LAST_SCENE = 8;
+    var FIRST_SCENE = 5; // we have act and summary before
+    var SECOND_SCENE = 8;
+    var THIRD_SCENE = LAST_SCENE = 11;
+    var FIRST_ACTION_OF_LAST_SCENE = 12;
 
     beforeEach(function(cb) {
       ep_script_elements_test_helper.shortcuts.createScriptWithThreeScenes(cb);
@@ -101,7 +101,9 @@ describe("ep_script_elements - shortcuts", function() {
           // wait for caret to be moved to correct scene
           helper.waitFor(function() {
             var $lineWhereCaretIs = utils.getLineWhereCaretIs();
-            var $firstScene = utils.getLine(0); // 1st scene is now on first line (0)
+
+            // 1st scene is now on first line visible (4), we have act and sequence not visible
+            var $firstScene = utils.getLine(4);
 
             // we need to compare DOM elements instead of jQuery ones
             return $lineWhereCaretIs.get(0) === $firstScene.get(0);

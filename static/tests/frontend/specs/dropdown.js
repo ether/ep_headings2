@@ -22,35 +22,35 @@ describe("ep_script_elements - dropdown", function(){
     this.timeout(60000);
   });
 
-  xit("changes option select when script element is changed", function(done) {
+  it("changes option select when script element is changed", function(done) {
     var inner$ = helper.padInner$;
 
     var $firstTextElement = inner$("div").first();
     $firstTextElement.sendkeys('First Line!');
 
     // sets first line to heading
-    utils.changeToElement(utils.HEADING);
+    utils.changeToElement(utils.ACTION);
 
     helper.waitFor(function(){
       // wait for element to be processed and changed
       $firstTextElement = inner$("div").first(); // need to get it again because line is changed by Content Collector
-      return $firstTextElement.find("heading").length === 1;
+      return $firstTextElement.find("action").length === 1;
     }).done(done);
   });
 
-  xit("clears style when General is selected", function(done) {
+  it("clears style when General is selected", function(done) {
     var inner$ = helper.padInner$;
 
     var $firstTextElement = inner$("div").first();
     $firstTextElement.sendkeys('First Line!');
 
     // sets first line to heading
-    utils.changeToElement(utils.HEADING);
+    utils.changeToElement(utils.ACTION);
 
     helper.waitFor(function(){
       // wait for element to be processed and changed
       $firstTextElement = inner$("div").first(); // need to get it again because line is changed by Content Collector
-      return $firstTextElement.find("heading").length === 1;
+      return $firstTextElement.find("action").length === 1;
     }).done(function(){
       // sets first line to general
       utils.changeToElement(utils.GENERAL);
@@ -58,7 +58,7 @@ describe("ep_script_elements - dropdown", function(){
       helper.waitFor(function(){
         // wait for element to be processed and changed
         $firstTextElement = inner$("div").first(); // need to get it again because line is changed by Content Collector
-        return $firstTextElement.find("heading").length === 0;
+        return $firstTextElement.find("action").length === 0;
       }).done(done);
     });
   });
@@ -69,7 +69,7 @@ describe("ep_script_elements - dropdown", function(){
       var $firstTextElement = inner$("div").first();
 
       // faster way to create two lines (1st is a scene heading, 2nd is an action)
-      var firstLine = "<heading>First Line!</heading><br/>";
+      var firstLine = "<dialogue>First Line!</dialogue><br/>";
       var secondLine = "<action>Second Line!</action><br/>";
       $firstTextElement.html(firstLine + secondLine);
 
@@ -80,21 +80,21 @@ describe("ep_script_elements - dropdown", function(){
       }, 2000).done(cb);
     });
 
-    xit("sets select value according to the line caret is", function(done) {
+    it("sets select value according to the line caret is", function(done) {
       // this is a longer test, might need more time to finish
       this.timeout(10000);
 
       var chrome$ = helper.padChrome$;
       var inner$ = helper.padInner$;
 
-      // places caret on heading
+      // places caret on dialogue
       var $heading = inner$("div").first();
       $heading.sendkeys("{selectall}");
 
-      // validate select shows "Heading"
+      // validate select shows "Dialogue"
       helper.waitFor(function() {
         var selectedValue = chrome$('#script_element-selection option:selected').text();
-        return selectedValue === "Heading";
+        return selectedValue === "Dialogue";
       }, 2000).done(function() {
         // places caret on action
         var $action = inner$("div").first().next();
@@ -108,20 +108,20 @@ describe("ep_script_elements - dropdown", function(){
       });
     });
 
-    xit("triggers event 'selectElementChange' when select value is changed", function(done) {
+    it("triggers event 'selectElementChange' when select value is changed", function(done) {
       // this is a longer test, might need more time to finish
       this.timeout(10000);
 
       var chrome$ = helper.padChrome$;
       var inner$ = helper.padInner$;
 
-      // places caret on heading to force select value to not be "Action"
+      // places caret on Dialogue to force select value to not be "Action"
       var $heading = inner$("div").first();
       $heading.sendkeys("{selectall}");
 
       helper.waitFor(function() {
         var selectedValue = chrome$('#script_element-selection option:selected').text();
-        return selectedValue === "Heading";
+        return selectedValue === "Dialogue";
       }, 2000).done(function() {
         // listens to 'selectElementChange' event
         var eventTriggered = false;
