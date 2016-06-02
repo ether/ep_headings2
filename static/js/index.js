@@ -31,19 +31,28 @@ exports.postAceInit = function(hook, context){
     var l10nLabel = selectedOption.attr("data-l10n-id");
     if(!_.isNaN(intValue)){
       context.ace.callWithAce(function(ace){
-        ace.ace_doInsertScriptElement(intValue);
-        ace.ace_updateDropdownWithValueChosen();
-        // TODO  - listenToChangeElementByShortCut
-        //if change to a button different from heading removes sceneTag line attributes
+
+        // if it changes to an option different of heading removes sceneTag
+        // and scene Mark line attributes if it applies
         if (l10nLabel !== "ep_script_elements.heading") {
           ace.ace_removeSceneTagFromSelection();
-          ace.ace_removeSceneMarksFromSelection();
+          var currentLine = ace.ace_caretLine();
+          emitEventHeadingHasChanged(currentLine);
         }
+        ace.ace_doInsertScriptElement(intValue);
+        ace.ace_updateDropdownWithValueChosen();
       },'insertscriptelement' , true);
       script_element_selection.val("dummy");
     }
   })
 };
+
+// This event is handled in the ep_script_scene_marks
+var emitEventHeadingHasChanged = function(line){
+  var $innerDocument = padInner().find("#innerdocbody");
+
+  $innerDocument.trigger('headingHasChanged', line);
+}
 
 function updateDropdownWithValueChosen(){
   var context = this;

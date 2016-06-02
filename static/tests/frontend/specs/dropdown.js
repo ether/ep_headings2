@@ -1,4 +1,3 @@
-// TODO: to implement this test
 // Letter
 // var GENERALS_PER_PAGE = 54;
 
@@ -147,7 +146,6 @@ describe("ep_script_elements - dropdown", function(){
 
     before(function() {
       utils = ep_script_scene_marks_test_helper.utils;
-      helperFunctions = ep_script_scene_marks_test_helper.addSceneMark;
     });
 
     beforeEach(function(cb) {
@@ -189,7 +187,6 @@ describe("ep_script_elements - dropdown", function(){
             helper.waitFor(function() {
               var chrome$ = helper.padChrome$;
               var selectedValue = chrome$('#script_element-selection option:selected').text();
-              console.log(selectedValue)
               return selectedValue === "Style";
             }, 2000).done(done);
           });
@@ -197,6 +194,75 @@ describe("ep_script_elements - dropdown", function(){
         });
 
       });
+    });
+  });
+
+  context("when caret is in a heading with scene mark", function(){
+    var sceneMarkUtils;
+
+    before(function() {
+      sceneMarkUtils = ep_script_scene_marks_test_helper.utils;
+    });
+
+    beforeEach(function(cb) {
+      var actLines = [0]; // creates act and sequence in the 1st heading
+      var seqLines = [];
+      var numOfHeadings = 1;
+      helper.newPad(function(){
+        sceneMarkUtils.writeScenesWithSceneMarks(actLines, seqLines, numOfHeadings, function(){
+          utils.placeCaretInTheBeginningOfLine(4, cb);
+        });
+      });
+      this.timeout(10000);
+    });
+
+    context("and change to another element", function(){
+
+      beforeEach(function(cb){
+        // changes from heading to parenthetical
+        utils.changeToElement(utils.PARENTHETICAL, cb);
+      });
+
+      it("removes the scene mark", function(done){
+        helper.waitFor(function(){
+          var inner$ = helper.padInner$;
+          var sceneMarks = inner$("div").length;
+
+          // ensure there are 2 elements: a parenthetical the was created
+          // by the dropdown and the action which already existed before
+          return sceneMarks === 2;
+        }).done(function(){
+
+          // double check, check the types and texts
+          utils.validateLineTextAndType(0, "SCENE 0", 'parenthetical');
+          utils.validateLineTextAndType(1, "action from SCENE 0 0", "action");
+          done();
+        });
+      });
+
+      context("and user performs undo", function(){
+        beforeEach(function(cb){
+          utils.undo();
+          cb();
+        });
+
+        it("displays the heading with the original scene marks", function(done){
+          helper.waitFor(function(done){
+            var inner$ = helper.padInner$;
+            var hasHeading = inner$("heading").length !== 0;
+            return hasHeading;
+          }).done(function(){
+            utils.validateLineTextAndType(0, "ACT OF undefined", 'act_name');
+            utils.validateLineTextAndType(1, "SUMMARY OF ACT OF undefined", 'act_summary');
+            utils.validateLineTextAndType(2, "SEQUENCE OF undefined", 'sequence_name');
+            utils.validateLineTextAndType(3, "SUMMARY OF SEQUENCE OF undefined", 'sequence_summary');
+            utils.validateLineTextAndType(4, "SCENE 0", 'heading');
+            utils.validateLineTextAndType(5, "action from SCENE 0 0", 'action');
+            done();
+          });
+        });
+      });
+
     });
   });
 

@@ -74,6 +74,23 @@ ep_script_elements_test_helper.utils = {
     // this helper.waitFor needs a little more time to finish, so we give it 2s
     , 2000).done(callback);
   },
+  changeToElementAndCheckNewLinePosition: function(tag, callback, lineTarget, newLinePosition){
+    lineTarget = lineTarget || 0;
+    var chrome$ = helper.padChrome$;
+    var inner$ = helper.padInner$;
+    var targetElement = ep_script_elements_test_helper.utils.TARGET_ELEMENT[tag];
+
+    chrome$('#script_element-selection').val(targetElement.val);
+    chrome$('#script_element-selection').change();
+
+    helper.waitFor(function() {
+      var $textElement = ep_script_elements_test_helper.utils.getLine(newLinePosition);
+      return tag === 'general' || $textElement.find(tag).length > 0;
+    }
+    // this helper.waitFor needs a little more time to finish, so we give it 2s
+    , 2000).done(callback);
+  },
+
 
   cleanText: function(text) {
     return text.replace(/\s/gi, " ");
@@ -193,5 +210,17 @@ ep_script_elements_test_helper.utils = {
   },
   redo: function() {
     ep_script_elements_test_helper.utils.buildUndoRedo(true);
+  },
+  validateLineTextAndType: function(lineNumber, expectedText, expectType) {
+    var $line = this.getLine(lineNumber);
+    var actualText = $line.text();
+
+    expect(actualText).to.be(expectedText);
+
+    // use fail() to return a clearer failure message
+    if ($line.find(expectType).length !== 1) {
+      var failureMessage = "Expected line '" + actualText + "' to be " + expectType;
+      expect().fail(function() { return failureMessage });
+    }
   },
 };
