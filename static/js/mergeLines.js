@@ -79,16 +79,17 @@ var handleDelete = function(context) {
   var currentLineHasDifferentTypeOfNextLine = thisLineTypeIsDifferentFromPreviousLine(nextLine, attributeManager);
 
   if (currentLineHasDifferentTypeOfNextLine) {
-    var currentLineIsEmpty = lineIsEmpty(currentLine, rep, attributeManager);
-    var nextLineIsEmpty    = lineIsEmpty(nextLine, rep, attributeManager);
+    var currentLineIsEmpty  = lineIsEmpty(currentLine, rep, attributeManager);
+    var nextLineIsEmpty     = lineIsEmpty(nextLine, rep, attributeManager);
+    var nextLineIsSceneMark = sceneMarkUtils.lineNumberContainsSceneMark(nextLine);
 
     // Scenarios that allow different line types to be merged:
-    // 1. if user is deleting next line (by pressing DELETE at a line where next line is empty);
+    // 1. if user is deleting next line (by pressing DELETE at a line where next line is empty and it is not a SM);
     // 2. if user is deleting current line (by pressing DELETE at an empty line where next line is not empty);
     // In any of those scenarios, we manually process the deletion event, and on both we need to prepare
     // line attributes for the UNDO operation -- otherwise, if user performs UNDO, we will loose
     // line types
-    var deletingNextLine    = nextLineIsEmpty;
+    var deletingNextLine    = nextLineIsEmpty && !nextLineIsSceneMark;
     var deletingCurrentLine = !nextLineIsEmpty && currentLineIsEmpty;
 
     if (deletingNextLine) {

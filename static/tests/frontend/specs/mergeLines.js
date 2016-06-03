@@ -367,7 +367,7 @@ describe("ep_script_elements - merge lines", function(){
     context("and it presses backspace in the beginning of heading line", function(){
 
       beforeEach(function(cb){
-        utils.placeCaretInTheBeginningOfLine(4, function(){
+        utils.placeCaretInTheBeginningOfLine(5, function(){
           utils.pressKey(BACKSPACE);
           cb();
         });
@@ -381,7 +381,7 @@ describe("ep_script_elements - merge lines", function(){
           var linesLength = inner$("div").length;
           var sequenceSummaryText = inner$("sequence_summary").text();
 
-          expect(linesLength).to.be(6);
+          expect(linesLength).to.be(7);
           expect(utils.cleanText(sequenceSummaryText)).to.be(" ");
 
           done();
@@ -390,6 +390,40 @@ describe("ep_script_elements - merge lines", function(){
 
     })
 
+  });
+
+  context("when script element is followed by an empty scene marks", function(){
+    beforeEach(function(cb){
+      utils.cleanPad(function(){
+        ep_script_elements_test_helper.mergeLines.createScriptWithHeadingAndSceneMark(cb);
+      });
+    });
+    context("and it presses delete at the end of line of the script element", function(){
+      beforeEach(function(cb){
+        utils.placeCaretAtTheEndOfLine(0, function(){
+          utils.pressKey(DELETE);
+          cb();
+        });
+      });
+
+      it("does nothing", function(done){
+        this.timeout(5000);
+        setTimeout(function() {
+          var inner$ = helper.padInner$;
+          var hasActName         = inner$("act_name").length !== 0;
+          var hasActSummary      = inner$("act_summary").length !== 0;
+          var hasSequenceName    = inner$("sequence_name").length !== 0;
+          var hasSequenceSummary = inner$("sequence_summary").length !== 0;
+
+          expect(hasActName).to.be(true);
+          expect(hasActSummary).to.be(true);
+          expect(hasSequenceName).to.be(true);
+          expect(hasSequenceSummary).to.be(true);
+          done();
+          // we have to wait 3s to avoid false positives
+        }, 3000);
+      });
+    });
   });
 
 });
@@ -407,15 +441,17 @@ ep_script_elements_test_helper.mergeLines = {
     utils.createScriptWith(script, "Third Line!", cb);
   },
   // we only create a heading, the rest is created automatically
+  // we need to use an empty act, to test the merge of delete
   createScriptWithHeadingAndSceneMark: function(cb){
     var utils = ep_script_elements_test_helper.utils;
     var sceneMarkUtils = ep_script_scene_marks_test_helper.utils;
 
-    var act      = sceneMarkUtils.act();
+    var dialogue = utils.dialogue("dialogue");
+    var act      = sceneMarkUtils.emptyAct();
     var sequence = sceneMarkUtils.emptySequence();
     var heading  = utils.heading("Heading");
     var action   = utils.action("action");
-    var script   = act + sequence + heading + action;
+    var script   = dialogue + act + sequence + heading + action;
 
     utils.createScriptWith(script, "action", function(){
       sceneMarkUtils.clickOnSceneMarkButtonOfLine(4);
