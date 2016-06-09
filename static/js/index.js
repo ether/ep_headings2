@@ -154,9 +154,8 @@ var processScriptElementAttribute = function(cls) {
 
   if (tagIndex !== undefined && tagIndex >= 0) {
     var tag = tags[tagIndex];
-    var sceneMarkIcon = buildSceneMarkIconIfTagIsHeading(tag);
     var modifier = {
-      preHtml: '<' + tag + '>' + sceneMarkIcon,
+      preHtml: '<' + tag + '>',
       postHtml: '</' + tag + '>',
       processedMarker: true
     };
@@ -164,14 +163,6 @@ var processScriptElementAttribute = function(cls) {
   }
 
   return [];
-}
-
-var buildSceneMarkIconIfTagIsHeading = function(tag){
-  var sceneMarkIcon = "";
-  if (tag == "heading"){
-    sceneMarkIcon = "<span class='scene_mark_button__heading'><empty/></span>";
-  }
-  return sceneMarkIcon;
 }
 
 var processUndoFixAttribute = function(cls) {
