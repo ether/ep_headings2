@@ -40,17 +40,20 @@ exports.findHandlerFor = function(context) {
       //  * beginning completely selected and end partially selected
       //   (it needs to remove the selection and reapply attribute in the last line selected)
       //
-      //  * beginning and end of selection partially selected
+      //  * beginning and end of selection partially selected and it is different elements
       //   (it needs to remove the selection, create a new line, and reapply attribute in the last line selected)
       //
       //  * end of selection is completely selected
+      //  * beginning and end of selection partially selected and it is the same element
       //   (it only need to remove the selection)
 
       var beginningOfSelection = rep.selStart[0];
+      var endOfSelection = rep.selEnd[0];
       var lineToSetAttributes = beginningOfSelection;
       var shouldCreateNewLine = false;
       var shouldRecoverAttribsOfLastLineSelected = true;
-      if(isBothLinesBoundariesOfSelectionPartiallySelected(context)){
+      var boundariesOfSelectionHasSameType = checkIfLinesIsTheSameScriptElement(beginningOfSelection, endOfSelection, attributeManager)
+      if(isBothLinesBoundariesOfSelectionPartiallySelected(context) && !boundariesOfSelectionHasSameType){
         // to avoid merging the rest of content not selected in the lines selected, we remove the selection
         // create a new line after the first line selected, with the rest of the content not selected in the
         // last line of selection
@@ -67,6 +70,13 @@ exports.findHandlerFor = function(context) {
       return removeAndProcessSelection(context, shouldCreateNewLine, lineToSetAttributes, shouldRecoverAttribsOfLastLineSelected);
     }
   }
+}
+
+var checkIfLinesIsTheSameScriptElement = function(firstLine, lastLine, attributeManager){
+  var firstLineSelection = attributeManager.getAttributeOnLine(firstLine, 'script_element');
+  var lastLineSelection = attributeManager.getAttributeOnLine(lastLine, 'script_element');
+
+  return firstLineSelection === lastLineSelection;
 }
 
 var handleBackspace = function(context) {

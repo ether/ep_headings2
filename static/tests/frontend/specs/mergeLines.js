@@ -644,10 +644,60 @@ describe("ep_script_elements - merge lines", function(){
     });
   });
 
+  context("when selection has the same element in the boundaries", function(){
+    beforeEach(function(done){
+      utils.cleanPad(function(){
+        helperFunctions.createScriptWithFirstAndLastElementEqual(function(){
+          // make the selection
+          var inner$ = helper.padInner$;
+
+          var $firstElement = inner$('div:has(shot)').first();
+          var $lastElement = inner$('div:has(shot)').last();
+
+          var offsetAtFirstElement = 2;
+          var offsetAtlastElement = 8;
+
+          // make the selection
+          helper.selectLines($firstElement, $lastElement, offsetAtFirstElement, offsetAtlastElement);
+          done();
+        });
+      });
+    });
+    context("and user deletes the selection", function(){
+
+      beforeEach(function(cb){
+        utils.pressKey(BACKSPACE);
+        cb();
+      });
+
+      it("removes the lines between", function(done){
+        helperFunctions.checkNumberOfLine(1);
+        done();
+      });
+
+      it("join the lines", function(done){
+        var textOfLine = "Fine!";
+        var element = "shot";
+        utils.validateLineTextAndType(0, textOfLine, element);
+        done();
+      });
+    });
+  })
+
 });
 
 var ep_script_elements_test_helper = ep_script_elements_test_helper || {};
 ep_script_elements_test_helper.mergeLines = {
+  createScriptWithFirstAndLastElementEqual: function(cb) {
+    var utils = ep_script_elements_test_helper.utils;
+
+    var shot          = utils.shot("First Line!");
+    var action        = utils.action("Second Line!");
+    var secondShot    = utils.shot("Third Line!");
+    var script        = shot + action + secondShot;
+
+    utils.createScriptWith(script, "Third Line!", cb);
+  },
   createScriptWithThreeDifferentElements: function(cb) {
     var utils = ep_script_elements_test_helper.utils;
 
