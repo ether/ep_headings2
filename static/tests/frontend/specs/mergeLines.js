@@ -2,10 +2,14 @@ var BACKSPACE = 8;
 var DELETE = 46;
 
 describe("ep_script_elements - merge lines", function(){
-  var utils;
+  var utils, helperFunctions;
+  var offsetAtFirstElement = 0;
+  var offsetLastLineSelection = 0;
+
   //create a new pad before each test run
   beforeEach(function(cb){
     utils = ep_script_elements_test_helper.utils;
+    helperFunctions = ep_script_elements_test_helper.mergeLines;
     helper.newPad(function() {
       ep_script_elements_test_helper.mergeLines.createScriptWithThreeDifferentElements(cb);
     });
@@ -392,6 +396,220 @@ describe("ep_script_elements - merge lines", function(){
 
   });
 
+  context("when it has a selection wrapping more than one line", function(){
+
+    beforeEach(function(done){
+      // make the selection
+      var inner$ = helper.padInner$;
+
+      var $firstElement = inner$('div:has(shot)').first();
+      var $lastElement = $firstElement.nextUntil('div:has(parenthetical)').next();
+
+      // the original text of first line is 'first line!'
+      // var offsetAtFirstElement ||= 0;
+
+      // the original text of last line is 'third line!'
+      var lastLineLength = $lastElement.text().length;
+      var offsetAtlastElement = lastLineLength - offsetLastLineSelection;
+
+      // make the selection
+      helper.selectLines($firstElement, $lastElement, offsetAtFirstElement, offsetAtlastElement);
+
+      // remove the text
+      utils.pressKey(BACKSPACE);
+      done();
+    });
+
+    context("and the first and last line of selection are partially selected and user removes selection", function(){
+
+      before(function(){
+        offsetAtFirstElement = 3;
+        offsetLastLineSelection = 8;
+      });
+
+
+      it("removes the lines between", function(done){
+        helperFunctions.checkNumberOfLine(2);
+        done();
+      });
+
+      it("keeps the original element of lines", function(done){
+        var firstElement = "shot";
+        var firstElementText = "Fir";
+        var lastElementText = "rd Line!"
+        var lastElement =  "parenthetical"
+        utils.validateLineTextAndType(0, firstElementText, firstElement);
+        utils.validateLineTextAndType(1, lastElementText, lastElement)
+        done();
+      });
+
+      context("and user performs undo", function(){
+        beforeEach(function(done){
+          // we have to wait a little to save the changes
+          setTimeout(function() {
+            utils.undo();
+            done();
+          }, 1000);
+        });
+
+        it("keeps the original text and types", function(done){
+          helperFunctions.checkIfItHasTheOriginalText(done);
+        });
+      });
+    });
+
+    context("and first line of selection is completely selected and last one is partially selected and user removes selection", function(){
+
+      before(function(){
+        offsetAtFirstElement = 0;
+        offsetLastLineSelection = 8;
+      });
+
+      it("removes the lines", function(done){
+        helperFunctions.checkNumberOfLine(1);
+        done();
+      });
+
+      it("keeps the last line type and part of the text", function(done){
+        var elementText = "rd Line!"
+        var element =  "parenthetical"
+        utils.validateLineTextAndType(0, elementText, element);
+        done();
+      });
+
+      context("and user performs undo", function(){
+        beforeEach(function(done){
+          // we have to wait a little to save the changes
+          setTimeout(function() {
+            utils.undo();
+            done();
+          }, 1000);
+        });
+
+        it("keeps the original text and types", function(done){
+          helperFunctions.checkIfItHasTheOriginalText(done);
+        });
+      });
+    });
+
+    context("and first line of selection is partially selected and last one is completely selected and user removes selection", function(){
+      before(function(){
+        offsetAtFirstElement = 3;
+        offsetLastLineSelection = 0;
+      });
+
+      it("removes the lines", function(done){
+        helperFunctions.checkNumberOfLine(1);
+        done();
+      });
+
+      it("keeps the first line type and part of the text", function(done){
+        var elementText = "Fir"
+        var element =  "shot"
+        utils.validateLineTextAndType(0, elementText, element);
+        done();
+      });
+
+      context("and user performs undo", function(){
+        beforeEach(function(done){
+          // we have to wait a little to save the changes
+          setTimeout(function() {
+            utils.undo();
+            done();
+          }, 1000);
+        });
+
+        it("keeps the original text and types", function(done){
+          helperFunctions.checkIfItHasTheOriginalText(done);
+        });
+      });
+    });
+
+    context("and first and last line is completely selected", function(){
+
+      before(function(){
+        offsetAtFirstElement = 0;
+      });
+
+      it("removes the lines between", function(done){
+        helperFunctions.checkNumberOfLine(1);
+        done();
+      });
+
+      it("keeps the original element of lines", function(done){
+        var firstElement = "shot";
+        var firstElementText = "";
+        utils.validateLineTextAndType(0, firstElementText, firstElement);
+        done();
+      });
+
+      context("and user performs undo", function(){
+        beforeEach(function(done){
+          // we have to wait a little to save the changes
+          setTimeout(function() {
+            utils.undo();
+            done();
+          }, 1000);
+        });
+
+        it("keeps the original text and types", function(done){
+          helperFunctions.checkIfItHasTheOriginalText(done);
+        });
+      });
+
+    });
+  });
+
+  context("when line is selected until the line break and user removes selection", function(){
+
+    beforeEach(function(done){
+      // make the selection
+      var inner$ = helper.padInner$;
+
+      var $firstElement = inner$('div:has(shot)').first();
+      var $lastElement = inner$('div:has(action)').first();
+
+      var offsetAtFirstElement = 0;
+      var offsetAtlastElement = 0;
+
+      // make the selection
+      helper.selectLines($firstElement, $lastElement, offsetAtFirstElement, offsetAtlastElement);
+      done();
+    });
+
+    context("and user removes selection", function(){
+      beforeEach(function(done){
+        // remove the text
+        utils.pressKey(BACKSPACE);
+        done();
+      });
+
+      it("removes only the line selected", function(done){
+        var firstElementText = "Second Line!";
+        var secondElementText = "Third Line!";
+        var firstElement = "action";
+        var secondElement = "parenthetical";
+        utils.validateLineTextAndType(0, firstElementText, firstElement);
+        utils.validateLineTextAndType(1, secondElementText, secondElement);
+        done();
+      });
+
+      context("and user performs undo", function(){
+        beforeEach(function(done){
+          // we have to wait a little to save the changes
+          setTimeout(function() {
+            utils.undo();
+            done();
+          }, 1000);
+        });
+
+        it("keeps the original text and types", function(done){
+          helperFunctions.checkIfItHasTheOriginalText(done);
+        });
+      });
+    });
+  });
+
   context("when script element is followed by an empty scene marks", function(){
     beforeEach(function(cb){
       utils.cleanPad(function(){
@@ -457,5 +675,23 @@ ep_script_elements_test_helper.mergeLines = {
       sceneMarkUtils.clickOnSceneMarkButtonOfLine(4);
       cb();
     });
+  },
+  checkNumberOfLine: function(numberOfLines){
+    var inner$ = helper.padInner$;
+    var linesLength = inner$("div").length;
+    expect(linesLength).to.equal(numberOfLines);
+  },
+  checkIfItHasTheOriginalText: function(done){
+    var utils = ep_script_elements_test_helper.utils;
+    var firstElementText = "First Line!";
+    var secondElementText = "Second Line!";
+    var thirdElementText = "Third Line!";
+    var firstElement = "shot";
+    var secondElement = "action";
+    var thirdElement = "parenthetical";
+    utils.validateLineTextAndType(0, firstElementText, firstElement);
+    utils.validateLineTextAndType(1, secondElementText, secondElement);
+    utils.validateLineTextAndType(2, thirdElementText, thirdElement);
+    done();
   },
 }

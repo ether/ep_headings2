@@ -94,7 +94,9 @@ exports.aceKeyEvent = function(hook, context) {
   }
   // BACKSPACE or DELETE
   else if (handleMerge) {
-    var mergeShouldBeBlocked = handleMerge(context);
+    // call function that handles merge
+    var mergeShouldBeBlocked = handleMerge;
+
     // cannot merge lines, so do not process keys
     if (mergeShouldBeBlocked) {
       evt.preventDefault();
