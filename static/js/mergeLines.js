@@ -1,5 +1,8 @@
 var sceneMarkUtils = require("ep_script_scene_marks/static/js/utils");
+var sceneMark      = require("ep_script_scene_marks/static/js/handleMultiLineDeletion");
 var utils          = require("./utils");
+var removeLines    = require("./removeLines");
+var _              = require('ep_etherpad-lite/static/js/underscore');
 
 var BACKSPACE = 8;
 var DELETE = 46;
@@ -15,8 +18,7 @@ exports.findHandlerFor = function(context) {
 
   // when user presses a mergeKey we can have three scenarios: no selection at all,
   // selection in only one line(this case is handled by default), selection in more than one line
-  if(isMergeKey){
-
+  if(isMergeKey && !beginningOfSelectionIsSceneMark(rep, attributeManager)){
     // if there is no selection at all
     if (!textSelected(editorInfo)) {
       // HACK: we need to get current position after calling synchronizeEditorWithUserSelection(), otherwise
@@ -33,50 +35,10 @@ exports.findHandlerFor = function(context) {
         return handleDelete(context);
       }
 
-    // if there is a selection of more than one line
     }else if(isMultiLineSelected(rep)){
-      // For deletion of selection of multiple lines we have the cases:
-      //
-      //  * beginning completely selected and end partially selected
-      //   (it needs to remove the selection and reapply attribute in the last line selected)
-      //
-      //  * beginning and end of selection partially selected and it is different elements
-      //   (it needs to remove the selection, create a new line, and reapply attribute in the last line selected)
-      //
-      //  * end of selection is completely selected
-      //  * beginning and end of selection partially selected and it is the same element
-      //   (it only need to remove the selection)
-
-      var beginningOfSelection = rep.selStart[0];
-      var endOfSelection = rep.selEnd[0];
-      var lineToSetAttributes = beginningOfSelection;
-      var shouldCreateNewLine = false;
-      var shouldRecoverAttribsOfLastLineSelected = true;
-      var boundariesOfSelectionHasSameType = checkIfLinesIsTheSameScriptElement(beginningOfSelection, endOfSelection, attributeManager)
-      if(isBothLinesBoundariesOfSelectionPartiallySelected(context) && !boundariesOfSelectionHasSameType){
-        // to avoid merging the rest of content not selected in the lines selected, we remove the selection
-        // create a new line after the first line selected, with the rest of the content not selected in the
-        // last line of selection
-        shouldCreateNewLine = true;
-
-        // we set the attributes that was previously in the last of selection, in the new line created
-        var nextLineAfterFirstLineSelected = beginningOfSelection + 1;
-        lineToSetAttributes = nextLineAfterFirstLineSelected;
-
-      }else if(isLastLineIsCompletelySelected(context)){
-        // all the line is removed, so we don't need to reapply any attribute
-        shouldRecoverAttribsOfLastLineSelected = false;
-      }
-      return removeAndProcessSelection(context, shouldCreateNewLine, lineToSetAttributes, shouldRecoverAttribsOfLastLineSelected);
+      return processTextSelected(context);
     }
   }
-}
-
-var checkIfLinesIsTheSameScriptElement = function(firstLine, lastLine, attributeManager){
-  var firstLineSelection = attributeManager.getAttributeOnLine(firstLine, 'script_element');
-  var lastLineSelection = attributeManager.getAttributeOnLine(lastLine, 'script_element');
-
-  return firstLineSelection === lastLineSelection;
 }
 
 var handleBackspace = function(context) {
@@ -159,26 +121,181 @@ var handleDelete = function(context) {
   return blockDelete;
 }
 
-var removeAndProcessSelection = function(context, shouldCreateNewLine, lineToSetAttributes, shouldRecoverAttribsOfLastLineSelected){
-
-  var rep = context.rep;
-  var editorInfo = context.editorInfo;
+var processTextSelected = function(context){
+  // For deletion of selection of multiple lines, where the first line of selection is a script element we have the cases:
+  //
+  //  1. Beginning of selection is a heading with SM
+  //   (we remove the heading and the SM, update the selection target excluding this part removed, and let the rest
+  //   to be processed with some rule below
+  //
+  //  2. Beginning completely selected and end partially selected
+  //   (it needs to remove the selection and reapply attribute in the last line selected)
+  //
+  //  3. Beginning and end of selection partially selected and it is different elements
+  //   (it needs to remove the selection, create a new line, and reapply attribute in the last line selected)
+  //
+  //  4. End of selection is completely selected
+  //  5. Beginning and end of selection partially selected and it is the same element
+  //   (it only needs to remove the selection)
+  //
+  //  6. Beginning of selection is a script element end of selection is a scene mark
+  //   (goes backwards - clean the scene marks at the end, remove the script elements from the scene mark until the
+  //   beginning of the selection)
+  var editorInfo       = context.editorInfo;
   var attributeManager = context.documentAttributeManager;
+  var rep              = context.rep;
 
-  var beginningOfSelection = rep.selStart;
-  var endOfSelection = rep.selEnd;
+  var beginningOfSelectionPosition = rep.selStart;
+  var firstLineSelected = rep.selStart[0];
+  var endOfSelectionPosition = rep.selEnd;
   var lastLineSelected = rep.selEnd[0];
-  var lastLineAttribs = getAttributesOfLine(lastLineSelected, attributeManager);
+  var lineToSetAttributes = firstLineSelected;
+  var shouldCreateNewLine = false;
+  var shouldRecoverAttribsOfLastLineSelected = true;
 
-  removeSelection(beginningOfSelection, endOfSelection, editorInfo);
+  var firstLineIsAHeadingWithSMCompletelySelected = isFirstLineSeletedAHeadingWithSM(attributeManager, rep);
+  if(firstLineIsAHeadingWithSMCompletelySelected){
+    // remove the heading and SM
+    var firstSMOfSceneSelected = sceneMark.getFirstSceneMarkOfScene(firstLineSelected, rep);
+    var endOfHeadingSelected = [firstLineSelected, getLength(firstLineSelected, rep)];
+    removeLinesCompletely(firstSMOfSceneSelected, endOfHeadingSelected[0], editorInfo, rep);
 
-  if(shouldCreateNewLine){
-    createANewLine(editorInfo)
+    // as we removed part of selection, we update the values of start and end of selection
+    beginningOfSelectionPosition = rep.selStart;
+    endOfSelectionPosition = rep.selEnd;
+
+    lineToSetAttributes = firstSMOfSceneSelected;
+
+    // avoid merging with the previous line, except when it is the first line of the pad
+    if(lineToSetAttributes > 0){
+      shouldCreateNewLine = true;
+    }
   }
-  if(shouldRecoverAttribsOfLastLineSelected){
-    setAttributesOnLine(lastLineAttribs, lineToSetAttributes, attributeManager, editorInfo);
+  var endOfSelectionIsSceneMark = getSceneMarkTypeOfLine(lastLineSelected, attributeManager);
+  if(endOfSelectionIsSceneMark){
+    // when the selection begins in a script element and ends in a scene mark we remove in two steps:
+    // 1. clean the last scene marks selected
+    // 2. remove everything (SE, SM) before the this scene mark cleaned
+
+    // clean the scene mark
+    var beginningOfLastSceneMarkOfSelection = sceneMark.getFirstSceneMarkOfScene(lastLineSelected, rep);
+    sceneMark.cleanLinesSceneMark(beginningOfLastSceneMarkOfSelection, lastLineSelected, context);
+
+    shouldRecoverAttribsOfLastLineSelected = false;
+
+    // the part to be removed will end in the previous line of the beginning of scene mark cleaned
+    var prevLineOfStartOfLastSMOfSelection =  beginningOfLastSceneMarkOfSelection - 1;
+    var lengthOfprevLineOfStartOfLastSMOfSelection = getLength(prevLineOfStartOfLastSMOfSelection, rep);
+    endOfSelectionPosition = [prevLineOfStartOfLastSMOfSelection, lengthOfprevLineOfStartOfLastSMOfSelection];
+
+  // end of selection is a script element
+  }else{
+    var endOfSelectionIsHeadingWithSceneMark = isLineAHeadingWithSceneMark(lastLineSelected, attributeManager);
+    var boundariesOfSelectionHasSameType = checkIfLinesIsTheSameScriptElement(firstLineSelected, lastLineSelected, attributeManager);
+    if(endOfSelectionIsHeadingWithSceneMark){
+      // removes part of the heading
+      var beginningOfHeadingSelected = [lastLineSelected, 1];
+      removeLines.removeAndProcessSelection(context, beginningOfHeadingSelected, endOfSelectionPosition, false, false, false);
+
+      // clean the scene marks
+      var beginningOfLastSceneMarkOfSelection = sceneMark.getFirstSceneMarkOfScene(lastLineSelected, rep);
+      var lastLineOfLastSceneMark = lastLineSelected - 1
+      sceneMark.cleanLinesSceneMark(beginningOfLastSceneMarkOfSelection, lastLineOfLastSceneMark, context);
+
+      // the new part to be processed will end in the previous line of the beginning of scene mark cleaned
+      var prevLineOfStartOfLastSMOfSelection = beginningOfLastSceneMarkOfSelection - 1;
+      endOfSelectionPosition = [prevLineOfStartOfLastSMOfSelection, getLength(prevLineOfStartOfLastSMOfSelection, rep)];
+
+      shouldRecoverAttribsOfLastLineSelected = false;
+    // when the boundaries of selection has different types we prevent of merge the lines
+    }else if(isBothLinesBoundariesOfSelectionPartiallySelected(context) && !boundariesOfSelectionHasSameType){
+      // to avoid merging the rest of content not selected in the lines selected, we remove the selection
+      // create a new line after the first line selected, with the rest of the content not selected in the
+      // last line of selection
+      shouldCreateNewLine = true;
+
+      // we set the attributes that was previously in the last of selection, in the new line created
+      var nextLineAfterFirstLineSelected = firstLineSelected + 1;
+      lineToSetAttributes = nextLineAfterFirstLineSelected;
+
+    }else if(isLastLineIsCompletelySelected(context)){
+      // all the line is removed, so we don't need to reapply any attribute
+      shouldRecoverAttribsOfLastLineSelected = false;
+    }
   }
+  removeLines.removeAndProcessSelection(context, beginningOfSelectionPosition, endOfSelectionPosition, shouldCreateNewLine, lineToSetAttributes, shouldRecoverAttribsOfLastLineSelected);
+  placeCaretOnLine(editorInfo, beginningOfSelectionPosition);
   return true;
+}
+
+var isFirstLineSeletedAHeadingWithSM = function(attributeManager, rep){
+  var firstLineSelected = rep.selStart[0];
+  var lineIsAHeadingWithSceneMark = isLineAHeadingWithSceneMark(firstLineSelected, attributeManager)
+  selectionStartInBeginningOfLine =  rep.selStart[1] === 1;
+
+  return lineIsAHeadingWithSceneMark && selectionStartInBeginningOfLine;
+}
+
+var removeLinesCompletely = function(lineStart, lineEnd, editorInfo, rep){
+  var lineLegthOfPad = rep.lines.length();
+  var start = [0,0];
+  var end = [lineEnd, getLength(lineEnd, rep)];
+
+  if (lineStart > 0){
+    var lineBefore = lineStart - 1;
+    var lengthOfLineBefore = getLength(lineBefore, rep);
+    start = [lineBefore, lengthOfLineBefore];
+  }
+
+  // we do it to avoid creating an additional line when the selection wraps
+  // the first line of the pad
+  if(lineStart === 0 && lineEnd < lineLegthOfPad){
+    var nextLineAfterLineEnd = lineEnd + 1;
+    end = [nextLineAfterLineEnd, 0];
+  }
+
+  editorInfo.ace_performDocumentReplaceRange(start, end, '');
+}
+
+var isLineAHeadingWithSceneMark = function(line, attributeManager){
+  var previousLine = line - 1;
+  var headingHasSceneMark = false;
+  var lineAttrib = getScriptElementOfLine(line, attributeManager);
+
+  // avoid getting attrib of line -1
+  if(previousLine > 0){
+    var previousLineAttrib = getSceneMarkTypeOfLine(previousLine, attributeManager);
+    var headingHasSceneMark = previousLineAttrib === "sequence_summary"
+  }
+
+  return lineAttrib === "heading" && headingHasSceneMark;
+}
+
+var getSceneMarkTypeOfLine = function(line, attributeManager){
+  var isAct      = attributeManager.getAttributeOnLine(line, 'act_scene_mark');
+  var isSequence = attributeManager.getAttributeOnLine(line, 'sequence_scene_mark');
+
+  return isAct || isSequence;
+}
+
+var checkIfLinesIsTheSameScriptElement = function(firstLine, lastLine, attributeManager){
+  var firstLineSelection = getScriptElementOfLine(firstLine, attributeManager);
+  var lastLineSelection = getScriptElementOfLine(lastLine, attributeManager);
+
+  return firstLineSelection === lastLineSelection;
+}
+
+var getScriptElementOfLine = function(line, attributeManager){
+  var scriptElement = attributeManager.getAttributeOnLine(line, 'script_element');
+  return scriptElement;
+}
+
+var beginningOfSelectionIsSceneMark = function(rep, attributeManager){
+  var firstLine = rep.selStart[0];
+  var actSelected = attributeManager.getAttributeOnLine(firstLine, 'act_scene_mark');
+  var sequenceSelected = attributeManager.getAttributeOnLine(firstLine, 'sequence_scene_mark');
+
+  return actSelected || sequenceSelected;
 }
 
 var isMultiLineSelected = function(rep){
@@ -210,34 +327,6 @@ var isFirstLinePartiallySelected = function(context){
   var firstPostionOfLine = lineHasMarker ? 1 : 0;
   var firstLineIsPartiallySelected =  rep.selStart[1] > firstPostionOfLine;
   return firstLineIsPartiallySelected;
-}
-
-var createANewLine = function(editorInfo){
-  return editorInfo.ace_doReturnKey();
-}
-
-var removeSelection = function(beginningOfSelection, endOfSelection, editorInfo){
-  editorInfo.ace_performDocumentReplaceRange(beginningOfSelection, endOfSelection, '');
-}
-
-var getAttributesOfLine = function(line, attributeManager){
-  var allLineAttribsOfLine = attributeManager.getAttributesOnLine(line);
-  var lineAttribsOfLine = _.reject(allLineAttribsOfLine, function(attrib) {
-    var attribName = attrib[0];
-    var isDefaultAttrib = utils.DEFAULT_LINE_ATTRIBS.indexOf(attribName) !== -1;
-    return isDefaultAttrib;
-  });
-
-  return lineAttribsOfLine;
-}
-
-var setAttributesOnLine = function(attribs, line, attributeManager){
-  attributeManager.removeAttributeOnLine(line, 'script_element');
-  attribs.forEach(function(attrib) {
-    var attribName = attrib[0];
-    var attribValue = attrib[1];
-    attributeManager.setAttributeOnLine(line, attribName, attribValue);
-  });
 }
 
 var changeLineAttribute = function(line, lineAttribute, attributeManager) {
@@ -346,13 +435,9 @@ var performDelete = function(editorInfo) {
   editorInfo.ace_performDocumentReplaceCharRange(currentCharPosition, currentCharPosition+1, '');
 }
 
-var getLength = function(line, rep) {
-  var nextLine = line + 1;
-  var startLineOffset = rep.lines.offsetOfIndex(line);
-  var endLineOffset   = rep.lines.offsetOfIndex(nextLine);
-
-  //lineLength without \n
-  var lineLength = endLineOffset - startLineOffset - 1;
-
-  return lineLength;
+var placeCaretOnLine = function(editorInfo, linePosition){
+  editorInfo.ace_inCallStackIfNecessary("placeCaretAfterRemoveSelection", function(){
+    editorInfo.ace_performSelectionChange(linePosition, linePosition, true);
+    editorInfo.ace_updateBrowserSelectionFromRep();
+  })
 }
