@@ -1,36 +1,39 @@
-var $              = require('ep_etherpad-lite/static/js/rjquery').$;
-var _              = require('ep_etherpad-lite/static/js/underscore');
+var $ = require('ep_etherpad-lite/static/js/rjquery').$;
+var _ = require('ep_etherpad-lite/static/js/underscore');
+
 var tags           = require('ep_script_elements/static/js/shared').tags;
 var sceneTag       = require('ep_script_elements/static/js/shared').sceneTag;
-var shortcuts      = require('./shortcuts');
-var mergeLines     = require('./mergeLines');
-var undoPagination = require('./undoPagination');
-var fixSmallZooms  = require('./fixSmallZooms');
-var padInner       = require('./utils').getPadInner;
-var sceneMarkTags  = require('./utils').sceneMarkTags;
-var SCENE_MARK_TYPE= require('./utils').SCENE_MARK_TYPE;
 var sceneMarkUtils = require("ep_script_scene_marks/static/js/utils");
+
+var shortcuts       = require('./shortcuts');
+var mergeLines      = require('./mergeLines');
+var undoPagination  = require('./undoPagination');
+var fixSmallZooms   = require('./fixSmallZooms');
+var padInner        = require('./utils').getPadInner;
+var SCENE_MARK_TYPE = require('./utils').SCENE_MARK_TYPE;
+var sceneMarkTags   = require('./utils').sceneMarkTags;
+var SM_AND_HEADING  = _.union(sceneMarkTags, ['heading']);
 
 var cssFiles = ['ep_script_elements/static/css/editor.css'];
 
 // All our tags are block elements, so we just return them.
-exports.aceRegisterBlockElements = function(){
+exports.aceRegisterBlockElements = function() {
   return _.flatten([undoPagination.UNDO_FIX_TAG, tags]);
 }
 
 // Bind the event handler to the toolbar buttons
-exports.postAceInit = function(hook, context){
+exports.postAceInit = function(hook, context) {
   listenToChangeElementByShortCut();
   fixSmallZooms.init();
 
   var script_element_selection = $('#script_element-selection');
-  script_element_selection.on('change', function(){
+  script_element_selection.on('change', function() {
     var value = $(this).val();
     var intValue = parseInt(value,10);
     var selectedOption = $(this).find("option:selected");
     var l10nLabel = selectedOption.attr("data-l10n-id");
-    if(!_.isNaN(intValue)){
-      context.ace.callWithAce(function(ace){
+    if(!_.isNaN(intValue)) {
+      context.ace.callWithAce(function(ace) {
 
         // if it changes to an option different of heading removes sceneTag
         // and scene Mark line attributes if it applies
@@ -48,30 +51,30 @@ exports.postAceInit = function(hook, context){
 };
 
 // This event is handled in the ep_script_scene_marks
-var emitEventHeadingHasChanged = function(line){
+var emitEventHeadingHasChanged = function(line) {
   var $innerDocument = padInner().find("#innerdocbody");
 
   $innerDocument.trigger('headingHasChanged', line);
 }
 
-function updateDropdownWithValueChosen(){
+function updateDropdownWithValueChosen() {
   var context = this;
   updateDropdownToCaretLine(this);
 }
 
-function listenToChangeElementByShortCut(){
+function listenToChangeElementByShortCut() {
   var $innerDocument = padInner().find("#innerdocbody");
   // ep_script_element_transition triggers 'elementChange' event when element is
   // changed by shortcut CMD+NUM, which means the type of current line was changed,
   // so we need to update the dropdown. We take the context from ep_script_element_transition
   // which is passed when then event happens
-  $innerDocument.on('elementChanged', function(event, context){
+  $innerDocument.on('elementChanged', function(event, context) {
     updateDropdownToCaretLine(context);
   });
 }
 
 // On caret position change show the current script element
-exports.aceSelectionChanged = function(hook, context, cb){
+exports.aceSelectionChanged = function(hook, context, cb) {
   var cs = context.callstack;
 
   // If it's an initial setup event then do nothing
@@ -108,7 +111,7 @@ exports.aceKeyEvent = function(hook, context) {
 }
 
 // Our script element attribute will result in a script_element:heading... :transition class
-exports.aceAttribsToClasses = function(hook, context){
+exports.aceAttribsToClasses = function(hook, context) {
   if (context.key == 'script_element') {
     return [ 'script_element:' + context.value ];
   } else if (context.key === undoPagination.UNDO_FIX_ATTRIB) {
@@ -116,7 +119,7 @@ exports.aceAttribsToClasses = function(hook, context){
   }
 }
 
-exports.aceDomLineProcessLineAttributes = function(name, context){
+exports.aceDomLineProcessLineAttributes = function(name, context) {
   var cls = context.cls;
 
   var lineModifier = processScriptElementAttribute(cls);
@@ -127,24 +130,26 @@ exports.aceDomLineProcessLineAttributes = function(name, context){
   return lineModifier;
 };
 
-exports.acePostWriteDomLineHTML = function(hook, context){
+exports.acePostWriteDomLineHTML = function(hook, context) {
   var $node = $(context.node);
-  var sceneMarkTagsAndHeading = _.union(sceneMarkTags, ['heading']);
-  var sceneMarkTagAndHeadingIndex = isTypeTag($node, sceneMarkTagsAndHeading);
-  if(sceneMarkTagAndHeadingIndex > -1 ){
-    $node.addClass(SCENE_MARK_TYPE[sceneMarkTagAndHeadingIndex]);
+  var extraFlag = findExtraFlagForLine($node);
+  if (extraFlag) {
+    $node.addClass(extraFlag);
   }
 }
 
-var isTypeTag = function($node, sceneMarkTagsAndHeading){
+var findExtraFlagForLine = function($node) {
   var sceneMarkTagIndex = -1;
-  _.each(sceneMarkTagsAndHeading, function(tag){
+
+  _.each(SM_AND_HEADING, function(tag) {
     var nodeHasTag = $node.find(tag).length;
     if (nodeHasTag) {
-      sceneMarkTagIndex = _.indexOf(sceneMarkTagsAndHeading, tag);
+      sceneMarkTagIndex = _.indexOf(SM_AND_HEADING, tag);
+      return; // found flagIndex, can stop each()
     }
   });
-  return sceneMarkTagIndex;
+
+  return SCENE_MARK_TYPE[sceneMarkTagIndex];
 }
 
 // Here we convert the class script_element:heading into a tag
@@ -184,7 +189,7 @@ var processUndoFixAttribute = function(cls) {
 // Find out which lines are selected and assign them the script element attribute.
 // Passing a level >= 0 will set a script element on the selected lines, level < 0
 // will remove it
-function doInsertScriptElement(level){
+function doInsertScriptElement(level) {
   var rep = this.rep;
   var attributeManager = this.documentAttributeManager;
   var newValue = tags[level];
@@ -196,7 +201,7 @@ function doInsertScriptElement(level){
   var lineIsSceneMark = sceneMarkUtils.lineNumberContainsSceneMark(currentLine);
 
   // do not apply when element is a scene mark
-  if (lineIsSceneMark){
+  if (lineIsSceneMark) {
     return;
   }
 
@@ -238,19 +243,19 @@ function removeAttribute(lineNumber, attributeManager) {
   attributeManager.removeAttributeOnLine(lineNumber, 'script_element');
 }
 
-function getLastLine(firstLine, rep){
+function getLastLine(firstLine, rep) {
   var lastLineSelected = rep.selEnd[0];
 
-  if (lastLineSelected > firstLine){
+  if (lastLineSelected > firstLine) {
     // Ignore last line if the selected text of it it is empty
-    if(lastLineSelectedIsEmpty(rep, lastLineSelected)){
+    if(lastLineSelectedIsEmpty(rep, lastLineSelected)) {
       lastLineSelected--;
     }
   }
   return lastLineSelected;
 }
 
-function lastLineSelectedIsEmpty(rep, lastLineSelected){
+function lastLineSelectedIsEmpty(rep, lastLineSelected) {
   var line = rep.lines.atIndex(lastLineSelected);
   // when we've a line with line attribute, the first char line position
   // in a line is 1 because of the *, otherwise is 0
@@ -260,13 +265,13 @@ function lastLineSelectedIsEmpty(rep, lastLineSelected){
   return lastColumnSelected === firstCharLinePosition;
 }
 
-function lineHasMarker(line){
+function lineHasMarker(line) {
   return line.lineMarker === 1;
 }
 
 // Once ace is initialized, we set ace_doInsertScriptElement and bind it to the context
 // and we set ace_removeSceneTagFromSelection and bind it to the context
-exports.aceInitialized = function(hook, context){
+exports.aceInitialized = function(hook, context) {
   var editorInfo = context.editorInfo;
 
   editorInfo.ace_removeSceneTagFromSelection = _(removeSceneTagFromSelection).bind(context);
@@ -274,7 +279,7 @@ exports.aceInitialized = function(hook, context){
   editorInfo.ace_updateDropdownWithValueChosen = _(updateDropdownWithValueChosen).bind(context);
 }
 
-exports.aceEditorCSS = function(){
+exports.aceEditorCSS = function() {
   return cssFiles;
 };
 
@@ -297,7 +302,7 @@ function removeSceneTagFromSelection() {
 
 }
 
-function updateDropdownToCaretLine(context){
+function updateDropdownToCaretLine(context) {
   setTimeout(function() {
     var rep              = context.rep;
     var attributeManager = context.documentAttributeManager;
@@ -308,7 +313,7 @@ function updateDropdownToCaretLine(context){
     var lineNumber  = rep.selStart[0];
     var isSceneMark = sceneMarkUtils.lineNumberContainsSceneMark(lineNumber);
 
-    if (multipleLinesSelected && !sameElementOnSelection || isSceneMark){
+    if (multipleLinesSelected && !sameElementOnSelection || isSceneMark) {
       //set drop-down to "Style"
       setDropdownValue(-2);
     }else{
@@ -319,16 +324,16 @@ function updateDropdownToCaretLine(context){
   }, 100);
 }
 
-function isSameElementOnSelection(rep, attributeManager){
+function isSameElementOnSelection(rep, attributeManager) {
   var firstLine = rep.selStart[0];
   var isSameElement = true;
   var lastLine = Math.max(firstLine, rep.selEnd[0] - ((rep.selEnd[1] === 0) ? 1 : 0));
   //get the first attribute on the selection
   var firstAttribute = attributeManager.getAttributeOnLine(firstLine, "script_element");
   //check if the first attribute on selection is present in all lines
-  _(_.range(firstLine + 1, lastLine + 1)).each(function(line){
+  _(_.range(firstLine + 1, lastLine + 1)).each(function(line) {
     var attributeOnline = attributeManager.getAttributeOnLine(line, "script_element");
-    if (attributeOnline !== firstAttribute){
+    if (attributeOnline !== firstAttribute) {
       isSameElement = false;
       return;
     }
@@ -336,12 +341,12 @@ function isSameElementOnSelection(rep, attributeManager){
   return isSameElement;
 }
 
-function setDropdownToElement(attr){
+function setDropdownToElement(attr) {
   var newValue = tags.indexOf(attr);
   setDropdownValue(newValue);
 }
 
-function setDropdownValue(newValue){
+function setDropdownValue(newValue) {
   // only change value if necessary
   if ($("#script_element-selection").val() === newValue) return;
 

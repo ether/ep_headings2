@@ -72,11 +72,18 @@ heading, action, character, parenthetical, dialogue, transition, shot{
 }
 
 /* Removes top margin for first element on script: */
-#innerdocbody > div:first-of-type > heading,
+#innerdocbody > div:first-of-type > act_name,
+/* handle 'div:first-of-type > heading' on fixSmallZooms.js */
 #innerdocbody > div:first-of-type > action,
 #innerdocbody > div:first-of-type > character,
 #innerdocbody > div:first-of-type > transition,
 #innerdocbody > div:first-of-type > shot {
+  margin-top: 0px;
+}
+
+/* Removes top margin between heading and its sequence, and between sequence and act: */
+div.withSeq:not(.hidden) + div.withHeading heading,
+div.withAct:not(.hidden) + div.withSeq sequence_name {
   margin-top: 0px;
 }
 

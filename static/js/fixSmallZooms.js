@@ -11,14 +11,6 @@ var utils = require("./utils");
 var DEFAULT_CHAR_WIDTH = 7.2;
 var DEFAULT_LINE_HEIGHT = 16.0;
 
-// when there are a sequence before a heading there is not space between them
-var noSpaceBetweenSeqAndHeading = "div.withSeq:not(.hidden) + div.withHeading heading{ margin-top: 0}";
-
-// when there is an act before a sequence, the sequence has not margin top
-var noSpaceBetweenSeqAndAct = "div.withAct:not(.hidden) + div.withSeq sequence_name{ margin-top: 0};"
-
-// these scene marks rules overrides the default ones, when these specific two scenarios above are applicable
-var sceneMarksSpecialRules = noSpaceBetweenSeqAndHeading + noSpaceBetweenSeqAndAct;
 var ELEMENTS_WITH_MARGINS = [
   "act_name",
   "sequence_name",
@@ -47,6 +39,8 @@ var DEFAULT_MARGINS = {
 };
 exports.DEFAULT_MARGINS = DEFAULT_MARGINS;
 
+var FIRST_HEADING_HAS_NO_MARGIN_TOP_PREFIX = 'div.withHeading ~ div.withHeading ';
+
 exports.init = function() {
   waitForResizeToFinishThenCall(function() {
     updateMargins();
@@ -70,11 +64,13 @@ var updateMargins = function() {
   var newHorizontalProportion = calculateHorizontalProportion();
 
   var elementStyles = _.map(ELEMENTS_WITH_MARGINS, function(elementName) {
-    return getNewStyleForElement(elementName, newHorizontalProportion, newVerticalProportion);
+    var elementStyle = getNewStyleForElement(elementName, newHorizontalProportion, newVerticalProportion);
+    elementStyle = adjustStylesToNotHaveTopMarginOnFirstLine(elementName, elementStyle);
+    return elementStyle;
   }).join("\n");
 
   // we don't want to affect mobile screens
-  var style = "@media (min-width : 464px) { " + elementStyles + sceneMarksSpecialRules + " }";
+  var style = "@media (min-width : 464px) { " + elementStyles + " }";
 
   // overwrite current style for element margins
   utils.getPadInner().find("head").append("<style>" + style + "</style>");
@@ -116,6 +112,17 @@ var getMarginStyle = function(marginName, defaultValues, proportion) {
   }
 
   return marginStyle;
+}
+
+var adjustStylesToNotHaveTopMarginOnFirstLine = function(elementName, elementStyle) {
+  var adjustedStyle = elementStyle;
+
+  // first heading is not on first div; it has an act + seq before, so we need a special CSS rule
+  if (elementName === 'heading') {
+    adjustedStyle = FIRST_HEADING_HAS_NO_MARGIN_TOP_PREFIX + elementStyle;
+  }
+
+  return adjustedStyle;
 }
 
 var getWidthOfOneChar = function() {
