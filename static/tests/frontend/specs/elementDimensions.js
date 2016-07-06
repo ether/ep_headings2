@@ -89,6 +89,10 @@ describe("ep_script_elements - element dimensions", function(){
           // click on SM icon to open them
           helper.padInner$('sm_icon').first().click();
         });
+        after(function() {
+          // click on SM icon to close them
+          helper.padInner$('sm_icon').first().click();
+        });
 
         it('displays headings with no top margin on first line', function(done) {
           var $headings               = helper.padInner$('heading');
@@ -102,8 +106,53 @@ describe("ep_script_elements - element dimensions", function(){
         });
       });
 
-      // // TODO
-      // context('and act has multiple lines on its summary');
+      context('and there is another element before first heading of script', function() {
+        before(function(done) {
+          // add a general on top of script
+          var $firstLine = utils.getLine(0);
+          var scriptWithGeneralOnTop = utils.general('general') + $firstLine.html();
+          $firstLine.html(scriptWithGeneralOnTop);
+
+          // wait for lines to be split
+          helper.waitFor(function() {
+            var firstLineIsNotActAnymore = !utils.getLine(0).hasClass('withAct');
+            return firstLineIsNotActAnymore;
+          }).done(done);
+        });
+
+        it('displays both headings with top margin', function(done) {
+          var $headings               = helper.padInner$('heading');
+          var $headingWithNoTopMargin = $headings.first();
+          var $headingWithTopMargin   = $headings.last();
+
+          expect($headingWithNoTopMargin.css('margin-top')).not.to.be('0px');
+          expect($headingWithTopMargin.css('margin-top')).not.to.be('0px');
+
+          done();
+        });
+
+        context('and act and seq are visible', function() {
+          before(function() {
+            // click on SM icon to open them
+            helper.padInner$('sm_icon').first().click();
+          });
+          after(function() {
+            // click on SM icon to close them
+            helper.padInner$('sm_icon').first().click();
+          });
+
+          it('displays headings with no top margin on first line', function(done) {
+            var $headings               = helper.padInner$('heading');
+            var $headingWithNoTopMargin = $headings.first();
+            var $headingWithTopMargin   = $headings.last();
+
+            expect($headingWithNoTopMargin.css('margin-top')).to.be('0px');
+            expect($headingWithTopMargin.css('margin-top')).not.to.be('0px');
+
+            done();
+          });
+        });
+      });
     });
   });
 

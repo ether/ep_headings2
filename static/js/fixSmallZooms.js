@@ -39,7 +39,12 @@ var DEFAULT_MARGINS = {
 };
 exports.DEFAULT_MARGINS = DEFAULT_MARGINS;
 
-var FIRST_HEADING_HAS_NO_MARGIN_TOP_PREFIX = 'div.withHeading ~ div.withHeading ';
+// if heading is the 1st element on pad, it won't have a top margin
+var HEADING_IS_FIRST_ELEMENT     = 'div:first-of-type.withAct ~ div.withHeading ~ div.withHeading ';
+// if heading is not the 1st element on pad, it will only have a top margin if its sequence is not
+// visible
+var HEADING_IS_NOT_FIRST_ELEMENT_AND_HAS_NO_SEQ = 'div:first-of-type:not(.withAct) ~ div:not(.withSeq) + div.withHeading ';
+var HEADING_IS_NOT_FIRST_ELEMENT_AND_HAS_SEQ    = 'div:first-of-type:not(.withAct) ~ div.withSeq.hidden + div.withHeading ';
 
 exports.init = function() {
   waitForResizeToFinishThenCall(function() {
@@ -119,7 +124,9 @@ var adjustStylesToNotHaveTopMarginOnFirstLine = function(elementName, elementSty
 
   // first heading is not on first div; it has an act + seq before, so we need a special CSS rule
   if (elementName === 'heading') {
-    adjustedStyle = FIRST_HEADING_HAS_NO_MARGIN_TOP_PREFIX + elementStyle;
+    adjustedStyle = HEADING_IS_NOT_FIRST_ELEMENT_AND_HAS_NO_SEQ + elementStyle;
+    adjustedStyle += HEADING_IS_NOT_FIRST_ELEMENT_AND_HAS_SEQ + elementStyle;
+    adjustedStyle += HEADING_IS_FIRST_ELEMENT + elementStyle;
   }
 
   return adjustedStyle;
