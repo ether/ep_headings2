@@ -81,12 +81,6 @@ heading, action, character, parenthetical, dialogue, transition, shot{
   margin-top: 0px;
 }
 
-/* Removes top margin between heading and its sequence, and between sequence and act: */
-div.withSeq:not(.hidden) + div.withHeading heading,
-div.withAct:not(.hidden) + div.withSeq sequence_name {
-  margin-top: 0px;
-}
-
 /* If available width is not even enough to have the regular 61
    chars/line, we make the margins proportional to available width: */
 @media (max-width : 463px) { /* based on value form ep_script_page_view */
