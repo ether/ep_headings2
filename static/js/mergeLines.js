@@ -18,7 +18,7 @@ exports.findHandlerFor = function(context) {
 
   // when user presses a mergeKey we can have three scenarios: no selection at all,
   // selection in only one line(this case is handled by default), selection in more than one line
-  if(isMergeKey && !beginningOfSelectionIsSceneMark(rep, attributeManager)){
+  if(isMergeKey){
     // if there is no selection at all
     if (!textSelected(editorInfo)) {
       // HACK: we need to get current position after calling synchronizeEditorWithUserSelection(), otherwise
@@ -288,14 +288,6 @@ var checkIfLinesIsTheSameScriptElement = function(firstLine, lastLine, attribute
 var getScriptElementOfLine = function(line, attributeManager){
   var scriptElement = attributeManager.getAttributeOnLine(line, 'script_element');
   return scriptElement;
-}
-
-var beginningOfSelectionIsSceneMark = function(rep, attributeManager){
-  var firstLine = rep.selStart[0];
-  var actSelected = attributeManager.getAttributeOnLine(firstLine, 'act_scene_mark');
-  var sequenceSelected = attributeManager.getAttributeOnLine(firstLine, 'sequence_scene_mark');
-
-  return actSelected || sequenceSelected;
 }
 
 var isMultiLineSelected = function(rep){

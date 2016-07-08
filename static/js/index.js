@@ -4,17 +4,14 @@ var _ = require('ep_etherpad-lite/static/js/underscore');
 var tags           = require('ep_script_elements/static/js/shared').tags;
 var sceneTag       = require('ep_script_elements/static/js/shared').sceneTag;
 var sceneMarkUtils = require("ep_script_scene_marks/static/js/utils");
-
-var shortcuts       = require('./shortcuts');
-var mergeLines      = require('./mergeLines');
-var undoPagination  = require('./undoPagination');
-var fixSmallZooms   = require('./fixSmallZooms');
-var padInner        = require('./utils').getPadInner;
-var SCENE_MARK_TYPE = require('./utils').SCENE_MARK_TYPE;
-var sceneMarkTags   = require('./utils').sceneMarkTags;
-var SM_AND_HEADING  = _.union(sceneMarkTags, ['heading']);
-
-var cssFiles = ['ep_script_elements/static/css/editor.css'];
+var SM_AND_HEADING = _.union(utils.sceneMarkTags, ['heading']);
+var shortcuts      = require('./shortcuts');
+var mergeLines     = require('./mergeLines');
+var undoPagination = require('./undoPagination');
+var fixSmallZooms  = require('./fixSmallZooms');
+var utils          = require('./utils');
+var ENTER          = 13;
+var cssFiles       = ['ep_script_elements/static/css/editor.css'];
 
 // All our tags are block elements, so we just return them.
 exports.aceRegisterBlockElements = function() {
@@ -24,6 +21,9 @@ exports.aceRegisterBlockElements = function() {
 // Bind the event handler to the toolbar buttons
 exports.postAceInit = function(hook, context) {
   listenToChangeElementByShortCut();
+
+  // prevent keys insert text and enter
+  preventCharacterKeysAndEnterOnSelectionMultiLine(context);
   fixSmallZooms.init();
 
   var script_element_selection = $('#script_element-selection');
@@ -85,29 +85,74 @@ exports.aceSelectionChanged = function(hook, context, cb) {
 exports.aceKeyEvent = function(hook, context) {
   var eventProcessed = false;
   var evt = context.evt;
+  var rep = context.rep;
+  var editorInfo = context.editorInfo;
 
-  var handleShortcut = shortcuts.findHandlerFor(evt);
-  var handleMerge    = mergeLines.findHandlerFor(context);
+  // hack: sometimes Etherpad takes a while to update editorInfo with the selection
+  // user made on browser, so we need to make sure editorInfo is up to date before
+  // checking if it is a script element.
+  synchronizeEditorWithUserSelection(editorInfo);
+  var caretStartPositionIsInAScriptElement = isCaretStartPositionInAScriptElement(rep);
+  if(caretStartPositionIsInAScriptElement){
+    var handleShortcut = shortcuts.findHandlerFor(evt);
+    var handleMerge    = mergeLines.findHandlerFor(context);
 
-  // Cmd+[ or Cmd+]
-  if (handleShortcut) {
-    evt.preventDefault();
-    handleShortcut(context);
-    eventProcessed = true;
-  }
-  // BACKSPACE or DELETE
-  else if (handleMerge) {
-    // call function that handles merge
-    var mergeShouldBeBlocked = handleMerge;
-
-    // cannot merge lines, so do not process keys
-    if (mergeShouldBeBlocked) {
+    // Cmd+[ or Cmd+]
+    if (handleShortcut) {
       evt.preventDefault();
+      handleShortcut(context);
       eventProcessed = true;
+    }
+    // BACKSPACE or DELETE
+    else if (handleMerge) {
+      // call function that handles merge
+      var mergeShouldBeBlocked = handleMerge;
+
+      // cannot merge lines, so do not process keys
+      if (mergeShouldBeBlocked) {
+        evt.preventDefault();
+        eventProcessed = true;
+      }
     }
   }
 
   return eventProcessed;
+}
+
+var preventCharacterKeysAndEnterOnSelectionMultiLine = function(context){
+  var $innerDocument = padInner().find("#innerdocbody");
+
+  context.ace.callWithAce(function(ace){
+    var rep = ace.ace_getRep();
+    var caretStartPositionIsInAScriptElement = isCaretStartPositionInAScriptElement(rep);
+
+    // keypress is fired when a key is pressed down and that key normally produces a character value
+    $innerDocument.on("keypress", function(e){
+      if(isMultipleLinesSelected(rep) && caretStartPositionIsInAScriptElement){
+        e.preventDefault();
+      }
+    });
+
+    // avoid ENTER
+    $innerDocument.on("keydown", function(e){
+      var enterIsPressed = e.keyCode === ENTER;
+      if(isMultipleLinesSelected(rep) && enterIsPressed && caretStartPositionIsInAScriptElement){
+        e.preventDefault();
+        return false;
+      }
+    });
+  });
+}
+
+var synchronizeEditorWithUserSelection = function(editorInfo) {
+  editorInfo.ace_fastIncorp();
+}
+
+var isCaretStartPositionInAScriptElement = function(rep){
+  var firstLineOfSelection = rep.selStart[0];
+  var lineIsScriptElement = utils.lineIsScriptElement(firstLineOfSelection);
+
+  return lineIsScriptElement;
 }
 
 // Our script element attribute will result in a script_element:heading... :transition class
@@ -149,7 +194,7 @@ var findExtraFlagForLine = function($node) {
     }
   });
 
-  return SCENE_MARK_TYPE[sceneMarkTagIndex];
+  return utils.SCENE_MARK_TYPE[sceneMarkTagIndex];
 }
 
 // Here we convert the class script_element:heading into a tag
