@@ -4,12 +4,13 @@ var _ = require('ep_etherpad-lite/static/js/underscore');
 var tags           = require('ep_script_elements/static/js/shared').tags;
 var sceneTag       = require('ep_script_elements/static/js/shared').sceneTag;
 var sceneMarkUtils = require("ep_script_scene_marks/static/js/utils");
-var SM_AND_HEADING = _.union(utils.sceneMarkTags, ['heading']);
+var utils          = require('./utils');
+var SM_AND_HEADING = _.union(utils.SCENE_MARK_SELECTOR, ['heading']);
 var shortcuts      = require('./shortcuts');
 var mergeLines     = require('./mergeLines');
 var undoPagination = require('./undoPagination');
 var fixSmallZooms  = require('./fixSmallZooms');
-var utils          = require('./utils');
+
 var ENTER          = 13;
 var cssFiles       = ['ep_script_elements/static/css/editor.css'];
 
@@ -51,8 +52,8 @@ exports.postAceInit = function(hook, context) {
 };
 
 // This event is handled in the ep_script_scene_marks
-var emitEventHeadingHasChanged = function(line) {
-  var $innerDocument = padInner().find("#innerdocbody");
+var emitEventHeadingHasChanged = function(line){
+  var $innerDocument = utils.getPadInner().find("#innerdocbody");
 
   $innerDocument.trigger('headingHasChanged', line);
 }
@@ -62,8 +63,8 @@ function updateDropdownWithValueChosen() {
   updateDropdownToCaretLine(this);
 }
 
-function listenToChangeElementByShortCut() {
-  var $innerDocument = padInner().find("#innerdocbody");
+function listenToChangeElementByShortCut(){
+  var $innerDocument = utils.getPadInner().find("#innerdocbody");
   // ep_script_element_transition triggers 'elementChange' event when element is
   // changed by shortcut CMD+NUM, which means the type of current line was changed,
   // so we need to update the dropdown. We take the context from ep_script_element_transition
@@ -120,7 +121,7 @@ exports.aceKeyEvent = function(hook, context) {
 }
 
 var preventCharacterKeysAndEnterOnSelectionMultiLine = function(context){
-  var $innerDocument = padInner().find("#innerdocbody");
+  var $innerDocument = utils.getPadInner().find("#innerdocbody");
 
   context.ace.callWithAce(function(ace){
     var rep = ace.ace_getRep();

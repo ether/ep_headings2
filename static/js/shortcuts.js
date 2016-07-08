@@ -1,6 +1,4 @@
 var utils    = require("./utils");
-var padOuter = utils.getPadOuter;
-var padInner = utils.getPadInner;
 
 // mac has different keycodes in the 'cmd + []' from windows and linux
 var TO_NEXT_SCENE = browser.mac ? 221 : 220;
@@ -65,14 +63,14 @@ function placeCaretOnLine(line, editorInfo) {
 function scrollToLine(lineNumber, rep) {
   // Set the top of the form to be the same Y as the target Rep
   var y = getYofLine(lineNumber, rep);
-  padOuter().find('#outerdocbody').scrollTop(y); // Works in Chrome
-  padOuter().find('#outerdocbody').parent().scrollTop(y); // Works in Firefox
+  utils.getPadOuter().find('#outerdocbody').scrollTop(y); // Works in Chrome
+  utils.getPadOuter().find('#outerdocbody').parent().scrollTop(y); // Works in Firefox
 }
 
 function getYofLine(lineNumber, rep) {
   var line        = rep.lines.atIndex(lineNumber);
   var key         = "#"+line.key;
-  var lineElement = padInner().find(key);
+  var lineElement = utils.getPadInner().find(key);
   var yOfLine     = lineElement[0].offsetTop;
 
   return yOfLine;
