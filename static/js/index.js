@@ -125,11 +125,10 @@ var preventCharacterKeysAndEnterOnSelectionMultiLine = function(context){
 
   context.ace.callWithAce(function(ace){
     var rep = ace.ace_getRep();
-    var caretStartPositionIsInAScriptElement = isCaretStartPositionInAScriptElement(rep);
 
     // keypress is fired when a key is pressed down and that key normally produces a character value
     $innerDocument.on("keypress", function(e){
-      if(isMultipleLinesSelected(rep) && caretStartPositionIsInAScriptElement){
+      if(isMultipleLinesSelected(rep) && isCaretStartPositionInAScriptElement(rep)){
         e.preventDefault();
       }
     });
@@ -137,7 +136,7 @@ var preventCharacterKeysAndEnterOnSelectionMultiLine = function(context){
     // avoid ENTER
     $innerDocument.on("keydown", function(e){
       var enterIsPressed = e.keyCode === ENTER;
-      if(isMultipleLinesSelected(rep) && enterIsPressed && caretStartPositionIsInAScriptElement){
+      if(isMultipleLinesSelected(rep) && enterIsPressed && isCaretStartPositionInAScriptElement(rep)){
         e.preventDefault();
         return false;
       }
