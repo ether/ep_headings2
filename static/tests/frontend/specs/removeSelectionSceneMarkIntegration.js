@@ -153,8 +153,8 @@ describe('ep_script_elements - remove selection ep_script_scene_marks integratio
     context('and the heading with scene marks is not first lines of pad', function(){
       beforeEach(function(done){
         var inner$ = helper.padInner$;
-        var $firstElement = inner$('div:has(heading)').last();
-        var $lastElement = inner$('div:has(action)').last();
+        var $firstElement = inner$('div:has(heading)').first();
+        var $lastElement = inner$('div:has(shot)').first();
         var offsetAtFirstElement = 0;
         var offsetLastLineSelection = 0;
         var lastLineLength = $lastElement.text().length;
@@ -170,8 +170,7 @@ describe('ep_script_elements - remove selection ep_script_scene_marks integratio
       });
 
       it('removes the scene marks of this heading and removes the rest selected', function(done){
-        utils.validateLineTextAndType(7, 'shot', 'shot');
-        utils.validateLineTextAndType(8, 'action', 'action');
+        utils.validateLineTextAndType(0, 'shot', 'shot');
         done();
       });
 
