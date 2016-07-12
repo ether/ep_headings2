@@ -89,31 +89,24 @@ exports.aceKeyEvent = function(hook, context) {
   var rep = context.rep;
   var editorInfo = context.editorInfo;
 
-  // hack: sometimes Etherpad takes a while to update editorInfo with the selection
-  // user made on browser, so we need to make sure editorInfo is up to date before
-  // checking if it is a script element.
-  synchronizeEditorWithUserSelection(editorInfo);
-  var caretStartPositionIsInAScriptElement = isCaretStartPositionInAScriptElement(rep);
-  if(caretStartPositionIsInAScriptElement){
-    var handleShortcut = shortcuts.findHandlerFor(evt);
-    var handleMerge    = mergeLines.findHandlerFor(context);
+  var handleShortcut = shortcuts.findHandlerFor(evt);
+  var handleMerge    = mergeLines.findHandlerFor(context);
 
-    // Cmd+[ or Cmd+]
-    if (handleShortcut) {
+  // Cmd+[ or Cmd+]
+  if (handleShortcut) {
+    evt.preventDefault();
+    handleShortcut(context);
+    eventProcessed = true;
+  }
+  // BACKSPACE or DELETE
+  else if (handleMerge) {
+    // call function that handles merge
+    var mergeShouldBeBlocked = handleMerge;
+
+    // cannot merge lines, so do not process keys
+    if (mergeShouldBeBlocked) {
       evt.preventDefault();
-      handleShortcut(context);
       eventProcessed = true;
-    }
-    // BACKSPACE or DELETE
-    else if (handleMerge) {
-      // call function that handles merge
-      var mergeShouldBeBlocked = handleMerge;
-
-      // cannot merge lines, so do not process keys
-      if (mergeShouldBeBlocked) {
-        evt.preventDefault();
-        eventProcessed = true;
-      }
     }
   }
 

@@ -18,7 +18,7 @@ exports.findHandlerFor = function(context) {
 
   // when user presses a mergeKey we can have three scenarios: no selection at all,
   // selection in only one line(this case is handled by default), selection in more than one line
-  if(isMergeKey){
+  if(isMergeKey && isCaretStartPositionInAScriptElement(rep)){
     // if there is no selection at all
     if (!textSelected(editorInfo)) {
       // HACK: we need to get current position after calling synchronizeEditorWithUserSelection(), otherwise
@@ -404,4 +404,11 @@ var placeCaretOnLine = function(editorInfo, linePosition){
     editorInfo.ace_performSelectionChange(linePosition, linePosition, true);
     editorInfo.ace_updateBrowserSelectionFromRep();
   })
+}
+
+var isCaretStartPositionInAScriptElement = function(rep){
+  var firstLineOfSelection = rep.selStart[0];
+  var lineIsScriptElement = utils.lineIsScriptElement(firstLineOfSelection);
+
+  return lineIsScriptElement;
 }
