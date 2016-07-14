@@ -12,9 +12,6 @@ var DEFAULT_CHAR_WIDTH = 7.2;
 var DEFAULT_LINE_HEIGHT = 16.0;
 
 var ELEMENTS_WITH_MARGINS = [
-  "act_name",
-  "sequence_name",
-  "heading",
   "action",
   "character",
   "parenthetical",
@@ -25,9 +22,6 @@ var ELEMENTS_WITH_MARGINS = [
 
 var DEFAULT_MARGINS = {
   // these values were originally set on CSS
-  "act_name":      { vertical: { top: 2*DEFAULT_LINE_HEIGHT } },
-  "sequence_name": { vertical: { top: 2*DEFAULT_LINE_HEIGHT } },
-  "heading":       { vertical: { top: 2*DEFAULT_LINE_HEIGHT } },
   "shot":          { vertical: { top: 2*DEFAULT_LINE_HEIGHT } },
   "action":        { vertical: { top: 1*DEFAULT_LINE_HEIGHT } },
   "character":     { vertical: { top: 1*DEFAULT_LINE_HEIGHT },
@@ -38,13 +32,6 @@ var DEFAULT_MARGINS = {
   "dialogue":      { horizontal: { left: 77,  right: 111 } },
 };
 exports.DEFAULT_MARGINS = DEFAULT_MARGINS;
-
-// if heading is the 1st element on pad, it won't have a top margin
-var HEADING_IS_FIRST_ELEMENT     = 'div:first-of-type.withAct ~ div.withHeading ~ div.withHeading ';
-// if heading is not the 1st element on pad, it will only have a top margin if its sequence is not
-// visible
-var HEADING_IS_NOT_FIRST_ELEMENT_AND_HAS_NO_SEQ = 'div:first-of-type:not(.withAct) ~ div:not(.withSeq) + div.withHeading ';
-var HEADING_IS_NOT_FIRST_ELEMENT_AND_HAS_SEQ    = 'div:first-of-type:not(.withAct) ~ div.withSeq.hidden + div.withHeading ';
 
 exports.init = function() {
   waitForResizeToFinishThenCall(function() {
@@ -70,7 +57,6 @@ var updateMargins = function() {
 
   var elementStyles = _.map(ELEMENTS_WITH_MARGINS, function(elementName) {
     var elementStyle = getNewStyleForElement(elementName, newHorizontalProportion, newVerticalProportion);
-    elementStyle = adjustStylesToNotHaveTopMarginOnFirstLine(elementName, elementStyle);
     return elementStyle;
   }).join("\n");
 
@@ -117,19 +103,6 @@ var getMarginStyle = function(marginName, defaultValues, proportion) {
   }
 
   return marginStyle;
-}
-
-var adjustStylesToNotHaveTopMarginOnFirstLine = function(elementName, elementStyle) {
-  var adjustedStyle = elementStyle;
-
-  // first heading is not on first div; it has an act + seq before, so we need a special CSS rule
-  if (elementName === 'heading') {
-    adjustedStyle = HEADING_IS_NOT_FIRST_ELEMENT_AND_HAS_NO_SEQ + elementStyle;
-    adjustedStyle += HEADING_IS_NOT_FIRST_ELEMENT_AND_HAS_SEQ + elementStyle;
-    adjustedStyle += HEADING_IS_FIRST_ELEMENT + elementStyle;
-  }
-
-  return adjustedStyle;
 }
 
 var getWidthOfOneChar = function() {

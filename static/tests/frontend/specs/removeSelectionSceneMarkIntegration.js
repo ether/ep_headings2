@@ -150,14 +150,12 @@ describe('ep_script_elements - remove selection ep_script_scene_marks integratio
     });
 
     // simulates triple click in a heading with scene mark
-    context('and the heading with scene marks is not first lines of pad', function(){
+    context('and the heading with scene marks is not on top of pad', function(){
       beforeEach(function(done){
         var inner$ = helper.padInner$;
-        var $firstElement = inner$('div:has(heading)').first();
-        var $lastElement = inner$('div:has(shot)').first();
+        var $firstElement = inner$('div:has(heading)').last();
+        var $lastElement = $firstElement.next();
         var offsetAtFirstElement = 0;
-        var offsetLastLineSelection = 0;
-        var lastLineLength = $lastElement.text().length;
         var offsetAtlastElement = 0;
 
         // make the selection
