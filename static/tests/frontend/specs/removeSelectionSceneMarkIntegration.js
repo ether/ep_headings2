@@ -168,7 +168,8 @@ describe('ep_script_elements - remove selection ep_script_scene_marks integratio
       });
 
       it('removes the scene marks of this heading and removes the rest selected', function(done){
-        utils.validateLineTextAndType(0, 'shot', 'shot');
+        utils.validateLineTextAndType(7, 'shot', 'shot');
+        utils.validateLineTextAndType(8, 'action', 'action');
         done();
       });
 

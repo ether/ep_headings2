@@ -137,10 +137,6 @@ var preventCharacterKeysAndEnterOnSelectionMultiLine = function(context){
   });
 }
 
-var synchronizeEditorWithUserSelection = function(editorInfo) {
-  editorInfo.ace_fastIncorp();
-}
-
 var isCaretStartPositionInAScriptElement = function(rep){
   var firstLineOfSelection = rep.selStart[0];
   var lineIsScriptElement = utils.lineIsScriptElement(firstLineOfSelection);
