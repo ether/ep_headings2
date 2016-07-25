@@ -364,7 +364,7 @@ describe("ep_script_elements - merge lines", function(){
 
     beforeEach(function(cb){
       utils.cleanPad(function(){
-        ep_script_elements_test_helper.mergeLines.createScriptWithHeadingAndSceneMark(cb);
+        ep_script_elements_test_helper.mergeLines.createScriptWithHeadingAndSceneMark("heading", cb);
       });
     });
 
@@ -396,10 +396,38 @@ describe("ep_script_elements - merge lines", function(){
 
   });
 
+  context("when element is an empty heading with scene mark", function(){
+
+    beforeEach(function(cb){
+      utils.cleanPad(function(){
+        ep_script_elements_test_helper.mergeLines.createScriptWithHeadingAndSceneMark(" ", cb);
+      });
+    });
+
+    context("and it presses backspace in the beginning of heading line", function(){
+
+      beforeEach(function(cb){
+        utils.placeCaretAtTheEndOfLine(5, function(){
+          // the heading content is " ", so to make it empty we press backspace twice
+          utils.pressKey(BACKSPACE);
+          utils.pressKey(BACKSPACE);
+          cb();
+        });
+      });
+
+      it("removes the heading and scene marks", function(done){
+        utils.validateLineTextAndType(0, 'dialogue', 'dialogue');
+        utils.validateLineTextAndType(1, 'action', 'action');
+        done();
+      });
+
+    })
+
+  });
   context("when script element is followed by an empty scene marks", function(){
     beforeEach(function(cb){
       utils.cleanPad(function(){
-        ep_script_elements_test_helper.mergeLines.createScriptWithHeadingAndSceneMark(cb);
+        ep_script_elements_test_helper.mergeLines.createScriptWithHeadingAndSceneMark("heading", cb);
       });
     });
     context("and it presses delete at the end of line of the script element", function(){
@@ -713,14 +741,14 @@ ep_script_elements_test_helper.mergeLines = {
   },
   // we only create a heading, the rest is created automatically
   // we need to use an empty act, to test the merge of delete
-  createScriptWithHeadingAndSceneMark: function(cb){
+  createScriptWithHeadingAndSceneMark: function(headingText, cb){
     var utils = ep_script_elements_test_helper.utils;
     var sceneMarkUtils = ep_script_scene_marks_test_helper.utils;
 
     var dialogue = utils.dialogue("dialogue");
     var act      = sceneMarkUtils.emptyAct();
     var sequence = sceneMarkUtils.emptySequence();
-    var heading  = utils.heading("Heading");
+    var heading  = utils.heading(headingText);
     var action   = utils.action("action");
     var script   = dialogue + act + sequence + heading + action;
 
