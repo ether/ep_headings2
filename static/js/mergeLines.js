@@ -52,7 +52,7 @@ var handleBackspace = function(context) {
   var previousLine = currentLine - 1;
 
   var currentLineIsEmpty = lineIsEmpty(currentLine, rep, attributeManager);
-  var currentLineHasDifferentTypeOfPreviousLine = thisLineTypeIsDifferentFromPreviousLine(currentLine, attributeManager);
+  var currentLineHasDifferentTypeOfPreviousLine = thisLineTypeIsDifferentFromPreviousLine(currentLine);
 
   var previousLineisASceneMark = sceneMarkUtils.lineNumberContainsSceneMark(previousLine);
 
@@ -96,7 +96,7 @@ var handleDelete = function(context) {
   var currentLine = rep.selStart[0];
   var nextLine    = currentLine + 1;
 
-  var currentLineHasDifferentTypeOfNextLine = thisLineTypeIsDifferentFromPreviousLine(nextLine, attributeManager);
+  var currentLineHasDifferentTypeOfNextLine = thisLineTypeIsDifferentFromPreviousLine(nextLine);
 
   if (currentLineHasDifferentTypeOfNextLine) {
     var currentLineIsEmpty  = lineIsEmpty(currentLine, rep, attributeManager);
@@ -329,15 +329,21 @@ var lineIsEmpty = function(line, rep, attributeManager){
   return emptyLine;
 }
 
-var thisLineTypeIsDifferentFromPreviousLine = function(line, attributeManager) {
-  var linesHasNotSameElement = false;
+var thisLineTypeIsDifferentFromPreviousLine = function(line) {
   var lineBefore = line - 1;
-  var currentLineAttribute = attributeManager.getAttributeOnLine(line, "script_element");
-  var previousLineAttribute = attributeManager.getAttributeOnLine(lineBefore , "script_element");
-  if (currentLineAttribute !== previousLineAttribute){
-    linesHasNotSameElement = true;
-  }
-  return linesHasNotSameElement;
+  var $currentLine = getLineFromLineNumber(line);
+  var $lineBefore = getLineFromLineNumber(lineBefore);
+
+  var currentLineAttribute = utils.typeOf($currentLine);
+  var previousLineAttribute = utils.typeOf($lineBefore);
+
+  return currentLineAttribute !== previousLineAttribute;
+}
+
+var getLineFromLineNumber = function(lineNumber){
+  var $lines = utils.getPadInner().find("div");
+  var $line = $lines.slice(lineNumber, lineNumber + 1);
+  return $line;
 }
 
 var synchronizeEditorWithUserSelection = function(editorInfo) {
