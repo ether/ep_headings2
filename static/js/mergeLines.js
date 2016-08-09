@@ -58,7 +58,7 @@ var handleBackspace = function(context) {
 
   if (currentLineIsEmpty && previousLineisASceneMark){
     // we removed the heading so we have to remove the SM
-    emitEventHeadingHasChanged(currentLine);
+    sceneMarkUtils.emitEventHeadingWasRemoved(currentLine);
   } else if (!currentLineIsEmpty && currentLineHasDifferentTypeOfPreviousLine) {
     // we only block merge if user is not removing previous line
     // (pressing BACKSPACE on a non-empty line when previous line is empty).
@@ -78,12 +78,6 @@ var handleBackspace = function(context) {
   }
 
   return blockBackspace;
-}
-
-var emitEventHeadingHasChanged = function(line){
-  var $innerDocument = utils.getPadInner().find("#innerdocbody");
-
-  $innerDocument.trigger('headingHasChanged', line);
 }
 
 var handleDelete = function(context) {

@@ -41,7 +41,8 @@ exports.postAceInit = function(hook, context) {
         if (l10nLabel !== "ep_script_elements.heading") {
           ace.ace_removeSceneTagFromSelection();
           var currentLine = ace.ace_caretLine();
-          emitEventHeadingHasChanged(currentLine);
+          // This event is handled in the ep_script_scene_marks
+          sceneMarkUtils.emitEventHeadingWasRemoved(currentLine);
         }
         ace.ace_doInsertScriptElement(intValue);
         ace.ace_updateDropdownWithValueChosen();
@@ -50,13 +51,6 @@ exports.postAceInit = function(hook, context) {
     }
   })
 };
-
-// This event is handled in the ep_script_scene_marks
-var emitEventHeadingHasChanged = function(line){
-  var $innerDocument = utils.getPadInner().find("#innerdocbody");
-
-  $innerDocument.trigger('headingHasChanged', line);
-}
 
 function updateDropdownWithValueChosen() {
   var context = this;
