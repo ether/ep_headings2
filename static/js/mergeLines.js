@@ -223,6 +223,7 @@ var processTextSelected = function(context){
   placeCaretOnLine(editorInfo, beginningOfSelectionPosition);
   return true;
 }
+exports.processTextSelected = processTextSelected;
 
 var isFirstLineSeletedAHeadingWithSM = function(attributeManager, rep){
   var firstLineSelected = rep.selStart[0];

@@ -10,6 +10,7 @@ var shortcuts      = require('./shortcuts');
 var mergeLines     = require('./mergeLines');
 var undoPagination = require('./undoPagination');
 var fixSmallZooms  = require('./fixSmallZooms');
+var cutEvents      = require('./cutEvents');
 
 var ENTER          = 13;
 var cssFiles       = ['ep_script_elements/static/css/editor.css'];
@@ -26,6 +27,7 @@ exports.postAceInit = function(hook, context) {
   // prevent keys insert text and enter
   preventCharacterKeysAndEnterOnSelectionMultiLine(context);
   fixSmallZooms.init();
+  cutEvents.init(context);
 
   var script_element_selection = $('#script_element-selection');
   script_element_selection.on('change', function() {
@@ -305,6 +307,7 @@ exports.aceInitialized = function(hook, context) {
   editorInfo.ace_removeSceneTagFromSelection = _(removeSceneTagFromSelection).bind(context);
   editorInfo.ace_doInsertScriptElement = _(doInsertScriptElement).bind(context);
   editorInfo.ace_updateDropdownWithValueChosen = _(updateDropdownWithValueChosen).bind(context);
+  editorInfo.ace_cutEventsHandleCutOnScriptElements = _(cutEvents.handleCutOnScriptElements).bind(context);
 }
 
 exports.aceEditorCSS = function() {
