@@ -3,11 +3,8 @@ var DELETE = 46;
 
 describe("ep_script_elements - merge lines", function(){
   var utils, helperFunctions;
-  var offsetAtFirstElement = 0;
-  var offsetLastLineSelection = 0;
 
-  //create a new pad before each test run
-  beforeEach(function(cb){
+  before(function(cb){
     utils = ep_script_elements_test_helper.utils;
     helperFunctions = ep_script_elements_test_helper.mergeLines;
     helper.newPad(function() {
@@ -107,189 +104,115 @@ describe("ep_script_elements - merge lines", function(){
     });
 
     context("and element line is empty", function(){
+      var ORIGINAL_NUMBER_OF_LINES = 3;
+      var TARGET_LINE = 1;
 
-      beforeEach(function (cb) {
-        var inner$ = helper.padInner$;
+      var TEXT_OF_LINE_BEFORE_TARGET = 'First Line!';
+      var TEXT_OF_TARGET_LINE        = '';
+      var TEXT_OF_LINE_AFTER_TARGET  = 'Third Line!';
 
-        // remove content from second line
-        var $secondLine = utils.getLine(1).find("action");
-        $secondLine.html("<br/>");
-        helper.waitFor(function(){
-          var $secondLine = inner$("div").first().next();
-          return $secondLine.text() === "";
-        }).done(cb);
-      });
+      var TYPE_OF_LINE_BEFORE_TARGET = 'shot';
+      var TYPE_OF_TARGET_LINE        = 'action';
+      var TYPE_OF_LINE_AFTER_TARGET  = 'parenthetical';
 
-      context("and user presses backspace in the beginning of this line", function(){
-        beforeEach(function(cb) {
-          utils.placeCaretInTheBeginningOfLine(1, function(){
-            utils.pressKey(BACKSPACE);
-            cb();
-          });
-        });
+      var lineIsRemoved = function() {
+        var $lines = helper.padInner$("div");
+        return $lines.length === (ORIGINAL_NUMBER_OF_LINES - 1);
+      }
+      var lineIsBackToScript = function() {
+        var $lines = helper.padInner$("div");
+        return $lines.length === ORIGINAL_NUMBER_OF_LINES;
+      }
 
-        it("erases the empty line and keeps original line types", function(done){
-          var inner$ = helper.padInner$;
-
-          helper.waitFor(function(){
-            var $secondLine = inner$("div").first().next();
-            return $secondLine.text() === "Third Line!";
+      var testItRemovesTheEmptyLineAndKeepOriginalLineTypes = function() {
+        it("removes the empty line and keeps original line types", function(done){
+          helper.waitFor(function() {
+            return lineIsRemoved();
           }).done(function() {
-            var $originalFirstLine = inner$("div").first();
-            var keptTypeOfFirstLine = $originalFirstLine.find("shot").length > 0;
-            expect(keptTypeOfFirstLine).to.be(true);
-
-            var $originalThirdLine = inner$("div").first().next();
-            var keptTypeOfThirdLine = $originalThirdLine.find("parenthetical").length > 0;
-            expect(keptTypeOfThirdLine).to.be(true);
+            utils.validateLineTextAndType(TARGET_LINE - 1, TEXT_OF_LINE_BEFORE_TARGET, TYPE_OF_LINE_BEFORE_TARGET);
+            // TARGET_LINE was removed
+            utils.validateLineTextAndType(TARGET_LINE, TEXT_OF_LINE_AFTER_TARGET, TYPE_OF_LINE_AFTER_TARGET);
 
             done();
           });
         });
+      }
 
-      });
-
-      context("and user presses backspace in the beginning of next line", function(){
-        beforeEach(function(cb) {
-          utils.placeCaretInTheBeginningOfLine(2, function(){
-            utils.pressKey(BACKSPACE);
-            cb();
-          });
-        });
-
-        it("erases the empty line and keeps original line types", function(done){
-          var inner$ = helper.padInner$;
-
-          helper.waitFor(function(){
-            var $secondLine = inner$("div").first().next();
-            return $secondLine.text() === "Third Line!";
-          }).done(function() {
-            var $originalFirstLine = inner$("div").first();
-            var keptTypeOfFirstLine = $originalFirstLine.find("shot").length > 0;
-            expect(keptTypeOfFirstLine).to.be(true);
-
-            var $originalThirdLine = inner$("div").first().next();
-            var keptTypeOfThirdLine = $originalThirdLine.find("parenthetical").length > 0;
-            expect(keptTypeOfThirdLine).to.be(true);
-
-            done();
-          });
-        });
-
+      var testUndoAddsEmptyLineBackAndKeepOriginalLineTypes = function() {
         context("then user presses UNDO", function(){
-          beforeEach(function(cb) {
-            var chrome$ = helper.padChrome$;
-            var inner$ = helper.padInner$;
-
-            helper.waitFor(function(){
-              var $secondLine = inner$("div").first().next();
-              return $secondLine.text() === "Third Line!";
-            }).done(function() {
-              var $undoButton = chrome$(".buttonicon-undo");
-              $undoButton.click();
-
-              cb();
-            });
+          before(function(done) {
+            // wait some time, so changes are saved before undoing
+            setTimeout(function() {
+              utils.undo();
+              done();
+            }, 1000);
           });
 
           it("moves line down again and keeps original line types", function(done){
-            var inner$ = helper.padInner$;
-
-            // wait for line to be moved down again
-            helper.waitFor(function(){
-              var $thirdLine = inner$("div").first().next().next();
-              return $thirdLine.text() === "Third Line!";
+            helper.waitFor(function() {
+              return lineIsBackToScript();
             }).done(function() {
-              var $originalFirstLine = inner$("div").first();
-              var keptTypeOfFirstLine = $originalFirstLine.find("shot").length > 0;
-              expect(keptTypeOfFirstLine).to.be(true);
-
-              var $originalSecondLine = inner$("div").first().next();
-              var keptTypeOfSecondLine = $originalSecondLine.find("action").length > 0;
-              expect(keptTypeOfSecondLine).to.be(true);
-
-              var $originalThirdLine = inner$("div").first().next().next();
-              var keptTypeOfThirdLine = $originalThirdLine.find("parenthetical").length > 0;
-              expect(keptTypeOfThirdLine).to.be(true);
+              utils.validateLineTextAndType(TARGET_LINE - 1, TEXT_OF_LINE_BEFORE_TARGET, TYPE_OF_LINE_BEFORE_TARGET);
+              utils.validateLineTextAndType(TARGET_LINE    , TEXT_OF_TARGET_LINE       , TYPE_OF_TARGET_LINE);
+              utils.validateLineTextAndType(TARGET_LINE + 1, TEXT_OF_LINE_AFTER_TARGET , TYPE_OF_LINE_AFTER_TARGET);
 
               done();
             });
           });
         });
+      }
+
+      before(function (done) {
+        // remove content from target line
+        var $targetLine = utils.getLine(TARGET_LINE).find("action");
+        $targetLine.sendkeys('{selectall}');
+        utils.pressKey(BACKSPACE);
+        done();
+      });
+      after(function(done) {
+        // make sure script is back to original state after finishing testing this context
+        ep_script_elements_test_helper.mergeLines.createScriptWithThreeDifferentElements(done);
       });
 
-      context("and user presses delete at the end of the previous line", function(){
-        beforeEach(function(cb) {
-          utils.placeCaretAtTheEndOfLine(0, function(){
+      context("and user presses backspace in the beginning of empty line", function(){
+        before(function(cb) {
+          utils.placeCaretInTheBeginningOfLine(TARGET_LINE, function(){
+            utils.pressKey(BACKSPACE);
+            cb();
+          });
+        });
+
+        testItRemovesTheEmptyLineAndKeepOriginalLineTypes();
+        testUndoAddsEmptyLineBackAndKeepOriginalLineTypes();
+      });
+
+      context("and user presses backspace in the beginning of line after empty line", function(){
+        before(function(cb) {
+          utils.placeCaretInTheBeginningOfLine(TARGET_LINE + 1, function(){
+            utils.pressKey(BACKSPACE);
+            cb();
+          });
+        });
+
+        testItRemovesTheEmptyLineAndKeepOriginalLineTypes();
+        testUndoAddsEmptyLineBackAndKeepOriginalLineTypes();
+      });
+
+      context("and user presses delete at the end of the line before empty line", function(){
+        before(function(cb) {
+          utils.placeCaretAtTheEndOfLine(TARGET_LINE - 1, function(){
             utils.pressKey(DELETE);
             cb();
           });
         });
 
-        it("erases the empty line and keeps original line types", function(done){
-          var inner$ = helper.padInner$;
-
-          helper.waitFor(function(){
-            var $secondLine = inner$("div").first().next();
-            return $secondLine.text() === "Third Line!";
-          }).done(function() {
-            var $originalFirstLine = inner$("div").first();
-            var keptTypeOfFirstLine = $originalFirstLine.find("shot").length > 0;
-            expect(keptTypeOfFirstLine).to.be(true);
-
-            var $originalThirdLine = inner$("div").first().next();
-            var keptTypeOfThirdLine = $originalThirdLine.find("parenthetical").length > 0;
-            expect(keptTypeOfThirdLine).to.be(true);
-
-            done();
-          });
-        });
-
-        context("then user presses UNDO", function(){
-          beforeEach(function(cb) {
-            var chrome$ = helper.padChrome$;
-            var inner$ = helper.padInner$;
-
-            helper.waitFor(function(){
-              var $secondLine = inner$("div").first().next();
-              return $secondLine.text() === "Third Line!";
-            }).done(function() {
-              var $undoButton = chrome$(".buttonicon-undo");
-              $undoButton.click();
-
-              cb();
-            });
-          });
-
-          it("moves line down again and keeps original line types", function(done){
-            var inner$ = helper.padInner$;
-
-            // wait for line to be moved down again
-            helper.waitFor(function(){
-              var $thirdLine = inner$("div").first().next().next();
-              return $thirdLine.text() === "Third Line!";
-            }).done(function() {
-              var $originalFirstLine = inner$("div").first();
-              var keptTypeOfFirstLine = $originalFirstLine.find("shot").length > 0;
-              expect(keptTypeOfFirstLine).to.be(true);
-
-              var $originalSecondLine = inner$("div").first().next();
-              var keptTypeOfSecondLine = $originalSecondLine.find("action").length > 0;
-              expect(keptTypeOfSecondLine).to.be(true);
-
-              var $originalThirdLine = inner$("div").first().next().next();
-              var keptTypeOfThirdLine = $originalThirdLine.find("parenthetical").length > 0;
-              expect(keptTypeOfThirdLine).to.be(true);
-
-              done();
-            });
-          });
-        });
+        testItRemovesTheEmptyLineAndKeepOriginalLineTypes();
+        testUndoAddsEmptyLineBackAndKeepOriginalLineTypes();
       });
 
-      context("and user presses delete at the end of the this line", function(){
-        beforeEach(function(cb) {
-          utils.placeCaretAtTheEndOfLine(1, function(){
+      context("and user presses delete at the end of the empty line", function(){
+        before(function(cb) {
+          utils.placeCaretAtTheEndOfLine(TARGET_LINE, function(){
             // apparently first DELETE is ignored
             utils.pressKey(DELETE);
             utils.pressKey(DELETE);
@@ -297,191 +220,55 @@ describe("ep_script_elements - merge lines", function(){
           });
         });
 
-        it("erases the empty line and keeps original line types", function(done){
-          var inner$ = helper.padInner$;
+        testItRemovesTheEmptyLineAndKeepOriginalLineTypes();
+        testUndoAddsEmptyLineBackAndKeepOriginalLineTypes();
+      });
+    });
+  });
 
-          helper.waitFor(function(){
-            var $secondLine = inner$("div").first().next();
-            return $secondLine.text() === "Third Line!";
-          }).done(function() {
-            var $originalFirstLine = inner$("div").first();
-            var keptTypeOfFirstLine = $originalFirstLine.find("shot").length > 0;
-            expect(keptTypeOfFirstLine).to.be(true);
-
-            var $originalThirdLine = inner$("div").first().next();
-            var keptTypeOfThirdLine = $originalThirdLine.find("parenthetical").length > 0;
-            expect(keptTypeOfThirdLine).to.be(true);
-
+  context("when user presses BACKSPACE and there is a selection", function(){
+    var testItRestoresOriginalTextsAndTypesOnUndo = function() {
+      context("and user performs undo", function(){
+        beforeEach(function(done){
+          // we have to wait a little to save the changes
+          setTimeout(function() {
+            utils.undo();
             done();
-          });
+          }, 1000);
         });
 
-        context("then user presses UNDO", function(){
-          beforeEach(function(cb) {
-            var chrome$ = helper.padChrome$;
-            var inner$ = helper.padInner$;
-
-            helper.waitFor(function(){
-              var $secondLine = inner$("div").first().next();
-              return $secondLine.text() === "Third Line!";
-            }).done(function() {
-              var $undoButton = chrome$(".buttonicon-undo");
-              $undoButton.click();
-
-              cb();
-            });
-          });
-
-          it("moves line down again and keeps original line types", function(done){
-            var inner$ = helper.padInner$;
-
-            // wait for line to be moved down again
-            helper.waitFor(function(){
-              var $thirdLine = inner$("div").first().next().next();
-              return $thirdLine.text() === "Third Line!";
-            }).done(function() {
-              var $originalFirstLine = inner$("div").first();
-              var keptTypeOfFirstLine = $originalFirstLine.find("shot").length > 0;
-              expect(keptTypeOfFirstLine).to.be(true);
-
-              var $originalSecondLine = inner$("div").first().next();
-              var keptTypeOfSecondLine = $originalSecondLine.find("action").length > 0;
-              expect(keptTypeOfSecondLine).to.be(true);
-
-              var $originalThirdLine = inner$("div").first().next().next();
-              var keptTypeOfThirdLine = $originalThirdLine.find("parenthetical").length > 0;
-              expect(keptTypeOfThirdLine).to.be(true);
-
-              done();
-            });
-          });
+        it("restores the original text and types", function(done){
+          helperFunctions.checkIfItHasTheOriginalText(done);
         });
       });
-    });
-  });
+    }
 
-  context("when element is a heading preceded by a sequence summary empty", function(){
+    var selectLines = function(offsetAtFirstElement, offsetLastLineSelection) {
+      // make the selection
+      var inner$ = helper.padInner$;
+      var $firstElement = inner$('div:has(shot)').first();
+      var $lastElement = $firstElement.nextUntil('div:has(parenthetical)').next();
 
-    beforeEach(function(cb){
-      utils.cleanPad(function(){
-        ep_script_elements_test_helper.mergeLines.createScriptWithHeadingAndSceneMark("heading", cb);
-      });
-    });
+      var lastLineLength = $lastElement.text().length;
+      var offsetAtlastElement = lastLineLength - offsetLastLineSelection;
 
-    context("and it presses backspace in the beginning of heading line", function(){
+      helper.selectLines($firstElement, $lastElement, offsetAtFirstElement, offsetAtlastElement);
+    }
+    var deleteSelection = function() {
+      utils.pressKey(BACKSPACE);
+    }
 
-      beforeEach(function(cb){
-        utils.placeCaretInTheBeginningOfLine(5, function(){
-          utils.pressKey(BACKSPACE);
-          cb();
-        });
-      });
-
-      // it doesn't test if it has a heading because, it can go to inside the upper tag
-      it("does nothing", function(done){
-
-        setTimeout(function() {
-          var inner$ = helper.padInner$;
-          var linesLength = inner$("div").length;
-          var sequenceSummaryText = inner$("sequence_summary").text();
-
-          expect(linesLength).to.be(7);
-          expect(utils.cleanText(sequenceSummaryText)).to.be(" ");
-
-          done();
-        }, 1000);
-      });
-
-    })
-
-  });
-
-  context("when element is an empty heading with scene mark", function(){
-
-    beforeEach(function(cb){
-      utils.cleanPad(function(){
-        ep_script_elements_test_helper.mergeLines.createScriptWithHeadingAndSceneMark(" ", cb);
-      });
-    });
-
-    context("and it presses backspace in the beginning of heading line", function(){
-
-      beforeEach(function(cb){
-        utils.placeCaretAtTheEndOfLine(5, function(){
-          // the heading content is " ", so to make it empty we press backspace twice
-          utils.pressKey(BACKSPACE);
-          utils.pressKey(BACKSPACE);
-          cb();
-        });
-      });
-
-      it("removes the heading and scene marks", function(done){
-        utils.validateLineTextAndType(0, 'dialogue', 'dialogue');
-        utils.validateLineTextAndType(1, 'action', 'action');
-        done();
-      });
-
-    })
-
-  });
-  context("when script element is followed by an empty scene marks", function(){
-    beforeEach(function(cb){
-      utils.cleanPad(function(){
-        ep_script_elements_test_helper.mergeLines.createScriptWithHeadingAndSceneMark("heading", cb);
-      });
-    });
-    context("and it presses delete at the end of line of the script element", function(){
-      beforeEach(function(cb){
-        utils.placeCaretAtTheEndOfLine(0, function(){
-          utils.pressKey(DELETE);
-          cb();
-        });
-      });
-
-      it("does nothing", function(done){
-        this.timeout(5000);
-        setTimeout(function() {
-          var inner$ = helper.padInner$;
-          var hasActName         = inner$("act_name").length !== 0;
-          var hasActSummary      = inner$("act_summary").length !== 0;
-          var hasSequenceName    = inner$("sequence_name").length !== 0;
-          var hasSequenceSummary = inner$("sequence_summary").length !== 0;
-
-          expect(hasActName).to.be(true);
-          expect(hasActSummary).to.be(true);
-          expect(hasSequenceName).to.be(true);
-          expect(hasSequenceSummary).to.be(true);
-          done();
-          // we have to wait 3s to avoid false positives
-        }, 3000);
-      });
-    });
-  });
-
-  context("when there is a selection", function(){
-    context("and it is wrapping more than one line", function(){
-
-      beforeEach(function(done){
-        // make the selection
-        var inner$ = helper.padInner$;
-        var $firstElement = inner$('div:has(shot)').first();
-        var $lastElement = $firstElement.nextUntil('div:has(parenthetical)').next();
-        var lastLineLength = $lastElement.text().length;
-        var offsetAtlastElement = lastLineLength - offsetLastLineSelection;
-        helper.selectLines($firstElement, $lastElement, offsetAtFirstElement, offsetAtlastElement);
-
-        // remove the text
-        utils.pressKey(BACKSPACE);
-        done();
-      });
+    context("and selection is wrapping more than one line", function(){
 
       context("and the first and last line of selection are partially selected and user removes selection", function(){
 
-        before(function(){
-          offsetAtFirstElement = 3;
-          offsetLastLineSelection = 8;
+        before(function(done) {
+          var offsetAtFirstElement = 3;
+          var offsetLastLineSelection = 8;
+          selectLines(offsetAtFirstElement, offsetLastLineSelection);
+          deleteSelection();
+          done();
         });
-
 
         it("removes the lines between", function(done){
           helperFunctions.checkNumberOfLine(2);
@@ -507,26 +294,17 @@ describe("ep_script_elements - merge lines", function(){
           }).done(done);
         });
 
-        context("and user performs undo", function(){
-          beforeEach(function(done){
-            // we have to wait a little to save the changes
-            setTimeout(function() {
-              utils.undo();
-              done();
-            }, 1000);
-          });
-
-          it("keeps the original text and types", function(done){
-            helperFunctions.checkIfItHasTheOriginalText(done);
-          });
-        });
+        testItRestoresOriginalTextsAndTypesOnUndo();
       });
 
       context("and first line of selection is completely selected and last one is partially selected and user removes selection", function(){
 
-        before(function(){
-          offsetAtFirstElement = 0;
-          offsetLastLineSelection = 8;
+        before(function(done) {
+          var offsetAtFirstElement = 0;
+          var offsetLastLineSelection = 8;
+          selectLines(offsetAtFirstElement, offsetLastLineSelection);
+          deleteSelection();
+          done();
         });
 
         it("removes the lines", function(done){
@@ -541,25 +319,16 @@ describe("ep_script_elements - merge lines", function(){
           done();
         });
 
-        context("and user performs undo", function(){
-          beforeEach(function(done){
-            // we have to wait a little to save the changes
-            setTimeout(function() {
-              utils.undo();
-              done();
-            }, 1000);
-          });
-
-          it("keeps the original text and types", function(done){
-            helperFunctions.checkIfItHasTheOriginalText(done);
-          });
-        });
+        testItRestoresOriginalTextsAndTypesOnUndo();
       });
 
       context("and first line of selection is partially selected and last one is completely selected and user removes selection", function(){
-        before(function(){
-          offsetAtFirstElement = 3;
-          offsetLastLineSelection = 0;
+        before(function(done){
+          var offsetAtFirstElement = 3;
+          var offsetLastLineSelection = 0;
+          selectLines(offsetAtFirstElement, offsetLastLineSelection);
+          deleteSelection();
+          done();
         });
 
         it("removes the lines", function(done){
@@ -574,25 +343,17 @@ describe("ep_script_elements - merge lines", function(){
           done();
         });
 
-        context("and user performs undo", function(){
-          beforeEach(function(done){
-            // we have to wait a little to save the changes
-            setTimeout(function() {
-              utils.undo();
-              done();
-            }, 1000);
-          });
-
-          it("keeps the original text and types", function(done){
-            helperFunctions.checkIfItHasTheOriginalText(done);
-          });
-        });
+        testItRestoresOriginalTextsAndTypesOnUndo();
       });
 
       context("and first and last line is completely selected", function(){
 
-        before(function(){
-          offsetAtFirstElement = 0;
+        before(function(done){
+          var offsetAtFirstElement = 0;
+          var offsetLastLineSelection = 0;
+          selectLines(offsetAtFirstElement, offsetLastLineSelection);
+          deleteSelection();
+          done();
         });
 
         it("removes the lines between", function(done){
@@ -607,27 +368,13 @@ describe("ep_script_elements - merge lines", function(){
           done();
         });
 
-        context("and user performs undo", function(){
-          beforeEach(function(done){
-            // we have to wait a little to save the changes
-            setTimeout(function() {
-              utils.undo();
-              done();
-            }, 1000);
-          });
-
-          it("keeps the original text and types", function(done){
-            helperFunctions.checkIfItHasTheOriginalText(done);
-          });
-        });
+        testItRestoresOriginalTextsAndTypesOnUndo();
 
       });
     });
 
-    context("and line is selected until the line break and user removes selection", function(){
-
-      beforeEach(function(done){
-        // make the selection
+    context("and line is selected until the line break", function(){
+      var selectLines = function() {
         var inner$ = helper.padInner$;
 
         var $firstElement = inner$('div:has(shot)').first();
@@ -638,79 +385,61 @@ describe("ep_script_elements - merge lines", function(){
 
         // make the selection
         helper.selectLines($firstElement, $lastElement, offsetAtFirstElement, offsetAtlastElement);
+      }
+
+      before(function(done){
+        selectLines();
+        deleteSelection();
         done();
       });
 
-      context("and user removes selection", function(){
-        beforeEach(function(done){
-          // remove the text
-          utils.pressKey(BACKSPACE);
-          done();
-        });
-
-        it("removes only the line selected", function(done){
-          var firstElementText = "Second Line!";
-          var secondElementText = "Third Line!";
-          var firstElement = "action";
-          var secondElement = "parenthetical";
-          utils.validateLineTextAndType(0, firstElementText, firstElement);
-          utils.validateLineTextAndType(1, secondElementText, secondElement);
-          done();
-        });
-
-        context("and user performs undo", function(){
-          beforeEach(function(done){
-            // we have to wait a little to save the changes
-            setTimeout(function() {
-              utils.undo();
-              done();
-            }, 1000);
-          });
-
-          it("keeps the original text and types", function(done){
-            helperFunctions.checkIfItHasTheOriginalText(done);
-          });
-        });
+      it("removes only the line selected", function(done){
+        var firstElementText = "Second Line!";
+        var secondElementText = "Third Line!";
+        var firstElement = "action";
+        var secondElement = "parenthetical";
+        utils.validateLineTextAndType(0, firstElementText, firstElement);
+        utils.validateLineTextAndType(1, secondElementText, secondElement);
+        done();
       });
+
+      testItRestoresOriginalTextsAndTypesOnUndo();
     });
 
-    context("and it has the same element in the boundaries", function(){
-      beforeEach(function(done){
+    context("and selection has the same element on both edges", function(){
+      var selectLines = function() {
+        var inner$ = helper.padInner$;
+
+        var $firstElement = inner$('div:has(shot)').first();
+        var $lastElement = inner$('div:has(shot)').last();
+
+        var offsetAtFirstElement = 2;
+        var offsetAtlastElement = 8;
+
+        // make the selection
+        helper.selectLines($firstElement, $lastElement, offsetAtFirstElement, offsetAtlastElement);
+      }
+
+      before(function(done){
         utils.cleanPad(function(){
           helperFunctions.createScriptWithFirstAndLastElementEqual(function(){
-            // make the selection
-            var inner$ = helper.padInner$;
-
-            var $firstElement = inner$('div:has(shot)').first();
-            var $lastElement = inner$('div:has(shot)').last();
-
-            var offsetAtFirstElement = 2;
-            var offsetAtlastElement = 8;
-
-            // make the selection
-            helper.selectLines($firstElement, $lastElement, offsetAtFirstElement, offsetAtlastElement);
+            selectLines();
+            deleteSelection();
             done();
           });
         });
       });
-      context("and user deletes the selection", function(){
 
-        beforeEach(function(cb){
-          utils.pressKey(BACKSPACE);
-          cb();
-        });
+      it("removes the lines between", function(done){
+        helperFunctions.checkNumberOfLine(1);
+        done();
+      });
 
-        it("removes the lines between", function(done){
-          helperFunctions.checkNumberOfLine(1);
-          done();
-        });
-
-        it("join the lines", function(done){
-          var textOfLine = "Fine!";
-          var element = "shot";
-          utils.validateLineTextAndType(0, textOfLine, element);
-          done();
-        });
+      it("join the lines", function(done){
+        var textOfLine = "Fine!";
+        var element = "shot";
+        utils.validateLineTextAndType(0, textOfLine, element);
+        done();
       });
     });
   });
@@ -737,10 +466,11 @@ ep_script_elements_test_helper.mergeLines = {
     var parenthetical = utils.parenthetical("Third Line!");
     var script        = shot + action + parenthetical;
 
-    utils.createScriptWith(script, "Third Line!", cb);
+    utils.cleanPad(function() {
+      utils.createScriptWith(script, "Third Line!", cb);
+    });
   },
   // we only create a heading, the rest is created automatically
-  // we need to use an empty act, to test the merge of delete
   createScriptWithHeadingAndSceneMark: function(headingText, cb){
     var utils = ep_script_elements_test_helper.utils;
     var sceneMarkUtils = ep_script_scene_marks_test_helper.utils;
