@@ -223,4 +223,13 @@ ep_script_elements_test_helper.utils = {
       expect().fail(function() { return failureMessage });
     }
   },
+  // first  - position = 0
+  // second - position = 1
+  getLineNumberOfElement: function(element, position){
+    var inner$ = helper.padInner$;
+    var $allDivs = inner$('div');
+    var $element = inner$(element).slice(position, position + 1);
+    var $elementDiv = $element.closest('div').get(0);
+    return _.indexOf($allDivs, $elementDiv);
+  },
 };

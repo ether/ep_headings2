@@ -5,9 +5,11 @@
 var GENERALS_PER_PAGE = 58;
 
 describe("ep_script_elements - dropdown", function(){
-  var utils;
+  var utils, SMUtils, helperFunctions;
   before(function(){
     utils = ep_script_elements_test_helper.utils;
+    helperFunctions = ep_script_elements_test_helper.dropdown;
+    SMUtils = ep_script_scene_marks_test_helper.utils;
   });
 
   //create a new pad before each test run
@@ -142,19 +144,13 @@ describe("ep_script_elements - dropdown", function(){
   });
 
   context("when caret is in a scene mark", function(){
-    var utils;
-
-    before(function() {
-      utils = ep_script_scene_marks_test_helper.utils;
-    });
-
     beforeEach(function(cb) {
       var actLines = [0]; // creates act and sequence in the 1st heading
       var seqLines = [];
       var numOfHeadings = 1;
       helper.newPad(function(){
-        utils.writeScenesWithSceneMarks(actLines, seqLines, numOfHeadings, function(){
-          utils.clickOnSceneMarkButtonOfLine(4);
+        SMUtils.writeScenesWithSceneMarks(actLines, seqLines, numOfHeadings, function(){
+          SMUtils.clickOnSceneMarkButtonOfLine(4);
           cb();
         });
       });
@@ -196,4 +192,67 @@ describe("ep_script_elements - dropdown", function(){
       });
     });
   });
+
+  context("when has a selection begins in a SE and includes a SM", function(){
+    // create a pad beginning with a SE
+    beforeEach(function(done){
+      helperFunctions.createPadWithSEandSM(function(){
+        // make SM visible
+        var firstHeadingLineNumber = utils.getLineNumberOfElement('heading', 0);
+        SMUtils.clickOnSceneMarkButtonOfLine(firstHeadingLineNumber);
+        var inner$ = helper.padInner$;
+
+        // selects since the first line
+        var $firstElement = inner$("div").first();
+        var $lastElement = inner$('div:has(sequence_summary)').last();
+        var lastLineLength = $lastElement.text().length;
+        var offsetAtFirstElement = 0;
+        var offsetAtlastElement = lastLineLength;
+
+        // make the selection
+        helper.selectLines($firstElement, $lastElement, offsetAtFirstElement, offsetAtlastElement);
+        done();
+      });
+      this.timeout(6000);
+    });
+    context("and user changes the element on dropdown", function(){
+      it("does not add SE attribute on SM", function(done){
+        utils.changeToElement(utils.ACTION);
+
+        // the general changes to an action
+        utils.validateLineTextAndType(0, "general", "action");
+
+        // SM should not include SM tag inside
+        helperFunctions.checkIfHasTagOnLines(1, 4, "action");
+        done();
+      });
+
+    });
+  });
 });
+
+var ep_script_elements_test_helper = ep_script_elements_test_helper || {};
+ep_script_elements_test_helper.dropdown = {
+  createPadWithSEandSM: function(done){
+    var utils = ep_script_elements_test_helper.utils;
+    var SMUtils = ep_script_scene_marks_test_helper.utils;
+
+    var general = utils.general("general");
+    var sceneText = "scene";
+    var act = SMUtils.act(sceneText);
+    var sequence = SMUtils.sequence(sceneText);
+    var lastLineText = "heading";
+    var heading = utils.heading(lastLineText);
+
+    var script = general + act + sequence + heading;
+    utils.createScriptWith(script, lastLineText, done);
+  },
+  // interval = 1, only one line
+  // interval = 2, two lines
+  checkIfHasTagOnLines(lineStart, interval, tag){
+    var inner$ = helper.padInner$;
+    var $lines = inner$("div").slice(lineStart, lineStart + interval);
+    var hasTagOnLines = $lines.find(tag).length !== 0;
+    expect(hasTagOnLines).to.be(false);
+  }
+}

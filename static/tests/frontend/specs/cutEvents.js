@@ -21,7 +21,7 @@ describe('ep_script_elements - cut events on multiline selected', function () {
 
     beforeEach(function(done){
       // make the scene marks visible
-      var firstHeadingLineNumber = helperFunctions.getLineNumberOfElement('heading', 0);
+      var firstHeadingLineNumber = utils.getLineNumberOfElement('heading', 0);
       SMutils.clickOnSceneMarkButtonOfLine(firstHeadingLineNumber);
 
       var inner$ = helper.padInner$;
@@ -102,7 +102,7 @@ describe('ep_script_elements - cut events on multiline selected', function () {
 
     beforeEach(function(done){
       // make the scene marks visible
-      var firstHeadingLineNumber = helperFunctions.getLineNumberOfElement('heading', 0);
+      var firstHeadingLineNumber = utils.getLineNumberOfElement('heading', 0);
       SMutils.clickOnSceneMarkButtonOfLine(firstHeadingLineNumber);
 
       var inner$ = helper.padInner$;
@@ -149,7 +149,7 @@ describe('ep_script_elements - cut events on multiline selected', function () {
 
     beforeEach(function(done){
       // make the scene marks visible
-      var firstHeadingLineNumber = helperFunctions.getLineNumberOfElement('heading', 0);
+      var firstHeadingLineNumber = utils.getLineNumberOfElement('heading', 0);
       SMutils.clickOnSceneMarkButtonOfLine(firstHeadingLineNumber);
 
       var inner$ = helper.padInner$;
@@ -213,15 +213,6 @@ ep_script_elements_test_helper.cutEvents = {
     var script = character + dialogue + secondCharacter + act + sequence + heading + action;
 
     utils.createScriptWith(script, lastLineText, cb)
-  },
-  // first  - position = 0
-  // second - position = 1
-  getLineNumberOfElement: function(element, position){
-    var inner$ = helper.padInner$;
-    var $allDivs = inner$('div');
-    var $element = inner$(element).slice(position, position + 1);
-    var $elementDiv = $element.closest('div').get(0);
-    return _.indexOf($allDivs, $elementDiv);
   },
   clickOnSceneMarkButtonOfLine: function(lineNumber){
     var utils = ep_script_scene_marks_test_helper.utils;

@@ -15,7 +15,7 @@ describe('ep_script_elements - remove selection ep_script_scene_marks integratio
   context('when selection begins in a script element and goes until a scene mark', function(){
     beforeEach(function(done) {
       // make the scene marks visible
-      var firstHeadingLineNumber = helperFunctions.getLineNumberOfElement('heading', 1);
+      var firstHeadingLineNumber = utils.getLineNumberOfElement('heading', 1);
       sceneMarkUtils.clickOnSceneMarkButtonOfLine(firstHeadingLineNumber);
 
       var inner$ = helper.padInner$;
@@ -62,7 +62,7 @@ describe('ep_script_elements - remove selection ep_script_scene_marks integratio
   context('when selection begins in a script element and goes until a heading with scene mark', function(){
     beforeEach(function(done) {
       // make the scene marks visible
-      var firstHeadingLineNumber = helperFunctions.getLineNumberOfElement('heading', 1);
+      var firstHeadingLineNumber = utils.getLineNumberOfElement('heading', 1);
       sceneMarkUtils.clickOnSceneMarkButtonOfLine(firstHeadingLineNumber);
 
       var inner$ = helper.padInner$;
@@ -192,15 +192,6 @@ describe('ep_script_elements - remove selection ep_script_scene_marks integratio
 
 var ep_script_elements_test_helper = ep_script_elements_test_helper || {};
 ep_script_elements_test_helper.removeSelectionSceneMarkIntegration = {
-  // first  - position = 0
-  // second - position = 1
-  getLineNumberOfElement: function(element, position){
-    var inner$ = helper.padInner$;
-    var $allDivs = inner$('div');
-    var $element = inner$(element).slice(position, position + 1);
-    var $elementDiv = $element.closest('div').get(0);
-    return _.indexOf($allDivs, $elementDiv);
-  },
   createScriptWithSEandSM: function(cb){
     var utils = ep_script_scene_marks_test_helper.utils;
     helper.newPad(function() {

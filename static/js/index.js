@@ -217,19 +217,11 @@ function doInsertScriptElement(level) {
   // if there's no text selected or type is unknown
   if (!(rep.selStart && rep.selEnd) || (level >= 0 && newValue === undefined)) return;
 
-  var currentLine     = rep.selStart[0];
-  var lineIsSceneMark = sceneMarkUtils.lineNumberContainsSceneMark(currentLine);
-
-  // do not apply when element is a scene mark
-  if (lineIsSceneMark) {
-    return;
-  }
-
   var firstLine = rep.selStart[0];
   var lastLine = getLastLine(firstLine, rep);
   var isRemovingAttribute = (level < 0);
 
-  var action = isRemovingAttribute ? removeAttribute : addAttribute;
+  var action = isRemovingAttribute ? removeAttribute : addAttributeIfElementIsNotSM;
 
   _(_.range(firstLine, lastLine + 1)).each(function(lineNumber) {
     action(lineNumber, attributeManager, newValue);
@@ -255,8 +247,11 @@ function lineIsSecondHalfOfSliptLine(lineNumber, attributeManager) {
   return attributeManager.getAttributeOnLine(lineNumber, "splitSecondHalf");
 }
 
-function addAttribute(lineNumber, attributeManager, value) {
-  attributeManager.setAttributeOnLine(lineNumber, 'script_element', value);
+function addAttributeIfElementIsNotSM(lineNumber, attributeManager, value) {
+  var lineIsSceneMark = sceneMarkUtils.lineNumberContainsSceneMark(lineNumber);
+  if(!lineIsSceneMark){
+    attributeManager.setAttributeOnLine(lineNumber, 'script_element', value);
+  }
 }
 
 function removeAttribute(lineNumber, attributeManager) {
