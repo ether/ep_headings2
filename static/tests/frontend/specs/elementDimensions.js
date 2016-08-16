@@ -16,37 +16,44 @@ describe("ep_script_elements - element dimensions", function(){
     it('displays actions with no top margin on first line, but with margin on the others', function(done) {
       var hasTopMarginOnOtherLines = true;
       dimensions.testElementHasNoTopMarginOnFirstLine(utils.action, 'action', hasTopMarginOnOtherLines, done);
+      this.timeout(10000);
     });
 
     it('displays characters with no top margin on first line, but with margin on the others', function(done) {
       var hasTopMarginOnOtherLines = true;
       dimensions.testElementHasNoTopMarginOnFirstLine(utils.character, 'character', hasTopMarginOnOtherLines, done);
+      this.timeout(10000);
     });
 
     it('displays parentheticals with no top margin on first line, nor on the others', function(done) {
       var hasTopMarginOnOtherLines = false;
       dimensions.testElementHasNoTopMarginOnFirstLine(utils.parenthetical, 'parenthetical', hasTopMarginOnOtherLines, done);
+      this.timeout(10000);
     });
 
     it('displays dialogues with no top margin on first line, nor on the others', function(done) {
       var hasTopMarginOnOtherLines = false;
       dimensions.testElementHasNoTopMarginOnFirstLine(utils.dialogue, 'dialogue', hasTopMarginOnOtherLines, done);
+      this.timeout(10000);
     });
 
     it('displays shots with no top margin on first line, but with margin on the others', function(done) {
       var hasTopMarginOnOtherLines = true;
       dimensions.testElementHasNoTopMarginOnFirstLine(utils.shot, 'shot', hasTopMarginOnOtherLines, done);
+      this.timeout(10000);
     });
 
     it('displays transitions with no top margin on first line, but with margin on the others', function(done) {
       var hasTopMarginOnOtherLines = true;
       dimensions.testElementHasNoTopMarginOnFirstLine(utils.transition, 'transition', hasTopMarginOnOtherLines, done);
+      this.timeout(10000);
     });
 
     it('displays generals with no top margin on first line, nor on the others', function(done) {
       var hasTopMarginOnOtherLines = false;
       var hasInnerTag = false;
       dimensions.testElementHasNoTopMarginOnFirstLine(utils.general, hasInnerTag, hasTopMarginOnOtherLines, done);
+      this.timeout(10000);
     });
 
     // headings have a different behavior on top of pages when they have an act and/or a sequence,
