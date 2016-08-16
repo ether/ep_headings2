@@ -3,7 +3,6 @@ var _ = require('ep_etherpad-lite/static/js/underscore');
 
 var tags           = require('ep_script_elements/static/js/shared').tags;
 var sceneTag       = require('ep_script_elements/static/js/shared').sceneTag;
-var sceneMarkUtils = require("ep_script_scene_marks/static/js/utils");
 var utils          = require('./utils');
 var SM_AND_HEADING = _.union(utils.SCENE_MARK_SELECTOR, ['heading']);
 var shortcuts      = require('./shortcuts');
@@ -248,8 +247,9 @@ function lineIsSecondHalfOfSliptLine(lineNumber, attributeManager) {
 }
 
 function addAttributeIfElementIsNotSM(lineNumber, attributeManager, value) {
-  var lineIsSceneMark = sceneMarkUtils.lineNumberContainsSceneMark(lineNumber);
-  if(!lineIsSceneMark){
+  // avoid applying SE attrib on SM tags
+  var isLineScriptElement = utils.lineIsScriptElement(lineNumber);
+  if(isLineScriptElement){
     attributeManager.setAttributeOnLine(lineNumber, 'script_element', value);
   }
 }
@@ -327,9 +327,8 @@ function updateDropdownToCaretLine(context) {
     var sameElementOnSelection = isSameElementOnSelection(rep, attributeManager);
 
     var lineNumber  = rep.selStart[0];
-    var isSceneMark = sceneMarkUtils.lineNumberContainsSceneMark(lineNumber);
-
-    if (multipleLinesSelected && !sameElementOnSelection || isSceneMark) {
+    var isLineScriptElement = utils.lineIsScriptElement(lineNumber);
+    if (multipleLinesSelected && !sameElementOnSelection || !isLineScriptElement) {
       //set drop-down to "Style"
       setDropdownValue(-2);
     }else{
