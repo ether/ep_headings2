@@ -46,6 +46,11 @@ exports.postAceInit = function(hook, context) {
 
 function updateDropdownWithValueChosen() {
   updateDropdownToCaretLine(this);
+  setFocusOnEditor();
+}
+
+var setFocusOnEditor = function(){
+  utils.getPadInner().find("#innerdocbody").focus();
 }
 
 function listenToChangeElementByShortCut(){
