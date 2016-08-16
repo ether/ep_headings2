@@ -15,45 +15,38 @@ describe("ep_script_elements - element dimensions", function(){
 
     it('displays actions with no top margin on first line, but with margin on the others', function(done) {
       var hasTopMarginOnOtherLines = true;
-      dimensions.testElementHasNoTopMarginOnFirstLine(utils.action, 'action', hasTopMarginOnOtherLines, done);
-      this.timeout(10000);
+      dimensions.testElementHasNoTopMarginOnFirstLine(this, utils.action, 'action', hasTopMarginOnOtherLines, done);
     });
 
     it('displays characters with no top margin on first line, but with margin on the others', function(done) {
       var hasTopMarginOnOtherLines = true;
-      dimensions.testElementHasNoTopMarginOnFirstLine(utils.character, 'character', hasTopMarginOnOtherLines, done);
-      this.timeout(10000);
+      dimensions.testElementHasNoTopMarginOnFirstLine(this, utils.character, 'character', hasTopMarginOnOtherLines, done);
     });
 
     it('displays parentheticals with no top margin on first line, nor on the others', function(done) {
       var hasTopMarginOnOtherLines = false;
-      dimensions.testElementHasNoTopMarginOnFirstLine(utils.parenthetical, 'parenthetical', hasTopMarginOnOtherLines, done);
-      this.timeout(10000);
+      dimensions.testElementHasNoTopMarginOnFirstLine(this, utils.parenthetical, 'parenthetical', hasTopMarginOnOtherLines, done);
     });
 
     it('displays dialogues with no top margin on first line, nor on the others', function(done) {
       var hasTopMarginOnOtherLines = false;
-      dimensions.testElementHasNoTopMarginOnFirstLine(utils.dialogue, 'dialogue', hasTopMarginOnOtherLines, done);
-      this.timeout(10000);
+      dimensions.testElementHasNoTopMarginOnFirstLine(this, utils.dialogue, 'dialogue', hasTopMarginOnOtherLines, done);
     });
 
     it('displays shots with no top margin on first line, but with margin on the others', function(done) {
       var hasTopMarginOnOtherLines = true;
-      dimensions.testElementHasNoTopMarginOnFirstLine(utils.shot, 'shot', hasTopMarginOnOtherLines, done);
-      this.timeout(10000);
+      dimensions.testElementHasNoTopMarginOnFirstLine(this, utils.shot, 'shot', hasTopMarginOnOtherLines, done);
     });
 
     it('displays transitions with no top margin on first line, but with margin on the others', function(done) {
       var hasTopMarginOnOtherLines = true;
-      dimensions.testElementHasNoTopMarginOnFirstLine(utils.transition, 'transition', hasTopMarginOnOtherLines, done);
-      this.timeout(10000);
+      dimensions.testElementHasNoTopMarginOnFirstLine(this, utils.transition, 'transition', hasTopMarginOnOtherLines, done);
     });
 
     it('displays generals with no top margin on first line, nor on the others', function(done) {
       var hasTopMarginOnOtherLines = false;
       var hasInnerTag = false;
-      dimensions.testElementHasNoTopMarginOnFirstLine(utils.general, hasInnerTag, hasTopMarginOnOtherLines, done);
-      this.timeout(10000);
+      dimensions.testElementHasNoTopMarginOnFirstLine(this, utils.general, hasInnerTag, hasTopMarginOnOtherLines, done);
     });
 
     // headings have a different behavior on top of pages when they have an act and/or a sequence,
@@ -172,9 +165,11 @@ ep_script_elements_test_helper.dimensions = {
     done();
   },
 
-  testElementHasNoTopMarginOnFirstLine: function(buildLine, elementTag, hasTopMarginOnOtherLines, done) {
+  testElementHasNoTopMarginOnFirstLine: function(test, buildLine, elementTag, hasTopMarginOnOtherLines, done) {
     var inner$ = helper.padInner$;
     var utils = ep_script_elements_test_helper.utils;
+
+    test.timeout(4000);
 
     utils.cleanPad(function() {
       // change first line to target type
@@ -192,7 +187,7 @@ ep_script_elements_test_helper.dimensions = {
         // wait for lines to be split
         var $secondLine = utils.getLine(1);
         return utils.cleanText($secondLine.text()) === 'regular line';
-      }).done(function() {
+      }, 2000).done(function() {
         // also test other lines of same type has top margin
         var $secondLine = utils.getLine(1);
         var $targetElement = elementTag ? $secondLine.find(elementTag) : $secondLine;

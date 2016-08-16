@@ -1,13 +1,32 @@
 describe("ep_script_elements - integration with ep_script_page_view", function() {
-  var utils, padId;
-  before(function() {
-    utils = ep_script_elements_test_helper.utils;
-  });
+  var utils, padId, paginationWasEnabledBeforeThisTestSuite;
 
-  //create a new pad before each test run
-  beforeEach(function(cb) {
-    padId = helper.newPad(cb);
+  var clickOnPaginationSettingIfNeeded = function(shouldEnable) {
+    var $paginationSetting = helper.padChrome$('#options-pagination');
+    if($paginationSetting.prop("checked") !== shouldEnable) {
+      $paginationSetting.click();
+    }
+  }
+  var enablePagination = function() {
+    clickOnPaginationSettingIfNeeded(true);
+  }
+
+  before(function(done) {
+    utils = ep_script_elements_test_helper.utils;
+
+    padId = helper.newPad(function() {
+      // make sure pagination is enabled
+      paginationWasEnabledBeforeThisTestSuite = helper.padChrome$('#options-pagination').prop("checked");
+      enablePagination();
+
+      done();
+    });
+
     this.timeout(60000);
+  });
+  after(function() {
+    // disable pagination if necessary
+    clickOnPaginationSettingIfNeeded(paginationWasEnabledBeforeThisTestSuite);
   });
 
   context("when pad has a non-split page break", function() {
@@ -19,17 +38,19 @@ describe("ep_script_elements - integration with ep_script_page_view", function()
 
       var inner$ = helper.padInner$;
 
-      utils.createScriptWith(buildScript(), lastLineText, function() {
-        // wait for pagination to finish creating page breaks
-        helper.waitFor(function() {
-          var $linesWithPageBreaks = inner$("div nonSplitPageBreak");
-          return $linesWithPageBreaks.length === 1;
-        }, 3000).done(function() {
-          // reload the pad so tests for UNDO work properly.
-          // But first need to wait for changes of pagination to be saved
-          setTimeout(function() {
-            helper.newPad(done, padId);
-          }, 1000);
+      utils.cleanPad(function() {
+        utils.createScriptWith(buildScript(), lastLineText, function() {
+          // wait for pagination to finish creating page breaks
+          helper.waitFor(function() {
+            var $linesWithPageBreaks = inner$("div nonSplitPageBreak");
+            return $linesWithPageBreaks.length === 1;
+          }, 3000).done(function() {
+            // reload the pad so tests for UNDO work properly.
+            // But first need to wait for changes of pagination to be saved
+            setTimeout(function() {
+              helper.newPad(done, padId);
+            }, 1000);
+          });
         });
       });
     });
@@ -279,17 +300,19 @@ describe("ep_script_elements - integration with ep_script_page_view", function()
       var lastGeneral        = utils.general(lastLineText);
       var script             = singleLineGenerals + multiLineGeneral + lastGeneral;
 
-      utils.createScriptWith(script, lastLineText, function() {
-        // wait for line to be split by pagination
-        helper.waitFor(function() {
-          var $splitElementsWithPageBreaks = inner$("div splitPageBreak");
-          return $splitElementsWithPageBreaks.length === 1;
-        }, 3000).done(function() {
-          // reload the pad so tests for UNDO work properly.
-          // But first need to wait for changes of pagination to be saved
-          setTimeout(function() {
-            helper.newPad(done, padId);
-          }, 1000);
+      utils.cleanPad(function() {
+        utils.createScriptWith(script, lastLineText, function() {
+          // wait for line to be split by pagination
+          helper.waitFor(function() {
+            var $splitElementsWithPageBreaks = inner$("div splitPageBreak");
+            return $splitElementsWithPageBreaks.length === 1;
+          }, 3000).done(function() {
+            // reload the pad so tests for UNDO work properly.
+            // But first need to wait for changes of pagination to be saved
+            setTimeout(function() {
+              helper.newPad(done, padId);
+            }, 1000);
+          });
         });
       });
     });
