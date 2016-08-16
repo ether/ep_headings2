@@ -49,32 +49,28 @@ var handleBackspace = function(context) {
   var rep              = context.rep;
 
   var currentLine  = rep.selStart[0];
-  var previousLine = currentLine - 1;
+  var previousLine = getPreviousLineWithScriptElement(currentLine, rep, attributeManager);
 
-  var currentLineIsEmpty = lineIsEmpty(currentLine, rep, attributeManager);
   var currentLineHasDifferentTypeOfPreviousLine = thisLineTypeIsDifferentFromPreviousLine(currentLine);
 
-  var previousLineisASceneMark = sceneMarkUtils.lineNumberContainsSceneMark(previousLine);
-
-  if (currentLineIsEmpty && previousLineisASceneMark){
-    // we removed the heading so we have to remove the SM
-    sceneMarkUtils.emitEventHeadingWasRemoved(currentLine);
-  } else if (!currentLineIsEmpty && currentLineHasDifferentTypeOfPreviousLine) {
-    // we only block merge if user is not removing previous line
-    // (pressing BACKSPACE on a non-empty line when previous line is empty).
-    // Otherwise, we allow merge but we'll need to adjust line attribute after merge
-    // (see adjustLines() for more detail)
+  if (currentLineHasDifferentTypeOfPreviousLine) {
+    var currentLineIsEmpty = lineIsEmpty(currentLine, rep, attributeManager);
     var previousLineIsEmpty = lineIsEmpty(previousLine, rep, attributeManager);
 
-    // when the very previous line is a scene mark, we never merge even if it is empty
-    if (previousLineIsEmpty && !previousLineisASceneMark) {
-      // previous line will be replaced by current line; make sure we copy type of current line to
-      // previous line before performing the deletion
-      adjustLineAttributeOfLineToBeKept(previousLine, currentLine, attributeManager);
-    } else {
-      blockBackspace = true;
-      // mergeEventInfo.blockMerge = true;
+    // Scenarios that allow different line types to be merged:
+    // 1. if user is deleting current line (by pressing BACKSPACE at an empty line where previous line is not empty);
+    // 2. if user is deleting previous line (by pressing BACKSPACE at a non-empty line where previous line is empty);
+    // In any of those scenarios, we manually process the deletion event
+    var deletingCurrentLine  = currentLineIsEmpty;
+    var deletingPreviousLine = !currentLineIsEmpty && previousLineIsEmpty;
+    var lineToBeDeleted = deletingCurrentLine ? currentLine : (deletingPreviousLine ? previousLine : null);
+
+    if (lineToBeDeleted) {
+      performDeleteOf(lineToBeDeleted, editorInfo, rep);
+      linesWillBeMerged(lineToBeDeleted, context);
     }
+
+    blockBackspace = true;
   }
 
   return blockBackspace;
@@ -88,40 +84,62 @@ var handleDelete = function(context) {
   var rep              = context.rep;
 
   var currentLine = rep.selStart[0];
-  var nextLine    = currentLine + 1;
+  var nextLine    = getNextLineWithScriptElement(currentLine, rep, attributeManager);
 
   var currentLineHasDifferentTypeOfNextLine = thisLineTypeIsDifferentFromPreviousLine(nextLine);
 
   if (currentLineHasDifferentTypeOfNextLine) {
     var currentLineIsEmpty  = lineIsEmpty(currentLine, rep, attributeManager);
     var nextLineIsEmpty     = lineIsEmpty(nextLine, rep, attributeManager);
-    var nextLineIsSceneMark = sceneMarkUtils.lineNumberContainsSceneMark(nextLine);
 
     // Scenarios that allow different line types to be merged:
-    // 1. if user is deleting next line (by pressing DELETE at a line where next line is empty and it is not a SM);
-    // 2. if user is deleting current line (by pressing DELETE at an empty line where next line is not empty);
-    // In any of those scenarios, we manually process the deletion event, and on both we need to prepare
-    // line attributes for the UNDO operation -- otherwise, if user performs UNDO, we will loose
-    // line types
-    var deletingNextLine    = nextLineIsEmpty && !nextLineIsSceneMark;
+    // 1. if user is deleting current line (by pressing DELETE at an empty line where next line is not empty);
+    // 2. if user is deleting next line (by pressing DELETE at a non-empty line where next line is empty);
+    // In any of those scenarios, we manually process the deletion event
     var deletingCurrentLine = !nextLineIsEmpty && currentLineIsEmpty;
+    var deletingNextLine    = nextLineIsEmpty;
+    var lineToBeDeleted = deletingCurrentLine ? currentLine : (deletingNextLine ? nextLine : null);
 
-    if (deletingNextLine) {
-      prepareLineAttributesForUndo(nextLine, attributeManager);
-      performDelete(editorInfo);
-    } else if (deletingCurrentLine) {
-      // current line will be replaced by next line; make sure we copy type of next line to
-      // current line before performing the deletion
-      adjustLineAttributeOfLineToBeKept(currentLine, nextLine, attributeManager);
+    if (deletingCurrentLine) {
+      // make sure caret will be at the right place when deletion is completed
+      placeCaretOnBeginningOfNextLine(nextLine, editorInfo, rep);
+    }
 
-      prepareLineAttributesForUndo(nextLine, attributeManager);
-      performDelete(editorInfo);
+    if (lineToBeDeleted) {
+      performDeleteOf(lineToBeDeleted, editorInfo, rep);
+      linesWillBeMerged(lineToBeDeleted, context);
     }
 
     blockDelete = true;
   }
 
   return blockDelete;
+}
+
+var getPreviousLineWithScriptElement = function(currentLine, rep, attributeManager) {
+  var previousLine = currentLine - 1;
+
+  // skip lines with scene marks
+  while (sceneMarkUtils.lineIsSceneMark(previousLine, rep, attributeManager)) previousLine--;
+
+  return previousLine;
+}
+var getNextLineWithScriptElement = function(currentLine, rep, attributeManager) {
+  var nextLine = currentLine + 1;
+
+  // skip lines with scene marks
+  while (sceneMarkUtils.lineIsSceneMark(nextLine, rep, attributeManager)) nextLine++;
+
+  return nextLine;
+}
+
+var linesWillBeMerged = function(lineToBeMerged, context) {
+  // Reflect the element removal on the edit event associated with this change,
+  // so that other plugins know that this change happened
+  if (context.callstack) {
+    context.callstack.editEvent.eventType = 'scriptElementRemoved';
+    context.callstack.editEvent.data = { lineNumber: lineToBeMerged };
+  }
 }
 
 var processTextSelected = function(context){
@@ -394,19 +412,17 @@ var currentLineIsLastLineOfPad = function(rep) {
   return currentLine === totalLinesOfPad;
 }
 
-var prepareLineAttributesForUndo = function(targetLine, attributeManager) {
-  // only remove line attribute of target line (to force UNDO to re-add it when UNDO is processed)
-  changeLineAttribute(targetLine, null, attributeManager);
+var performDeleteOf = function(targetLine, editorInfo, rep) {
+  var enfOfLineBeforeTarget = rep.lines.offsetOfIndex(targetLine) - 1;
+  var endOfTargetLine       = rep.lines.offsetOfIndex(targetLine + 1) - 1;
+  editorInfo.ace_performDocumentReplaceCharRange(enfOfLineBeforeTarget, endOfTargetLine, '');
 }
 
-var adjustLineAttributeOfLineToBeKept = function(lineToBeRemoved, lineToBeKept, attributeManager) {
-  var attributeOfLineToBeKept = attributeManager.getAttributeOnLine(lineToBeKept, "script_element");
-  changeLineAttribute(lineToBeRemoved, attributeOfLineToBeKept, attributeManager);
-}
+var placeCaretOnBeginningOfNextLine = function(nextLine, editorInfo, rep) {
+  var nextLineEntry = rep.lines.atIndex(nextLine);
+  var beginningOfNextLine = [nextLine, nextLineEntry.lineMarker];
 
-var performDelete = function(editorInfo) {
-  var currentCharPosition = editorInfo.ace_caretDocChar();
-  editorInfo.ace_performDocumentReplaceCharRange(currentCharPosition, currentCharPosition+1, '');
+  editorInfo.ace_performSelectionChange(beginningOfNextLine, beginningOfNextLine, true);
 }
 
 var placeCaretOnLine = function(editorInfo, linePosition){

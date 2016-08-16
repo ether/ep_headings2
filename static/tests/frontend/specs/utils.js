@@ -130,6 +130,12 @@ ep_script_elements_test_helper.utils = {
 
     return $lineWhereCaretIs;
   },
+  getColumnWhereCaretIs: function() {
+    var inner$ = helper.padInner$;
+    var columnWhereCaretIsOnElement = inner$.document.getSelection().anchorOffset;
+
+    return columnWhereCaretIsOnElement;
+  },
 
   // first line === getLine(0)
   // second line === getLine(1)

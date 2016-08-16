@@ -130,11 +130,34 @@ describe("ep_script_elements - merge lines", function(){
             return lineIsRemoved();
           }).done(function() {
             utils.validateLineTextAndType(TARGET_LINE - 1, TEXT_OF_LINE_BEFORE_TARGET, TYPE_OF_LINE_BEFORE_TARGET);
-            // TARGET_LINE was removed
+            // line was already removed, so now line below is the new TARGET_LINE
             utils.validateLineTextAndType(TARGET_LINE, TEXT_OF_LINE_AFTER_TARGET, TYPE_OF_LINE_AFTER_TARGET);
 
             done();
           });
+        });
+      }
+
+      var testItPlacesCaretAtTheEndOfLineAboveRemovedLine = function() {
+        it("places the caret at the end of line above removed line", function(done){
+          var $lineAboveRemovedLine = utils.getLine(TARGET_LINE-1);
+          var endOfLineAboveRemovedLine = $lineAboveRemovedLine.text().length;
+
+          expect(utils.getColumnWhereCaretIs()).to.be(endOfLineAboveRemovedLine);
+          expect(utils.getLineWhereCaretIs().get(0)).to.be($lineAboveRemovedLine.get(0));
+
+          done();
+        });
+      }
+      var testItPlacesCaretAtTheBeginningOfLineBelowRemovedLine = function() {
+        it("places the caret at the beginning of line below removed line", function(done){
+          // line was already removed, so now line below is the new TARGET_LINE
+          var $lineBelowRemovedLine = utils.getLine(TARGET_LINE);
+
+          expect(utils.getColumnWhereCaretIs()).to.be(0);
+          expect(utils.getLineWhereCaretIs().get(0)).to.be($lineBelowRemovedLine.get(0));
+
+          done();
         });
       }
 
@@ -183,6 +206,7 @@ describe("ep_script_elements - merge lines", function(){
         });
 
         testItRemovesTheEmptyLineAndKeepOriginalLineTypes();
+        testItPlacesCaretAtTheEndOfLineAboveRemovedLine();
         testUndoAddsEmptyLineBackAndKeepOriginalLineTypes();
       });
 
@@ -195,6 +219,7 @@ describe("ep_script_elements - merge lines", function(){
         });
 
         testItRemovesTheEmptyLineAndKeepOriginalLineTypes();
+        testItPlacesCaretAtTheBeginningOfLineBelowRemovedLine();
         testUndoAddsEmptyLineBackAndKeepOriginalLineTypes();
       });
 
@@ -207,6 +232,7 @@ describe("ep_script_elements - merge lines", function(){
         });
 
         testItRemovesTheEmptyLineAndKeepOriginalLineTypes();
+        testItPlacesCaretAtTheEndOfLineAboveRemovedLine();
         testUndoAddsEmptyLineBackAndKeepOriginalLineTypes();
       });
 
@@ -221,6 +247,7 @@ describe("ep_script_elements - merge lines", function(){
         });
 
         testItRemovesTheEmptyLineAndKeepOriginalLineTypes();
+        testItPlacesCaretAtTheBeginningOfLineBelowRemovedLine();
         testUndoAddsEmptyLineBackAndKeepOriginalLineTypes();
       });
     });
