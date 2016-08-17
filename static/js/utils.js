@@ -1,9 +1,12 @@
 var _                        = require('ep_etherpad-lite/static/js/underscore');
 var SCRIPT_ELEMENTS_SELECTOR = require('./shared').tags;
 exports.SCENE_MARK_SELECTOR  = require("ep_script_scene_marks/static/js/shared").sceneMarkTags;
+
 var LINE_ELEMENTS_SELECTOR   = _.union(SCRIPT_ELEMENTS_SELECTOR, exports.SCENE_MARK_SELECTOR).join(", ");
 var SE_TAGS_AND_GENERAL      = _.union(SCRIPT_ELEMENTS_SELECTOR, ["general"]);
 exports.DEFAULT_LINE_ATTRIBS = ['author', 'lmkr', 'insertorder', 'start'];
+
+exports.CHANGE_ELEMENT_EVENT = 'insertscriptelement';
 
 // Easier access to outer pad
 var padOuter;

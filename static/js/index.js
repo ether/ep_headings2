@@ -38,7 +38,7 @@ exports.postAceInit = function(hook, context) {
       context.ace.callWithAce(function(ace) {
         ace.ace_doInsertScriptElement(intValue);
         ace.ace_updateDropdownWithValueChosen();
-      },'insertscriptelement' , true);
+      }, utils.CHANGE_ELEMENT_EVENT, true);
       script_element_selection.val("dummy");
     }
   })

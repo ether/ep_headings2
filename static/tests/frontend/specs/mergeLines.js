@@ -532,6 +532,7 @@ describe("ep_script_elements - merge lines", function(){
     }
 
     before(function(done) {
+      this.timeout(4000);
       helperFunctions.createScriptWithEmptyNonHeadingOnTopThenAHeadingWithSceneMark(done);
     });
 
