@@ -1,4 +1,4 @@
-describe('ep_script_elements - remove selection ep_script_scene_marks integration', function() {
+describe('ep_script_elements - remove selection - ep_script_scene_marks integration', function() {
   var utils, helperFunctions;
 
   before(function() {

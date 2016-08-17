@@ -13,7 +13,7 @@ describe("ep_script_elements - merge lines", function(){
     this.timeout(60000);
   });
 
-  context("when element is the first of pad and user presses backspace in the beginning of line", function() {
+  context('when element is the first of pad and user presses backspace in the beginning of line', function() {
     beforeEach(function(cb) {
       utils.placeCaretInTheBeginningOfLine(0, function(){
         utils.pressKey(BACKSPACE);
@@ -37,7 +37,7 @@ describe("ep_script_elements - merge lines", function(){
     });
   });
 
-  context("when element is the last of pad and user presses delete in the end of line", function() {
+  context('when element is the last of pad and user presses delete in the end of line', function() {
     beforeEach(function(cb) {
       utils.placeCaretAtTheEndOfLine(2, function(){
         // apparently first DELETE is ignored
@@ -63,8 +63,8 @@ describe("ep_script_elements - merge lines", function(){
     });
   });
 
-  context("when element is followed by a different element", function(){
-    context("and user presses backspace in the beginning of a line", function(){
+  context('when element is followed by a different element', function(){
+    context("and target line is not empty and user presses backspace in the beginning of it", function(){
 
       it("does not merge these two lines", function(done){
         var inner$ = helper.padInner$;
@@ -82,7 +82,7 @@ describe("ep_script_elements - merge lines", function(){
       });
     });
 
-    context("and user presses delete in the end of a line", function(){
+    context("and target line is not empty and user presses delete in the end of it", function(){
 
       it("does not merge these two lines", function(done){
         var inner$ = helper.padInner$;
@@ -171,7 +171,7 @@ describe("ep_script_elements - merge lines", function(){
             }, 1000);
           });
 
-          it("moves line down again and keeps original line types", function(done){
+          it("adds line back and keeps original line types", function(done){
             helper.waitFor(function() {
               return lineIsBackToScript();
             }).done(function() {
@@ -253,7 +253,7 @@ describe("ep_script_elements - merge lines", function(){
     });
   });
 
-  context("when user presses BACKSPACE and there is a selection", function(){
+  context('when user presses BACKSPACE and there is a selection', function(){
     var testItRestoresOriginalTextsAndTypesOnUndo = function() {
       context("and user performs undo", function(){
         beforeEach(function(done){
@@ -471,6 +471,95 @@ describe("ep_script_elements - merge lines", function(){
     });
   });
 
+  context('when first line of script is an empty element and there is a heading with scene marks after it', function() {
+    var LINE_WITH_HEADING = 5;
+    var ORIGINAL_NUMBER_OF_LINES = 7;
+
+    var lineIsRemoved = function() {
+      var $lines = helper.padInner$("div");
+      return $lines.length === (ORIGINAL_NUMBER_OF_LINES - 1);
+    }
+    var lineIsBackToScript = function() {
+      var $lines = helper.padInner$("div");
+      return $lines.length === ORIGINAL_NUMBER_OF_LINES;
+    }
+
+    var testItRemovesFirstLineAndKeepOriginalLineTypes = function() {
+      it("removes first line and keeps types of other lines", function(done) {
+        var sceneMarkUtils = ep_script_scene_marks_test_helper.utils;
+
+        helper.waitFor(function() {
+          return lineIsRemoved();
+        }).done(function() {
+          utils.validateLineTextAndType(0, sceneMarkUtils.actNameOf('heading'), 'act_name');
+          utils.validateLineTextAndType(1, sceneMarkUtils.actSummaryOf('heading'), 'act_summary');
+          utils.validateLineTextAndType(2, sceneMarkUtils.sequenceNameOf('heading'), 'sequence_name');
+          utils.validateLineTextAndType(3, sceneMarkUtils.sequenceSummaryOf('heading'), 'sequence_summary');
+          utils.validateLineTextAndType(4, 'heading', 'heading');
+
+          done();
+        });
+      });
+    }
+
+    var testUndoAddsEmptyLineBackAndKeepOriginalLineTypes = function() {
+      context("then user presses UNDO", function(){
+        before(function(done) {
+          // wait some time, so changes are saved before undoing
+          setTimeout(function() {
+            utils.undo();
+            done();
+          }, 1000);
+        });
+
+        it("adds line back and keeps original line types", function(done) {
+          var sceneMarkUtils = ep_script_scene_marks_test_helper.utils;
+
+          helper.waitFor(function() {
+            return lineIsBackToScript();
+          }).done(function() {
+            utils.validateLineTextAndType(0, '', 'action');
+            utils.validateLineTextAndType(1, sceneMarkUtils.actNameOf('heading'), 'act_name');
+            utils.validateLineTextAndType(2, sceneMarkUtils.actSummaryOf('heading'), 'act_summary');
+            utils.validateLineTextAndType(3, sceneMarkUtils.sequenceNameOf('heading'), 'sequence_name');
+            utils.validateLineTextAndType(4, sceneMarkUtils.sequenceSummaryOf('heading'), 'sequence_summary');
+            utils.validateLineTextAndType(5, 'heading', 'heading');
+
+            done();
+          });
+        });
+      });
+    }
+
+    before(function(done) {
+      helperFunctions.createScriptWithEmptyNonHeadingOnTopThenAHeadingWithSceneMark(done);
+    });
+
+    context('and user presses DELETE at the line on top of script', function() {
+      before(function(done) {
+        utils.placeCaretInTheBeginningOfLine(0, function() {
+          utils.pressKey(DELETE);
+          done();
+        });
+      });
+
+      testItRemovesFirstLineAndKeepOriginalLineTypes();
+      testUndoAddsEmptyLineBackAndKeepOriginalLineTypes();
+    });
+
+    context('and user presses BACKSPACE at the beginning of line with heading', function() {
+      before(function(done) {
+        utils.placeCaretInTheBeginningOfLine(LINE_WITH_HEADING, function() {
+          utils.pressKey(BACKSPACE);
+          done();
+        });
+      });
+
+      testItRemovesFirstLineAndKeepOriginalLineTypes();
+      testUndoAddsEmptyLineBackAndKeepOriginalLineTypes();
+    });
+  });
+
 });
 
 var ep_script_elements_test_helper = ep_script_elements_test_helper || {};
@@ -497,21 +586,25 @@ ep_script_elements_test_helper.mergeLines = {
       utils.createScriptWith(script, "Third Line!", cb);
     });
   },
-  // we only create a heading, the rest is created automatically
-  createScriptWithHeadingAndSceneMark: function(headingText, cb){
+  createScriptWithEmptyNonHeadingOnTopThenAHeadingWithSceneMark: function(cb){
     var utils = ep_script_elements_test_helper.utils;
     var sceneMarkUtils = ep_script_scene_marks_test_helper.utils;
 
-    var dialogue = utils.dialogue("dialogue");
-    var act      = sceneMarkUtils.emptyAct();
-    var sequence = sceneMarkUtils.emptySequence();
-    var heading  = utils.heading(headingText);
-    var action   = utils.action("action");
-    var script   = dialogue + act + sequence + heading + action;
+    var empty     = utils.general('');
+    var act       = sceneMarkUtils.act('heading');
+    var sequence  = sceneMarkUtils.sequence('heading');
+    var heading   = utils.heading('heading');
+    var character = utils.character('character');
+    var script    = empty + act + sequence + heading + character;
 
-    utils.createScriptWith(script, "action", function(){
-      sceneMarkUtils.clickOnSceneMarkButtonOfLine(4);
-      cb();
+    utils.cleanPad(function() {
+      utils.createScriptWith(script, 'character', function() {
+        // change type of first line just to avoid confusion with general
+        utils.changeToElement(utils.ACTION, function() {
+          sceneMarkUtils.clickOnSceneMarkButtonOfLine(4);
+          cb();
+        });
+      });
     });
   },
   checkNumberOfLine: function(numberOfLines){

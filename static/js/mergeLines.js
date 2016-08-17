@@ -65,8 +65,8 @@ var handleBackspace = function(context) {
     var deletingPreviousLine = !currentLineIsEmpty && previousLineIsEmpty;
     var lineToBeDeleted = deletingCurrentLine ? currentLine : (deletingPreviousLine ? previousLine : null);
 
-    if (lineToBeDeleted) {
-      performDeleteOf(lineToBeDeleted, editorInfo, rep);
+    if (lineToBeDeleted !== null) {
+      performDeleteOf(lineToBeDeleted, editorInfo, rep, attributeManager);
       linesWillBeMerged(lineToBeDeleted, context);
     }
 
@@ -102,11 +102,11 @@ var handleDelete = function(context) {
 
     if (deletingCurrentLine) {
       // make sure caret will be at the right place when deletion is completed
-      placeCaretOnBeginningOfNextLine(nextLine, editorInfo, rep);
+      placeCaretOnBeginningOfLine(nextLine, editorInfo, rep);
     }
 
-    if (lineToBeDeleted) {
-      performDeleteOf(lineToBeDeleted, editorInfo, rep);
+    if (lineToBeDeleted !== null) {
+      performDeleteOf(lineToBeDeleted, editorInfo, rep, attributeManager);
       linesWillBeMerged(lineToBeDeleted, context);
     }
 
@@ -412,17 +412,39 @@ var currentLineIsLastLineOfPad = function(rep) {
   return currentLine === totalLinesOfPad;
 }
 
-var performDeleteOf = function(targetLine, editorInfo, rep) {
+var performDeleteOf = function(targetLine, editorInfo, rep, attributeManager) {
+  if (targetLine > 0) {
+    removeContentFromEndOfPreviousLineUntilEndOfTargetLine(targetLine, editorInfo, rep);
+  } else {
+    // there's no previous line, we need to use a different strategy
+    replaceContentOfTargetLineByNextLine(targetLine, editorInfo, rep, attributeManager);
+  }
+}
+
+var removeContentFromEndOfPreviousLineUntilEndOfTargetLine = function(targetLine, editorInfo, rep) {
   var enfOfLineBeforeTarget = rep.lines.offsetOfIndex(targetLine) - 1;
   var endOfTargetLine       = rep.lines.offsetOfIndex(targetLine + 1) - 1;
   editorInfo.ace_performDocumentReplaceCharRange(enfOfLineBeforeTarget, endOfTargetLine, '');
 }
+var replaceContentOfTargetLineByNextLine = function(targetLine, editorInfo, rep, attributeManager) {
+  // this is necessary for UNDO to work:
+  changeLineAttribute(targetLine, null, attributeManager);
 
-var placeCaretOnBeginningOfNextLine = function(nextLine, editorInfo, rep) {
-  var nextLineEntry = rep.lines.atIndex(nextLine);
-  var beginningOfNextLine = [nextLine, nextLineEntry.lineMarker];
+  // set line type
+  var lineBelowTarget = targetLine + 1;
+  var attributeOfLineToBeKept = attributeManager.getAttributeOnLine(lineBelowTarget, 'script_element');
+  changeLineAttribute(targetLine, attributeOfLineToBeKept, attributeManager);
 
-  editorInfo.ace_performSelectionChange(beginningOfNextLine, beginningOfNextLine, true);
+  // replace content
+  var endOfTargetLine = rep.lines.offsetOfIndex(lineBelowTarget) - 1;
+  editorInfo.ace_performDocumentReplaceCharRange(endOfTargetLine, endOfTargetLine + 1, '');
+}
+
+var placeCaretOnBeginningOfLine = function(targetLine, editorInfo, rep) {
+  var targetLineEntry = rep.lines.atIndex(targetLine);
+  var beginningOfTargetLine = [targetLine, targetLineEntry.lineMarker];
+
+  editorInfo.ace_performSelectionChange(beginningOfTargetLine, beginningOfTargetLine, true);
 }
 
 var placeCaretOnLine = function(editorInfo, linePosition){
