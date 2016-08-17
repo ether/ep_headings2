@@ -6,6 +6,7 @@
       "client_hooks": {
         "aceEditorCSS": "ep_script_elements/static/js/index",
         "aceSelectionChanged": "ep_script_elements/static/js/index",
+        "aceEditEvent": "ep_script_elements/static/js/index",
         "postAceInit": "ep_script_elements/static/js/index",
         "aceInitialized": "ep_script_elements/static/js/index",
         "aceAttribsToClasses": "ep_script_elements/static/js/index",

@@ -1,6 +1,8 @@
 var $ = require('ep_etherpad-lite/static/js/rjquery').$;
 var _ = require('ep_etherpad-lite/static/js/underscore');
 
+var scriptElementTransitionUtils = require("ep_script_element_transitions/static/js/utils");
+
 var tags           = require('ep_script_elements/static/js/shared').tags;
 var sceneTag       = require('ep_script_elements/static/js/shared').sceneTag;
 var utils          = require('./utils');
@@ -19,10 +21,22 @@ exports.aceRegisterBlockElements = function() {
   return _.flatten([undoPagination.UNDO_FIX_TAG, tags]);
 }
 
+exports.aceEditEvent = function(hook, context) {
+  var eventType = context.callstack.editEvent.eventType;
+
+  if (lineWasChangedByShortcut(eventType) || eventMightBeAnUndo(context.callstack)) {
+    updateDropdownToCaretLine(context);
+  }
+}
+var lineWasChangedByShortcut = function(eventType) {
+  return eventType === scriptElementTransitionUtils.CHANGE_ELEMENT_BY_SHORTCUT_EVENT;
+}
+var eventMightBeAnUndo = function(callstack) {
+  return callstack.repChanged && callstack.editEvent.eventType === 'handleKeyEvent';
+}
+
 // Bind the event handler to the toolbar buttons
 exports.postAceInit = function(hook, context) {
-  listenToChangeElementByShortCut();
-
   // prevent keys insert text and enter
   preventCharacterKeysAndEnterOnSelectionMultiLine(context);
   fixSmallZooms.init();
@@ -51,17 +65,6 @@ function updateDropdownWithValueChosen() {
 
 var setFocusOnEditor = function(){
   utils.getPadInner().find("#innerdocbody").focus();
-}
-
-function listenToChangeElementByShortCut(){
-  var $innerDocument = utils.getPadInner().find("#innerdocbody");
-  // ep_script_element_transition triggers 'elementChange' event when element is
-  // changed by shortcut CMD+NUM, which means the type of current line was changed,
-  // so we need to update the dropdown. We take the context from ep_script_element_transition
-  // which is passed when then event happens
-  $innerDocument.on('elementChanged', function(event, context) {
-    updateDropdownToCaretLine(context);
-  });
 }
 
 // On caret position change show the current script element

@@ -58,6 +58,9 @@ ep_script_elements_test_helper.utils = {
     'transition'    : { val : '5' },
     'shot'          : { val : '6' }
   },
+  valOf: function(tag) {
+    return this.TARGET_ELEMENT[tag].val;
+  },
   changeToElement: function(tag, callback, lineNum){
     lineNum = lineNum || 0;
     var chrome$ = helper.padChrome$;
