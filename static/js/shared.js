@@ -7,20 +7,16 @@ var collectContentPre = function(hook, context){
   var tname = context.tname;
   var state = context.state;
   var lineAttributes = state.lineAttributes
-  //check if tname is a valid scene attribute
-  var sceneTagIndex =  _.indexOf(sceneTag, tname);
-  var tagIndex = _.indexOf(tags, tname);
 
   if(tname === "div" || tname === "p"){
     delete lineAttributes['script_element'];
   }
-  if(tagIndex >= 0){
-    lineAttributes['script_element'] = tags[tagIndex];
-  }
-  //take the scene tag its class, which is its value, and uses as lineAttributes key-value
-  else if(sceneTagIndex>=0){
-    var tagName = sceneTag[sceneTagIndex]
-    lineAttributes[tagName] = context.cls;
+
+  if (isScriptElement(tname)) {
+    lineAttributes['script_element'] = tname;
+  } else if (isSceneTag(tname)) {
+    // scene tag value is stored on element class
+    lineAttributes[tname] = context.cls;
   }
 };
 
@@ -40,6 +36,13 @@ var collectContentPost = function(hook, context){
 
   }
 };
+
+var isSceneTag = function(tname) {
+  return _.indexOf(sceneTag, tname) >= 0;
+}
+var isScriptElement = function(tname) {
+  return _.indexOf(tags, tname) >= 0;
+}
 
 exports.collectContentPre = collectContentPre;
 exports.collectContentPost = collectContentPost;

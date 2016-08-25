@@ -11,7 +11,7 @@ describe('ep_script_elements - cut events on multiline selected', function () {
   beforeEach(function(done){
     helper.newPad(function(){
       // create Pad with SM
-      helperFunctions.createPadContent(done());
+      helperFunctions.createPadContent(done);
     });
     this.timeout(60000);
   });

@@ -222,7 +222,7 @@ ep_script_elements_test_helper.utils = {
   },
   validateLineTextAndType: function(lineNumber, expectedText, expectType) {
     var $line = this.getLine(lineNumber);
-    var actualText = $line.text();
+    var actualText = this.cleanText($line.text());
 
     expect(actualText).to.be(expectedText);
 
@@ -240,5 +240,83 @@ ep_script_elements_test_helper.utils = {
     var $element = inner$(element).slice(position, position + 1);
     var $elementDiv = $element.closest('div').get(0);
     return _.indexOf($allDivs, $elementDiv);
+  },
+
+  /**** vars and functions to drag some text and drop it somewhere else: ****/
+  dragSelectedTextAndDropItIntoMiddleOfLine: function(targetLineNumber, done) {
+    // in order to get the actual HTML that is inserted when DnD happens, we need to
+    // listen to 'drop' event, so we can retrieve the dropped HTML content.
+    // Note: we need to use the same jQuery instance that is registering the main window
+    var draggedHtml;
+    var $editor = helper.padInner$('#innerdocbody');
+    helper.padChrome$($editor.get(0)).one('drop', function(e) {
+      draggedHtml = e.originalEvent.dataTransfer.getData('text/html');
+    });
+
+    // use same object to transfer data between events
+    var dataTransferMock = this._createDataTransferMock();
+
+    this._triggerDnDEvent('dragstart', dataTransferMock);
+    this._triggerDnDEvent('drop', dataTransferMock);
+
+    // dragend: remove original content + insert HTML data into target
+    this._moveSelectionIntoTarget(draggedHtml, targetLineNumber);
+    this._triggerDnDEvent('dragend', dataTransferMock);
+
+    // wait for dropped lines to be processed. This happens when there's no drag marker nor any
+    // split elements on the same line (two tags with the same name inside of a <div>)
+    helper.waitFor(function() {
+      var $dragMarkers = helper.padInner$('dragstart, dragend');
+      var dragMarkersWereRemoved = $dragMarkers.length === 0;
+
+      var siblingsSelector = 'heading ~ heading, ' +
+                             'action ~ action, ' +
+                             'character ~ character, ' +
+                             'parenthetical ~ parenthetical, ' +
+                             'dialogue ~ dialogue, ' +
+                             'transition ~ transition, ' +
+                             'shot ~ shot';
+      var $siblingsOnSameLine = helper.padInner$(siblingsSelector);
+      var siblingsWereMerged = $siblingsOnSameLine.length === 0;
+
+      return dragMarkersWereRemoved && siblingsWereMerged;
+    }, 2000).done(done);
+
+  },
+  _createDataTransferMock: function() {
+    // store data into a simple object, indexed by format
+    var dataTransferMock = {
+     data: {},
+     setData: function(format, value) { this.data[format] = value; },
+     getData: function(format)        { return this.data[format]; }
+    };
+
+    return dataTransferMock;
+  },
+  _triggerDnDEvent: function(eventName, dataTransferMock) {
+    var originalEvent = { dataTransfer: dataTransferMock };
+    var $event = helper.padInner$.Event(eventName);
+    $event.originalEvent = originalEvent;
+
+    var $editor = helper.padInner$('#innerdocbody');
+    // Bug fix: as we're simulating the DnD event triggering, we need to trigger the event
+    // using both the jQuery instance that is registering the main window and the inner frame.
+    // This is necessary because Etherpad listens DnD events on the padChrome jQuery,
+    // but the plugin listens DnD events on the inner frame jQuery.
+    $editor.trigger($event);
+    helper.padChrome$($editor.get(0)).trigger($event);
+  },
+  _moveSelectionIntoTarget: function(draggedHtml, targetLineNumber) {
+    var innerDocument = helper.padInner$.document;
+
+    // delete original content
+    innerDocument.execCommand('delete');
+
+    // set position to insert content on target line
+    var $target = this.getLine(targetLineNumber);
+    $target.sendkeys('{selectall}{rightarrow}{leftarrow}');
+
+    // insert content
+    innerDocument.execCommand('insertHTML', false, draggedHtml);
   },
 };
