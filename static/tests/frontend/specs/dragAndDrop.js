@@ -65,8 +65,8 @@ describe('ep_script_elements - drag and drop', function() {
     this.timeout(60000);
   });
 
-  context('when user drags part of a line with script element and drops it into a script element', function() {
-    before(function(done) {
+  context('when user drags part of a line with script element', function() {
+    var selectPartOfOneSourceLineAndDropItIntoMiddleOfLine = function(targetLine, done) {
       // select part of first line
       var $source = utils.getLine(SOURCE_LINE_1);
       var start = 'The '.length;
@@ -74,20 +74,33 @@ describe('ep_script_elements - drag and drop', function() {
       helper.selectLines($source, $source, start, end);
 
       // drag into another line
-      utils.dragSelectedTextAndDropItIntoMiddleOfLine(TARGET_LINE_WITH_DIFFERENT_TYPE, done);
-    });
-    after(function(done) {
-      undoAndWaitForScriptToBeBackToOriginal(done);
+      utils.dragSelectedTextAndDropItIntoMiddleOfLine(targetLine, done);
+    };
+
+    context('and drops it into the middle of a line with script element', function() {
+      before(function(done) {
+        selectPartOfOneSourceLineAndDropItIntoMiddleOfLine(TARGET_LINE_WITH_DIFFERENT_TYPE, done);
+      });
+      after(function(done) {
+        undoAndWaitForScriptToBeBackToOriginal(done);
+      });
+
+      it('inserts dragged text into target line and does not change its type', function(done) {
+        utils.validateLineTextAndType(TARGET_LINE_WITH_DIFFERENT_TYPE, 'Target with different type [source]', DIFFERENT_TYPE);
+        done();
+      });
+
+      it('removes text from source line and does not change its type', function(done) {
+        utils.validateLineTextAndType(SOURCE_LINE_1, 'The  1', SOURCE_TYPE);
+        done();
+      });
     });
 
-    it('inserts dragged text into target line and does not change its type', function(done) {
-      utils.validateLineTextAndType(TARGET_LINE_WITH_DIFFERENT_TYPE, 'Target with different type [source]', DIFFERENT_TYPE);
-      done();
+    context('and drops it into the beginning of a line with script element', function() {
+      it('should be implemented');
     });
-
-    it('removes text from source line and does not change its type', function(done) {
-      utils.validateLineTextAndType(SOURCE_LINE_1, 'The  1', SOURCE_TYPE);
-      done();
+    context('and drops it into the end of a line with script element', function() {
+      it('should be implemented');
     });
   });
 
@@ -100,7 +113,7 @@ describe('ep_script_elements - drag and drop', function() {
       utils.dragSelectedTextAndDropItIntoMiddleOfLine(targetLine, done);
     }
 
-    context('and drops into the middle of a line with script element', function() {
+    context('and drops them into the middle of a line with script element', function() {
       context('and target line has the same type of the dragged lines', function() {
         before(function(done) {
           selectAllSourceLinesAndDropItIntoMiddleOfLine(TARGET_LINE_WITH_SAME_TYPE, done);
@@ -155,8 +168,12 @@ describe('ep_script_elements - drag and drop', function() {
       });
     });
 
-    context('and drops into the beginning of a line with script element', function() {});
-    context('and drops into the end of a line with script element', function() {});
+    context('and drops them into the beginning of a line with script element', function() {
+      it('should be implemented');
+    });
+    context('and drops them into the end of a line with script element', function() {
+      it('should be implemented');
+    });
 
   });
 });
