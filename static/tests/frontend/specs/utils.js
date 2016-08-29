@@ -227,11 +227,23 @@ ep_script_elements_test_helper.utils = {
     expect(actualText).to.be(expectedText);
 
     // use fail() to return a clearer failure message
-    if ($line.find(expectType).length !== 1) {
-      var failureMessage = "Expected line '" + actualText + "' to be " + expectType;
+    var actualType = this.getLineType(lineNumber);
+    if (actualType !== expectType) {
+      var failureMessage = "Expected line '" + actualText + "' to be " + expectType + ', found ' + actualType + ' instead';
       expect().fail(function() { return failureMessage });
     }
   },
+
+  SCRIPT_ELEMENT_TYPE_SELECTOR: 'heading, action, character, dialogue, parenthetical, shot, transition',
+  SCENE_MARK_TYPE_SELECTOR: 'act_name, act_summary, sequence_name, sequence_summary',
+  getLineType: function(lineNumber) {
+    var sceneElementsAndSceneMarks = this.SCRIPT_ELEMENT_TYPE_SELECTOR + ',' + this.SCENE_MARK_TYPE_SELECTOR;
+    var $line = this.getLine(lineNumber);
+    var $type = $line.find(sceneElementsAndSceneMarks).first();
+
+    return $type.length !== 0 ? $type.get(0).tagName.toLowerCase() : this.GENERAL;
+  },
+
   // first  - position = 0
   // second - position = 1
   getLineNumberOfElement: function(element, position){

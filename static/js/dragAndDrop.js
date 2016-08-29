@@ -21,10 +21,13 @@ var setDataTransferWithSelectionContent = function(e) {
   var draggedHtml = getHtmlContentOfSelection();
 
   // we need to mark dragged content edges, so when it is dropped we can merge them to
-  // the line it was dropped at, if types are the same
-  var adjustedHtml = markEdgesOfDraggedContent(draggedHtml);
+  // the line it was dropped at, if types are the same.
+  // Only do that if dragging multiple lines, otherwise leave dragged content as it it
+  if (draggingMultipleLines(draggedHtml)) {
+    draggedHtml = markEdgesOfDraggedContent(draggedHtml);
+  }
 
-  e.originalEvent.dataTransfer.setData('text/html', adjustedHtml);
+  e.originalEvent.dataTransfer.setData('text/html', draggedHtml);
 }
 
 var getHtmlContentOfSelection = function() {
@@ -36,20 +39,57 @@ var getHtmlContentOfSelection = function() {
   return span.outerHTML;
 }
 
+var draggingMultipleLines = function(draggedHtml) {
+  var $draggedContent = $(draggedHtml);
+  return $draggedContent.find('div').length !== 0;
+}
+
 var markEdgesOfDraggedContent = function(draggedHtml) {
   return DRAG_START_MARKER + draggedHtml + DRAG_END_MARKER;
 }
 
 var mergeEdgesOfDroppedContentIfNecessary = function() {
   var $targetLine = utils.getPadInner().find('div:has(dragstart)');
+
+  if ($targetLine.length === 0) {
+    // content was dropped on a general. We have a completely different behavior, so we handle
+    // it in a different function
+    mergeEdgesOfDroppedContentOnAGeneral();
+  } else {
+    mergeEdgesOfDroppedContentOnANonGeneral($targetLine);
+  }
+
+  // remove markers to avoid adding extra line-breaks on dropped content
+  removeMarkersOfDroppedContentEdges();
+}
+
+var mergeEdgesOfDroppedContentOnAGeneral = function() {
+  var $beginningOfDroppedContent = utils.getPadInner().find(DRAG_START_TAG);
+  var $endOfDroppedContent       = utils.getPadInner().find(DRAG_END_TAG);
+
+  var $firstHalfOfOriginalTargetLine  = $beginningOfDroppedContent.prev();
+  var $secondHalfOfOriginalTargetLine = $endOfDroppedContent.next();
+
+  var $droppedLines = $beginningOfDroppedContent.nextUntil(DRAG_END_TAG);
+
+  var topOfDroppedContentIsGeneralToo    = utils.typeOf($droppedLines.first()) === 'general';
+  var bottomOfDroppedContentIsGeneralToo = utils.typeOf($droppedLines.last()) === 'general';
+
+  // merge edges of dropped lines
+  if (topOfDroppedContentIsGeneralToo) {
+    $firstHalfOfOriginalTargetLine.append($droppedLines.first());
+  }
+  if (bottomOfDroppedContentIsGeneralToo) {
+    $secondHalfOfOriginalTargetLine.prepend($droppedLines.last());
+  }
+}
+
+var mergeEdgesOfDroppedContentOnANonGeneral = function($targetLine) {
   var typeOfTargetLine = utils.typeOf($targetLine);
   var $droppedLines = $targetLine.find('div');
 
   mergeDroppedAndTargetLineIfTheyHaveSameType($droppedLines.first(), typeOfTargetLine);
   mergeDroppedAndTargetLineIfTheyHaveSameType($droppedLines.last(), typeOfTargetLine);
-
-  // remove markers to avoid adding extra line-breaks on dropped content
-  removeMarkersOfDroppedContentEdges($targetLine);
 }
 
 var mergeDroppedAndTargetLineIfTheyHaveSameType = function($droppedLine, typeOfTargetLine) {
@@ -64,7 +104,7 @@ var mergeDroppedAndTargetLineIfTheyHaveSameType = function($droppedLine, typeOfT
   }
 }
 
-var removeMarkersOfDroppedContentEdges = function($targetLine) {
-  $targetLine.find(DRAG_START_TAG).remove();
-  $targetLine.find(DRAG_END_TAG).remove();
+var removeMarkersOfDroppedContentEdges = function() {
+  utils.getPadInner().find(DRAG_START_TAG).remove();
+  utils.getPadInner().find(DRAG_END_TAG).remove();
 }
