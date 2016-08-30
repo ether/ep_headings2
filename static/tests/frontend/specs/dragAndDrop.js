@@ -134,18 +134,17 @@ describe('ep_script_elements - drag and drop', function() {
   });
 
   context('when user drags multiple full lines with script elements', function() {
-    var selectAllSourceLinesAndDropItIntoMiddleOfLine = function(firstSourceLineNumber, lastSourceLineNumber, targetLine, done) {
+    var selectAllSourceLines = function(firstSourceLineNumber, lastSourceLineNumber) {
       var $firstSourceLine = utils.getLine(firstSourceLineNumber);
       var $lastSourceLine = utils.getLine(lastSourceLineNumber);
       helper.selectLines($firstSourceLine, $lastSourceLine);
-
-      utils.dragSelectedTextAndDropItIntoMiddleOfLine(targetLine, done);
     }
 
     context('and drops them into the middle of a line with script element', function() {
       context('and target line has the same type of the dragged lines', function() {
         before(function(done) {
-          selectAllSourceLinesAndDropItIntoMiddleOfLine(SOURCE_LINE_1, SOURCE_LINE_3, TARGET_LINE_WITH_SAME_TYPE, done);
+          selectAllSourceLines(SOURCE_LINE_1, SOURCE_LINE_3);
+          utils.dragSelectedTextAndDropItIntoMiddleOfLine(TARGET_LINE_WITH_SAME_TYPE, done);
         });
         after(function(done) {
           undoAndWaitForScriptToBeBackToOriginal(done);
@@ -171,28 +170,58 @@ describe('ep_script_elements - drag and drop', function() {
         // original target line will be split in 2, and dragged lines will be between halves
         var SECOND_HALF_OF_TARGET_LINE = TARGET_LINE_WITH_DIFFERENT_TYPE + 4;
 
-        before(function(done) {
-          selectAllSourceLinesAndDropItIntoMiddleOfLine(SOURCE_LINE_1, SOURCE_LINE_3, TARGET_LINE_WITH_DIFFERENT_TYPE, done);
-        });
-        after(function(done) {
-          undoAndWaitForScriptToBeBackToOriginal(done);
+        context('and source lines are generals', function() {
+          before(function(done) {
+            selectAllSourceLines(GENERAL_SOURCE_LINE_1, GENERAL_SOURCE_LINE_3);
+            utils.dragSelectedTextAndDropItIntoMiddleOfLine(TARGET_LINE_WITH_DIFFERENT_TYPE, done);
+          });
+          after(function(done) {
+            undoAndWaitForScriptToBeBackToOriginal(done);
+          });
+
+          it('splits first half of target line', function(done) {
+            utils.validateLineTextAndType(TARGET_LINE_WITH_DIFFERENT_TYPE, 'Target with different type [', DIFFERENT_TYPE);
+            done();
+          });
+
+          it('splits second half of target line', function(done) {
+            utils.validateLineTextAndType(SECOND_HALF_OF_TARGET_LINE, ']', DIFFERENT_TYPE);
+            done();
+          });
+
+          it('places all dragged content between split halves of original target line', function(done) {
+            utils.validateLineTextAndType(TARGET_LINE_WITH_DIFFERENT_TYPE + 1, 'The source with general 1', utils.GENERAL);
+            utils.validateLineTextAndType(TARGET_LINE_WITH_DIFFERENT_TYPE + 2, 'The source with general 2', utils.GENERAL);
+            utils.validateLineTextAndType(TARGET_LINE_WITH_DIFFERENT_TYPE + 3, 'The source with general 3', utils.GENERAL);
+            done();
+          });
         });
 
-        it('splits first half of target line', function(done) {
-          utils.validateLineTextAndType(TARGET_LINE_WITH_DIFFERENT_TYPE, 'Target with different type [', DIFFERENT_TYPE);
-          done();
-        });
+        context('and source lines are not generals', function() {
+          before(function(done) {
+            selectAllSourceLines(SOURCE_LINE_1, SOURCE_LINE_3);
+            utils.dragSelectedTextAndDropItIntoMiddleOfLine(TARGET_LINE_WITH_DIFFERENT_TYPE, done);
+          });
+          after(function(done) {
+            undoAndWaitForScriptToBeBackToOriginal(done);
+          });
 
-        it('splits second half of target line', function(done) {
-          utils.validateLineTextAndType(SECOND_HALF_OF_TARGET_LINE, ']', DIFFERENT_TYPE);
-          done();
-        });
+          it('splits first half of target line', function(done) {
+            utils.validateLineTextAndType(TARGET_LINE_WITH_DIFFERENT_TYPE, 'Target with different type [', DIFFERENT_TYPE);
+            done();
+          });
 
-        it('places all dragged content between split halves of original target line', function(done) {
-          utils.validateLineTextAndType(TARGET_LINE_WITH_DIFFERENT_TYPE + 1, 'The source 1', SOURCE_TYPE);
-          utils.validateLineTextAndType(TARGET_LINE_WITH_DIFFERENT_TYPE + 2, 'The source 2', SOURCE_TYPE);
-          utils.validateLineTextAndType(TARGET_LINE_WITH_DIFFERENT_TYPE + 3, 'The source 3', SOURCE_TYPE);
-          done();
+          it('splits second half of target line', function(done) {
+            utils.validateLineTextAndType(SECOND_HALF_OF_TARGET_LINE, ']', DIFFERENT_TYPE);
+            done();
+          });
+
+          it('places all dragged content between split halves of original target line', function(done) {
+            utils.validateLineTextAndType(TARGET_LINE_WITH_DIFFERENT_TYPE + 1, 'The source 1', SOURCE_TYPE);
+            utils.validateLineTextAndType(TARGET_LINE_WITH_DIFFERENT_TYPE + 2, 'The source 2', SOURCE_TYPE);
+            utils.validateLineTextAndType(TARGET_LINE_WITH_DIFFERENT_TYPE + 3, 'The source 3', SOURCE_TYPE);
+            done();
+          });
         });
       });
 
@@ -201,7 +230,8 @@ describe('ep_script_elements - drag and drop', function() {
         var SECOND_HALF_OF_TARGET_LINE = TARGET_GENERAL + 4;
 
         before(function(done) {
-          selectAllSourceLinesAndDropItIntoMiddleOfLine(SOURCE_LINE_1, SOURCE_LINE_3, TARGET_GENERAL, done);
+          selectAllSourceLines(SOURCE_LINE_1, SOURCE_LINE_3);
+          utils.dragSelectedTextAndDropItIntoMiddleOfLine(TARGET_GENERAL, done);
         });
         after(function(done) {
           undoAndWaitForScriptToBeBackToOriginal(done);
@@ -227,7 +257,8 @@ describe('ep_script_elements - drag and drop', function() {
 
       context('and source and target lines are all generals', function() {
         before(function(done) {
-          selectAllSourceLinesAndDropItIntoMiddleOfLine(GENERAL_SOURCE_LINE_1, GENERAL_SOURCE_LINE_3, TARGET_GENERAL, done);
+          selectAllSourceLines(GENERAL_SOURCE_LINE_1, GENERAL_SOURCE_LINE_3);
+          utils.dragSelectedTextAndDropItIntoMiddleOfLine(TARGET_GENERAL, done);
         });
         after(function(done) {
           undoAndWaitForScriptToBeBackToOriginal(done);
@@ -251,7 +282,91 @@ describe('ep_script_elements - drag and drop', function() {
     });
 
     context('and drops them into the beginning of a line with script element', function() {
-      it('should be implemented');
+      context('and target line has the same type of the dragged lines', function() {
+        before(function(done) {
+          selectAllSourceLines(SOURCE_LINE_1, SOURCE_LINE_3);
+          utils.dragSelectedTextAndDropItIntoBeginningOfLine(TARGET_LINE_WITH_SAME_TYPE, done);
+        });
+        after(function(done) {
+          undoAndWaitForScriptToBeBackToOriginal(done);
+        });
+
+        it('merges last line of dragged content with target line', function(done) {
+          utils.validateLineTextAndType(TARGET_LINE_WITH_SAME_TYPE + 2, 'The source 3Target with same type []', SOURCE_TYPE);
+          done();
+        });
+
+        it('places other lines of dragged content before merged lines', function(done) {
+          utils.validateLineTextAndType(TARGET_LINE_WITH_SAME_TYPE    , 'The source 1', SOURCE_TYPE);
+          utils.validateLineTextAndType(TARGET_LINE_WITH_SAME_TYPE + 1, 'The source 2', SOURCE_TYPE);
+          done();
+        });
+      });
+
+      context('and target line has a different type of the dragged lines', function() {
+        before(function(done) {
+          selectAllSourceLines(SOURCE_LINE_1, SOURCE_LINE_3);
+          utils.dragSelectedTextAndDropItIntoBeginningOfLine(TARGET_LINE_WITH_DIFFERENT_TYPE, done);
+        });
+        after(function(done) {
+          undoAndWaitForScriptToBeBackToOriginal(done);
+        });
+
+        it('does not merge any text with target line, nor splits it anywhere', function(done) {
+          utils.validateLineTextAndType(TARGET_LINE_WITH_DIFFERENT_TYPE + 3, 'Target with different type []', DIFFERENT_TYPE);
+          done();
+        });
+
+        it('places all dragged content above original target line', function(done) {
+          utils.validateLineTextAndType(TARGET_LINE_WITH_DIFFERENT_TYPE    , 'The source 1', SOURCE_TYPE);
+          utils.validateLineTextAndType(TARGET_LINE_WITH_DIFFERENT_TYPE + 1, 'The source 2', SOURCE_TYPE);
+          utils.validateLineTextAndType(TARGET_LINE_WITH_DIFFERENT_TYPE + 2, 'The source 3', SOURCE_TYPE);
+          done();
+        });
+      });
+
+      context('and target line is a general', function() {
+        before(function(done) {
+          selectAllSourceLines(SOURCE_LINE_1, SOURCE_LINE_3);
+          utils.dragSelectedTextAndDropItIntoBeginningOfLine(TARGET_GENERAL, done);
+        });
+        after(function(done) {
+          undoAndWaitForScriptToBeBackToOriginal(done);
+        });
+
+        it('does not merge any text with target line, nor splits it anywhere', function(done) {
+          utils.validateLineTextAndType(TARGET_GENERAL + 3, 'Target with general []', utils.GENERAL);
+          done();
+        });
+
+        it('places all dragged content above original target line', function(done) {
+          utils.validateLineTextAndType(TARGET_GENERAL    , 'The source 1', SOURCE_TYPE);
+          utils.validateLineTextAndType(TARGET_GENERAL + 1, 'The source 2', SOURCE_TYPE);
+          utils.validateLineTextAndType(TARGET_GENERAL + 2, 'The source 3', SOURCE_TYPE);
+          done();
+        });
+      });
+
+      context('and source and target lines are all generals', function() {
+        before(function(done) {
+          selectAllSourceLines(GENERAL_SOURCE_LINE_1, GENERAL_SOURCE_LINE_3);
+          utils.dragSelectedTextAndDropItIntoBeginningOfLine(TARGET_GENERAL, done);
+        });
+        after(function(done) {
+          undoAndWaitForScriptToBeBackToOriginal(done);
+        });
+
+        it('merges last line of dragged content with target line', function(done) {
+          utils.validateLineTextAndType(TARGET_GENERAL + 2, 'The source with general 3Target with general []', utils.GENERAL);
+          done();
+        });
+
+        it('places other lines of dragged content before merged lines', function(done) {
+          utils.validateLineTextAndType(TARGET_GENERAL    , 'The source with general 1', utils.GENERAL);
+          utils.validateLineTextAndType(TARGET_GENERAL + 1, 'The source with general 2', utils.GENERAL);
+          done();
+        });
+      });
     });
     context('and drops them into the end of a line with script element', function() {
       it('should be implemented');

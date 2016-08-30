@@ -153,37 +153,25 @@ ep_script_elements_test_helper.utils = {
   },
 
   placeCaretOnLine: function(lineNum, cb) {
-    var utils =  ep_script_elements_test_helper.utils;
-    var $targetLine = utils.getLine(lineNum);
-    $targetLine.sendkeys("{selectall}");
-
-    helper.waitFor(function() {
-      var $targetLine = utils.getLine(lineNum);
-      var $lineWhereCaretIs = utils.getLineWhereCaretIs();
-
-      return $targetLine.get(0) === $lineWhereCaretIs.get(0);
-    }).done(cb);
+    ep_script_elements_test_helper.utils._moveCaretToLine(lineNum, '{selectall}', cb);
   },
-
   placeCaretInTheBeginningOfLine: function(lineNum, cb) {
-    var utils =  ep_script_elements_test_helper.utils;
-    var $targetLine = utils.getLine(lineNum);
-    $targetLine.sendkeys("{selectall}{leftarrow}");
-    helper.waitFor(function() {
-      var $targetLine = utils.getLine(lineNum);
-      var $lineWhereCaretIs = utils.getLineWhereCaretIs();
-
-      return $targetLine.get(0) === $lineWhereCaretIs.get(0);
-    }).done(cb);
+    ep_script_elements_test_helper.utils._moveCaretToLine(lineNum, '{selectall}{leftarrow}', cb);
   },
-
   placeCaretAtTheEndOfLine: function(lineNum, cb) {
-    var utils =  ep_script_elements_test_helper.utils;
-    var $targetLine = utils.getLine(lineNum);
-    $targetLine.sendkeys("{selectall}{rightarrow}");
+    ep_script_elements_test_helper.utils._moveCaretToLine(lineNum, '{selectall}{rightarrow}', cb);
+  },
+  placeCaretInTheMiddleOfLine: function(lineNum, cb) {
+    ep_script_elements_test_helper.utils._moveCaretToLine(lineNum, '{selectall}{rightarrow}{leftarrow}', cb);
+  },
+  _moveCaretToLine: function(lineNum, sendkeysCommand, cb) {
+    var self = ep_script_elements_test_helper.utils;
+    var $targetLine = self.getLine(lineNum);
+    $targetLine.sendkeys(sendkeysCommand);
+
     helper.waitFor(function() {
-      var $targetLine = utils.getLine(lineNum);
-      var $lineWhereCaretIs = utils.getLineWhereCaretIs();
+      var $targetLine = self.getLine(lineNum);
+      var $lineWhereCaretIs = self.getLineWhereCaretIs();
 
       return $targetLine.get(0) === $lineWhereCaretIs.get(0);
     }).done(cb);
@@ -255,7 +243,18 @@ ep_script_elements_test_helper.utils = {
   },
 
   /**** vars and functions to drag some text and drop it somewhere else: ****/
+  dragSelectedTextAndDropItIntoBeginningOfLine: function(targetLineNumber, done) {
+    this._dragSelectedTextAndDropItIntoTargetPositionOfLine(targetLineNumber, this.placeCaretInTheBeginningOfLine, this._waitForDragIntoBeginningOfLine, done);
+  },
+  dragSelectedTextAndDropItIntoEndOfLine: function(targetLineNumber, done) {
+    this._dragSelectedTextAndDropItIntoTargetPositionOfLine(targetLineNumber, this.placeCaretAtTheEndOfLine, this._waitForDragIntoMiddleOfLine, done);
+  },
   dragSelectedTextAndDropItIntoMiddleOfLine: function(targetLineNumber, done) {
+    this._dragSelectedTextAndDropItIntoTargetPositionOfLine(targetLineNumber, this.placeCaretInTheMiddleOfLine, this._waitForDragIntoMiddleOfLine, done);
+  },
+  _dragSelectedTextAndDropItIntoTargetPositionOfLine: function(targetLineNumber, placeCaretAtTargetPosition, waitForLinesToBeProcessed, done) {
+    var self = this;
+
     // in order to get the actual HTML that is inserted when DnD happens, we need to
     // listen to 'drop' event, so we can retrieve the dropped HTML content.
     // Note: we need to use the same jQuery instance that is registering the main window
@@ -272,28 +271,11 @@ ep_script_elements_test_helper.utils = {
     this._triggerDnDEvent('drop', dataTransferMock);
 
     // dragend: remove original content + insert HTML data into target
-    this._moveSelectionIntoTarget(draggedHtml, targetLineNumber);
-    this._triggerDnDEvent('dragend', dataTransferMock);
+    this._moveSelectionIntoTarget(draggedHtml, targetLineNumber, placeCaretAtTargetPosition, function() {
+      self._triggerDnDEvent('dragend', dataTransferMock);
 
-    // wait for dropped lines to be processed. This happens when there's no drag marker nor any
-    // split elements on the same line (two tags with the same name inside of a <div>)
-    helper.waitFor(function() {
-      var $dragMarkers = helper.padInner$('dragstart, dragend');
-      var dragMarkersWereRemoved = $dragMarkers.length === 0;
-
-      var siblingsSelector = 'heading ~ heading, ' +
-                             'action ~ action, ' +
-                             'character ~ character, ' +
-                             'parenthetical ~ parenthetical, ' +
-                             'dialogue ~ dialogue, ' +
-                             'transition ~ transition, ' +
-                             'shot ~ shot';
-      var $siblingsOnSameLine = helper.padInner$(siblingsSelector);
-      var siblingsWereMerged = $siblingsOnSameLine.length === 0;
-
-      return dragMarkersWereRemoved && siblingsWereMerged;
-    }, 2000).done(done);
-
+      waitForLinesToBeProcessed(done);
+    });
   },
   _createDataTransferMock: function() {
     // store data into a simple object, indexed by format
@@ -318,17 +300,49 @@ ep_script_elements_test_helper.utils = {
     $editor.trigger($event);
     helper.padChrome$($editor.get(0)).trigger($event);
   },
-  _moveSelectionIntoTarget: function(draggedHtml, targetLineNumber) {
+  _moveSelectionIntoTarget: function(draggedHtml, targetLineNumber, placeCaretAtTargetPosition, done) {
     var innerDocument = helper.padInner$.document;
 
     // delete original content
     innerDocument.execCommand('delete');
 
     // set position to insert content on target line
-    var $target = this.getLine(targetLineNumber);
-    $target.sendkeys('{selectall}{rightarrow}{leftarrow}');
+    placeCaretAtTargetPosition(targetLineNumber, function() {
+      // insert content
+      innerDocument.execCommand('insertHTML', false, draggedHtml);
 
-    // insert content
-    innerDocument.execCommand('insertHTML', false, draggedHtml);
+      done();
+    });
   },
+  _waitForDragIntoBeginningOfLine: function(done) {
+    helper.waitFor(function() {
+      var $dragMarkers = helper.padInner$('dragstart, dragend');
+      var dragMarkersWereRemoved = $dragMarkers.length === 0;
+
+      var $lineInsideALine = helper.padInner$('div div');
+      var linesWereProcessed = $lineInsideALine.length === 0;
+
+      return dragMarkersWereRemoved && linesWereProcessed;
+    }, 2000).done(done);
+  },
+  _waitForDragIntoMiddleOfLine: function(done) {
+    // wait until there's no drag marker nor any split elements on the same line
+    // (two tags with the same name inside of a <div>)
+    helper.waitFor(function() {
+      var $dragMarkers = helper.padInner$('dragstart, dragend');
+      var dragMarkersWereRemoved = $dragMarkers.length === 0;
+
+      var siblingsSelector = 'heading ~ heading, ' +
+                             'action ~ action, ' +
+                             'character ~ character, ' +
+                             'parenthetical ~ parenthetical, ' +
+                             'dialogue ~ dialogue, ' +
+                             'transition ~ transition, ' +
+                             'shot ~ shot';
+      var $siblingsOnSameLine = helper.padInner$(siblingsSelector);
+      var siblingsWereMerged = $siblingsOnSameLine.length === 0;
+
+      return dragMarkersWereRemoved && siblingsWereMerged;
+    }, 2000).done(done);
+  }
 };
