@@ -69,11 +69,10 @@ var mergeEdgesOfDroppedContentOnAGeneral = function() {
   var $beginningOfDroppedContent = utils.getPadInner().find(DRAG_START_TAG);
   var $endOfDroppedContent       = utils.getPadInner().find(DRAG_END_TAG);
 
-  var $droppedLines = $beginningOfDroppedContent.nextUntil(DRAG_END_TAG);
-
   var $firstHalfOfOriginalTargetLine = $beginningOfDroppedContent.prev();
   var $secondHalfOfOriginalTargetLine = $endOfDroppedContent.next();
 
+  var $droppedLines = $beginningOfDroppedContent.nextUntil(DRAG_END_TAG);
   mergeTopEdgeOfDroppedContentIfItIsAGeneral($droppedLines.first(), $firstHalfOfOriginalTargetLine);
   mergeBottomEdgeOfDroppedContentIfItIsAGeneral($droppedLines.last(), $secondHalfOfOriginalTargetLine);
 }
@@ -85,13 +84,12 @@ var mergeBottomEdgeOfDroppedContentIfItIsAGeneral = function($droppedLine, $targ
   mergeEdgeOfDroppedContentIfItIsAGeneral($droppedLine, $targetLine, false);
 }
 var mergeEdgeOfDroppedContentIfItIsAGeneral = function($droppedLine, $targetLine, isTopEdge) {
-  var droppedLineIsGeneralToo = utils.typeOf($droppedLine) === 'general';
-  if (droppedLineIsGeneralToo) {
-    if (isTopEdge) {
-      $targetLine.append($droppedLine);
-    } else {
-      $targetLine.prepend($droppedLine);
-    }
+  var typeOfTargetLine = utils.typeOf($targetLine);
+  var typeOfDroppedLine = utils.typeOf($droppedLine);
+  var droppedLineHasSameTypeOfTargetLine = typeOfTargetLine === typeOfDroppedLine;
+
+  if (droppedLineHasSameTypeOfTargetLine) {
+    moveDroppedLineIntoTargetLine($droppedLine, $targetLine, isTopEdge);
 
     // Bug fix: moving a general into inside a line ('merging it') leads to a <div> inside
     // another <div>, which inserts an extra line break between them. To avoid this, we transform
@@ -100,6 +98,16 @@ var mergeEdgeOfDroppedContentIfItIsAGeneral = function($droppedLine, $targetLine
     $innerDiv.replaceWith(function() {
       return $('<span></span>').html($(this).contents());
     });
+  }
+}
+
+var moveDroppedLineIntoTargetLine = function($droppedLine, $targetLine, isTopEdge) {
+  // we need to know where (inside $targetLine) we should put the dropped line, if at the
+  // beginning or at the end of the line
+  if (isTopEdge) {
+    $targetLine.append($droppedLine);
+  } else {
+    $targetLine.prepend($droppedLine);
   }
 }
 

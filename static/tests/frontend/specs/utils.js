@@ -244,10 +244,10 @@ ep_script_elements_test_helper.utils = {
 
   /**** vars and functions to drag some text and drop it somewhere else: ****/
   dragSelectedTextAndDropItIntoBeginningOfLine: function(targetLineNumber, done) {
-    this._dragSelectedTextAndDropItIntoTargetPositionOfLine(targetLineNumber, this.placeCaretInTheBeginningOfLine, this._waitForDragIntoBeginningOfLine, done);
+    this._dragSelectedTextAndDropItIntoTargetPositionOfLine(targetLineNumber, this.placeCaretInTheBeginningOfLine, this._waitForDragIntoEdgeOfLine, done);
   },
   dragSelectedTextAndDropItIntoEndOfLine: function(targetLineNumber, done) {
-    this._dragSelectedTextAndDropItIntoTargetPositionOfLine(targetLineNumber, this.placeCaretAtTheEndOfLine, this._waitForDragIntoMiddleOfLine, done);
+    this._dragSelectedTextAndDropItIntoTargetPositionOfLine(targetLineNumber, this.placeCaretAtTheEndOfLine, this._waitForDragIntoEdgeOfLine, done);
   },
   dragSelectedTextAndDropItIntoMiddleOfLine: function(targetLineNumber, done) {
     this._dragSelectedTextAndDropItIntoTargetPositionOfLine(targetLineNumber, this.placeCaretInTheMiddleOfLine, this._waitForDragIntoMiddleOfLine, done);
@@ -314,7 +314,7 @@ ep_script_elements_test_helper.utils = {
       done();
     });
   },
-  _waitForDragIntoBeginningOfLine: function(done) {
+  _waitForDragIntoEdgeOfLine: function(done) {
     helper.waitFor(function() {
       var $dragMarkers = helper.padInner$('dragstart, dragend');
       var dragMarkersWereRemoved = $dragMarkers.length === 0;
