@@ -268,6 +268,7 @@ ep_script_elements_test_helper.utils = {
     var dataTransferMock = this._createDataTransferMock();
 
     this._triggerDnDEvent('dragstart', dataTransferMock);
+    this._dragSelectionBetweenOriginAndTargetLines(targetLineNumber);
     this._triggerDnDEvent('drop', dataTransferMock);
 
     // dragend: remove original content + insert HTML data into target
@@ -299,6 +300,24 @@ ep_script_elements_test_helper.utils = {
     // but the plugin listens DnD events on the inner frame jQuery.
     $editor.trigger($event);
     helper.padChrome$($editor.get(0)).trigger($event);
+  },
+  _triggerDragoverEvent: function(currentTarget) {
+    var $event = helper.padInner$.Event('dragover');
+    $event.currentTarget = currentTarget;
+    helper.padChrome$(currentTarget).trigger($event);
+  },
+  _dragSelectionBetweenOriginAndTargetLines: function(targetLineNumber) {
+    var $originLine = this.getLineWhereCaretIs();
+    var $targetLine = this.getLine(targetLineNumber);
+
+    var $linesBetweenOriginAndTarget = $originLine.prevUntil($targetLine);
+    var $linesToDragOver = $linesBetweenOriginAndTarget.add($originLine).add($targetLine);
+
+    var self = this;
+    // need to iterate backwards, as the content is being moved from bottom to top
+    $($linesToDragOver.get().reverse()).each(function() {
+      self._triggerDragoverEvent(this);
+    });
   },
   _moveSelectionIntoTarget: function(draggedHtml, targetLineNumber, placeCaretAtTargetPosition, done) {
     var innerDocument = helper.padInner$.document;

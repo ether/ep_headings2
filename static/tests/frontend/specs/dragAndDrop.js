@@ -1,17 +1,18 @@
 describe('ep_script_elements - drag and drop', function() {
   var utils;
 
-  var TARGET_GENERAL = 0;
-  var TARGET_LINE_WITH_DIFFERENT_TYPE = 1;
-  var TARGET_LINE_WITH_SAME_TYPE = 2;
   // separator =====
-  var SOURCE_LINE_1 = 4;
-  var SOURCE_LINE_2 = 5;
-  var SOURCE_LINE_3 = 6;
+  var TARGET_GENERAL = 1;
+  var TARGET_LINE_WITH_DIFFERENT_TYPE = 2;
+  var TARGET_LINE_WITH_SAME_TYPE = 3;
   // separator =====
-  var GENERAL_SOURCE_LINE_1 = 8;
-  var GENERAL_SOURCE_LINE_2 = 9;
-  var GENERAL_SOURCE_LINE_3 = 10;
+  var SOURCE_LINE_1 = 5;
+  var SOURCE_LINE_2 = 6;
+  var SOURCE_LINE_3 = 7;
+  // separator =====
+  var GENERAL_SOURCE_LINE_1 = 9;
+  var GENERAL_SOURCE_LINE_2 = 10;
+  var GENERAL_SOURCE_LINE_3 = 11;
 
   var SOURCE_TYPE = 'action';
   var DIFFERENT_TYPE = 'dialogue';
@@ -32,7 +33,8 @@ describe('ep_script_elements - drag and drop', function() {
     var separator = utils.general('=======');
     var lastLine = utils.general('last line');
 
-    var script = target_general + target_dialogue + target_action +
+    var script = separator +
+                 target_general + target_dialogue + target_action +
                  separator +
                  source_action1 + source_action2 + source_action3 +
                  separator +

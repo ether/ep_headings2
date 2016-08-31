@@ -15,7 +15,16 @@ exports.init = function() {
     setDataTransferWithSelectionContent(e);
   });
   $editor.on('dragend', function(e) {
-    mergeEdgesOfDroppedContentIfNecessary();
+    mergeEdgesOfDroppedContentIfNecessary(textOfLastTargetLine);
+  });
+
+  // Bug fix: when DnD is finished, we need to know which was the last line displayed as
+  // target on the editor. To do this, we store its text -- if we store a reference, the
+  // line might change on the midway due to Etherpad updates to DOM structure. See
+  // mergeEdgesOfDroppedContentOnAGeneral() for more details
+  var textOfLastTargetLine;
+  $editor.on('dragover', 'div', function(e) {
+    textOfLastTargetLine = $(e.currentTarget).text();
   });
 }
 
@@ -50,13 +59,13 @@ var markEdgesOfDraggedContent = function(draggedHtml) {
   return DRAG_START_MARKER + draggedHtml + DRAG_END_MARKER;
 }
 
-var mergeEdgesOfDroppedContentIfNecessary = function() {
+var mergeEdgesOfDroppedContentIfNecessary = function(textOfLastTargetLine) {
   var $targetLine = utils.getPadInner().find('div:has(dragstart)');
 
   if ($targetLine.length === 0) {
     // content was dropped on a general. We have a completely different behavior, so we handle
     // it in a different function
-    mergeEdgesOfDroppedContentOnAGeneral();
+    mergeEdgesOfDroppedContentOnAGeneral(textOfLastTargetLine);
   } else {
     mergeEdgesOfDroppedContentOnANonGeneral($targetLine);
   }
@@ -65,16 +74,26 @@ var mergeEdgesOfDroppedContentIfNecessary = function() {
   removeMarkersOfDroppedContentEdges();
 }
 
-var mergeEdgesOfDroppedContentOnAGeneral = function() {
+var mergeEdgesOfDroppedContentOnAGeneral = function(textOfLastTargetLine) {
   var $beginningOfDroppedContent = utils.getPadInner().find(DRAG_START_TAG);
   var $endOfDroppedContent       = utils.getPadInner().find(DRAG_END_TAG);
 
-  var $firstHalfOfOriginalTargetLine = $beginningOfDroppedContent.prev();
+  var $droppedLines = $beginningOfDroppedContent.nextUntil(DRAG_END_TAG);
+
+  var $firstHalfOfOriginalTargetLine  = $beginningOfDroppedContent.prev();
   var $secondHalfOfOriginalTargetLine = $endOfDroppedContent.next();
 
-  var $droppedLines = $beginningOfDroppedContent.nextUntil(DRAG_END_TAG);
-  mergeTopEdgeOfDroppedContentIfItIsAGeneral($droppedLines.first(), $firstHalfOfOriginalTargetLine);
-  mergeBottomEdgeOfDroppedContentIfItIsAGeneral($droppedLines.last(), $secondHalfOfOriginalTargetLine);
+  var droppedContentAtEndOfLine       = $firstHalfOfOriginalTargetLine.text() === textOfLastTargetLine;
+  var droppedContentAtBeginningOfLine = $secondHalfOfOriginalTargetLine.text() === textOfLastTargetLine;
+
+  // Bug fix: when generals are dropped between two lines with generals, we should only merge the
+  // edge of dropped content that was intended to be moved inside of the target line
+  if (!droppedContentAtEndOfLine) {
+    mergeBottomEdgeOfDroppedContentIfItIsAGeneral($droppedLines.last(), $secondHalfOfOriginalTargetLine);
+  }
+  if (!droppedContentAtBeginningOfLine) {
+    mergeTopEdgeOfDroppedContentIfItIsAGeneral($droppedLines.first(), $firstHalfOfOriginalTargetLine);
+  }
 }
 
 var mergeTopEdgeOfDroppedContentIfItIsAGeneral = function($droppedLine, $targetLine) {
