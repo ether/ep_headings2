@@ -1,30 +1,24 @@
 var _ = require('ep_etherpad-lite/static/js/underscore');
 
 var utils = require('./utils');
+var dndMemory = require('./dragAndDropMemory');
 
-var DRAG_START_TAG = 'dragstart';
-var DRAG_END_TAG = 'dragend';
+var DRAG_START_TAG = dndMemory.DRAG_START_TAG;
+var DRAG_END_TAG   = dndMemory.DRAG_END_TAG;
 
 var DRAG_START_MARKER = '<' + DRAG_START_TAG + '><br></' + DRAG_START_TAG + '>';
 var DRAG_END_MARKER = '<' + DRAG_END_TAG + '><br></' + DRAG_END_TAG + '>';
 
 exports.init = function() {
-  var $editor = utils.getPadInner().find('#innerdocbody');
+  // Bug fix: when DnD is finished, we need to know which was the last line displayed as
+  // target on the editor. So we need to have a "memory" about the DnD process
+  dndMemory.init();
 
+  var $editor = utils.getPadInner().find('#innerdocbody');
   $editor.on('dragstart', function(e) {
     setDataTransferWithSelectionContent(e);
-  });
-  $editor.on('dragend', function(e) {
-    mergeEdgesOfDroppedContentIfNecessary(textOfLastTargetLine);
-  });
-
-  // Bug fix: when DnD is finished, we need to know which was the last line displayed as
-  // target on the editor. To do this, we store its text -- if we store a reference, the
-  // line might change on the midway due to Etherpad updates to DOM structure. See
-  // mergeEdgesOfDroppedContentOnAGeneral() for more details
-  var textOfLastTargetLine;
-  $editor.on('dragover', 'div', function(e) {
-    textOfLastTargetLine = $(e.currentTarget).text();
+  }).on('dragend', function(e) {
+    mergeEdgesOfDroppedContentIfNecessary();
   });
 }
 
@@ -59,13 +53,13 @@ var markEdgesOfDraggedContent = function(draggedHtml) {
   return DRAG_START_MARKER + draggedHtml + DRAG_END_MARKER;
 }
 
-var mergeEdgesOfDroppedContentIfNecessary = function(textOfLastTargetLine) {
+var mergeEdgesOfDroppedContentIfNecessary = function() {
   var $targetLine = utils.getPadInner().find('div:has(dragstart)');
 
   if ($targetLine.length === 0) {
     // content was dropped on a general. We have a completely different behavior, so we handle
     // it in a different function
-    mergeEdgesOfDroppedContentOnAGeneral(textOfLastTargetLine);
+    mergeEdgesOfDroppedContentOnAGeneral();
   } else {
     mergeEdgesOfDroppedContentOnANonGeneral($targetLine);
   }
@@ -74,7 +68,7 @@ var mergeEdgesOfDroppedContentIfNecessary = function(textOfLastTargetLine) {
   removeMarkersOfDroppedContentEdges();
 }
 
-var mergeEdgesOfDroppedContentOnAGeneral = function(textOfLastTargetLine) {
+var mergeEdgesOfDroppedContentOnAGeneral = function() {
   var $beginningOfDroppedContent = utils.getPadInner().find(DRAG_START_TAG);
   var $endOfDroppedContent       = utils.getPadInner().find(DRAG_END_TAG);
 
@@ -83,15 +77,12 @@ var mergeEdgesOfDroppedContentOnAGeneral = function(textOfLastTargetLine) {
   var $firstHalfOfOriginalTargetLine  = $beginningOfDroppedContent.prev();
   var $secondHalfOfOriginalTargetLine = $endOfDroppedContent.next();
 
-  var droppedContentAtEndOfLine       = $firstHalfOfOriginalTargetLine.text() === textOfLastTargetLine;
-  var droppedContentAtBeginningOfLine = $secondHalfOfOriginalTargetLine.text() === textOfLastTargetLine;
-
   // Bug fix: when generals are dropped between two lines with generals, we should only merge the
   // edge of dropped content that was intended to be moved inside of the target line
-  if (!droppedContentAtEndOfLine) {
+  if (!dndMemory.droppedContentAtEndOfGeneral()) {
     mergeBottomEdgeOfDroppedContentIfItIsAGeneral($droppedLines.last(), $secondHalfOfOriginalTargetLine);
   }
-  if (!droppedContentAtBeginningOfLine) {
+  if (!dndMemory.droppedContentAtBeginningOfGeneral()) {
     mergeTopEdgeOfDroppedContentIfItIsAGeneral($droppedLines.first(), $firstHalfOfOriginalTargetLine);
   }
 }
