@@ -86,53 +86,85 @@ describe('ep_script_elements - drag and drop', function() {
   });
 
   context('when user drags part of a line', function() {
-    var selectPartOfOneSourceLineAndDropItIntoMiddleOfLine = function(targetLine, done) {
-      // select part of first line
-      var $source = utils.getLine(SOURCE_LINE_1);
+    var selectPartOfOneSourceLine = function(sourceLine) {
+      var $source = utils.getLine(sourceLine);
       var start = 'The '.length;
       var end = start + 'source'.length;
       helper.selectLines($source, $source, start, end);
-
-      // drag into another line
-      utils.dragSelectedTextAndDropItIntoMiddleOfLine(targetLine, done);
     };
 
-    context('and drops it into the middle of a line with script element', function() {
-      var testItDoesNotChangeTargetLineTypeAndItRemovesTextFromOriginalLine = function(targetLine, targetLineType, expectedTargetLineText) {
-        before(function(done) {
-          selectPartOfOneSourceLineAndDropItIntoMiddleOfLine(targetLine, done);
-        });
-        after(function(done) {
-          undoAndWaitForScriptToBeBackToOriginal(done);
-        });
-
-        it('inserts dragged text into target line and does not change its type', function(done) {
-          utils.validateLineTextAndType(targetLine, expectedTargetLineText, targetLineType);
-          done();
-        });
-
-        it('removes text from source line and does not change its type', function(done) {
-          utils.validateLineTextAndType(SOURCE_LINE_1, 'The  1', SOURCE_TYPE);
-          done();
-        });
+    var dragAndDrop = function(targetPosition, targetLine, done) {
+      var dragAndDropMethod;
+      if (targetPosition === 'middle') {
+        dragAndDropMethod = utils.dragSelectedTextAndDropItIntoMiddleOfLine;
+      } else if (targetPosition === 'end') {
+        dragAndDropMethod = utils.dragSelectedTextAndDropItIntoEndOfLine;
+      } else {
+        dragAndDropMethod = utils.dragSelectedTextAndDropItIntoBeginningOfLine;
       }
+      dragAndDropMethod(targetLine, done);
+    }
+
+    var testItDoesNotChangeTargetLineTypeAndItRemovesTextFromOriginalLine = function(targetLine, targetLineType, expectedTargetLineText, dropPosition) {
+      before(function(done) {
+        selectPartOfOneSourceLine(SOURCE_LINE_1);
+        dragAndDrop(dropPosition, targetLine, done);
+      });
+      after(function(done) {
+        undoAndWaitForScriptToBeBackToOriginal(done);
+      });
+
+      it('inserts dragged text into target line and does not change its type', function(done) {
+        utils.validateLineTextAndType(targetLine, expectedTargetLineText, targetLineType);
+        done();
+      });
+
+      it('removes text from source line and does not change its type', function(done) {
+        utils.validateLineTextAndType(SOURCE_LINE_1, 'The  1', SOURCE_TYPE);
+        done();
+      });
+    }
+
+    context('and drops it into the middle of a line with script element', function() {
+      var DROP_POSITION = 'middle';
 
       context('and target line is not a general', function() {
         var targetLineTextAfterDrop = 'Target with different type [source]';
-        testItDoesNotChangeTargetLineTypeAndItRemovesTextFromOriginalLine(TARGET_LINE_WITH_DIFFERENT_TYPE, DIFFERENT_TYPE, targetLineTextAfterDrop);
+        testItDoesNotChangeTargetLineTypeAndItRemovesTextFromOriginalLine(TARGET_LINE_WITH_DIFFERENT_TYPE, DIFFERENT_TYPE, targetLineTextAfterDrop, DROP_POSITION);
       });
 
       context('and target line is a general', function() {
         var targetLineTextAfterDrop = 'Target with general [source]';
-        testItDoesNotChangeTargetLineTypeAndItRemovesTextFromOriginalLine(TARGET_GENERAL, 'general', targetLineTextAfterDrop);
+        testItDoesNotChangeTargetLineTypeAndItRemovesTextFromOriginalLine(TARGET_GENERAL, 'general', targetLineTextAfterDrop, DROP_POSITION);
       });
     });
 
     context('and drops it into the beginning of a line with script element', function() {
-      it('should be implemented');
+      var DROP_POSITION = 'beginning';
+
+      context('and target line is not a general', function() {
+        var targetLineTextAfterDrop = 'sourceTarget with different type []';
+        testItDoesNotChangeTargetLineTypeAndItRemovesTextFromOriginalLine(TARGET_LINE_WITH_DIFFERENT_TYPE, DIFFERENT_TYPE, targetLineTextAfterDrop, DROP_POSITION);
+      });
+
+      context('and target line is a general', function() {
+        var targetLineTextAfterDrop = 'sourceTarget with general []';
+        testItDoesNotChangeTargetLineTypeAndItRemovesTextFromOriginalLine(TARGET_GENERAL, 'general', targetLineTextAfterDrop, DROP_POSITION);
+      });
     });
+
     context('and drops it into the end of a line with script element', function() {
-      it('should be implemented');
+      var DROP_POSITION = 'end';
+
+      context('and target line is not a general', function() {
+        var targetLineTextAfterDrop = 'Target with different type []source';
+        testItDoesNotChangeTargetLineTypeAndItRemovesTextFromOriginalLine(TARGET_LINE_WITH_DIFFERENT_TYPE, DIFFERENT_TYPE, targetLineTextAfterDrop, DROP_POSITION);
+      });
+
+      context('and target line is a general', function() {
+        var targetLineTextAfterDrop = 'Target with general []source';
+        testItDoesNotChangeTargetLineTypeAndItRemovesTextFromOriginalLine(TARGET_GENERAL, 'general', targetLineTextAfterDrop, DROP_POSITION);
+      });
     });
   });
 

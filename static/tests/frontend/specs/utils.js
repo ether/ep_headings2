@@ -247,13 +247,16 @@ ep_script_elements_test_helper.utils = {
 
   /**** vars and functions to drag some text and drop it somewhere else: ****/
   dragSelectedTextAndDropItIntoBeginningOfLine: function(targetLineNumber, done) {
-    this._dragSelectedTextAndDropItIntoTargetPositionOfLine(targetLineNumber, this.placeCaretInTheBeginningOfLine, this._waitForDragIntoEdgeOfLine, done);
+    var self = ep_script_elements_test_helper.utils;
+    self._dragSelectedTextAndDropItIntoTargetPositionOfLine(targetLineNumber, self.placeCaretInTheBeginningOfLine, self._waitForDragIntoEdgeOfLine, done);
   },
   dragSelectedTextAndDropItIntoEndOfLine: function(targetLineNumber, done) {
-    this._dragSelectedTextAndDropItIntoTargetPositionOfLine(targetLineNumber, this.placeCaretAtTheEndOfLine, this._waitForDragIntoEdgeOfLine, done);
+    var self = ep_script_elements_test_helper.utils;
+    self._dragSelectedTextAndDropItIntoTargetPositionOfLine(targetLineNumber, self.placeCaretAtTheEndOfLine, self._waitForDragIntoEdgeOfLine, done);
   },
   dragSelectedTextAndDropItIntoMiddleOfLine: function(targetLineNumber, done) {
-    this._dragSelectedTextAndDropItIntoTargetPositionOfLine(targetLineNumber, this.placeCaretInTheMiddleOfLine, this._waitForDragIntoMiddleOfLine, done);
+    var self = ep_script_elements_test_helper.utils;
+    self._dragSelectedTextAndDropItIntoTargetPositionOfLine(targetLineNumber, self.placeCaretInTheMiddleOfLine, self._waitForDragIntoMiddleOfLine, done);
   },
   _dragSelectedTextAndDropItIntoTargetPositionOfLine: function(targetLineNumber, placeCaretAtTargetPosition, waitForLinesToBeProcessed, done) {
     var self = this;
