@@ -126,20 +126,24 @@ var mergeEdgesOfDroppedContentOnANonGeneral = function($targetLine) {
 
   // Bug fix: when content is dropped at beginning of line, the types of edge lines are
   // being messed up. To avoid that, we need to move dropped content out of $targetLine
-  if (contentWasDroppedAtBeginningOfLine($targetLine)) {
+  if (dndMemory.droppedContentAtBeginningOfNonGeneral()) {
     moveDroppedContentOutOfTargetLine($targetLine, typeOfTargetLine);
+
+    // Bug fix: when content is dropped at an empty line, its original <br> is replaced
+    // by the new content, so after moving dropped content out of target line Etherpad
+    // messes up with the type of first dropped line. To avoid that, we need to add the
+    // <br> back, so Etherpad will understand that original line was kept unchanged, and
+    // leave the other lines around it untouched
+    if (dndMemory.droppedContentAtEmptyLine()) {
+      // need to insert <br> as a sibling of dropped content edges, otherwise original
+      // line type will be lost
+      $('<br>').insertBefore($targetLine.find(DRAG_START_TAG));
+    }
   }
 
   var $droppedLines = $targetLine.find('div');
   mergeDroppedAndTargetLineIfTheyHaveSameType($droppedLines.first(), typeOfTargetLine);
   mergeDroppedAndTargetLineIfTheyHaveSameType($droppedLines.last(), typeOfTargetLine);
-}
-
-var contentWasDroppedAtBeginningOfLine = function($targetLine) {
-  var $tagsBeforeDroppedContent = $targetLine.find(DRAG_START_TAG).prev();
-  var contentDroppedAtBeginningOfLine = $tagsBeforeDroppedContent.length === 0;
-
-  return contentDroppedAtBeginningOfLine;
 }
 
 var moveDroppedContentOutOfTargetLine = function($targetLine, typeOfTargetLine) {

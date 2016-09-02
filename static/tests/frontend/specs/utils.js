@@ -188,7 +188,10 @@ ep_script_elements_test_helper.utils = {
     e.keyCode = CODE;
     inner$("#innerdocbody").trigger(e);
   },
-
+  BACKSPACE: 8,
+  pressBackspace: function() {
+    this.pressKey(this.BACKSPACE);
+  },
   buildUndoRedo: function(isRedo) {
     var inner$ = helper.padInner$;
     if(inner$(window)[0].bowser.firefox || inner$(window)[0].bowser.modernIE){ // if it's a mozilla or IE

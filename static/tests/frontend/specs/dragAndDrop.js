@@ -459,5 +459,130 @@ describe('ep_script_elements - drag and drop', function() {
         });
       });
     });
+
+    context('and drops them into an empty line with script element', function() {
+      var removeContentFromLine = function(lineNumber, done) {
+        var $line = utils.getLine(lineNumber);
+        $line.sendkeys('{selectall}');
+        utils.pressBackspace();
+
+        // wait for line to be processed -- it should have a br when Etherpad finishes processing it
+        helper.waitFor(function() {
+          var $line = utils.getLine(lineNumber);
+          var lineIsEmpty = $line.find('br').length !== 0;
+          return lineIsEmpty;
+        }).done(done);
+      }
+
+      context('and target line has the same type of the dragged lines', function() {
+        before(function(done) {
+          removeContentFromLine(TARGET_LINE_WITH_SAME_TYPE, function() {
+            selectAllSourceLines(SOURCE_LINE_1, SOURCE_LINE_3);
+            utils.dragSelectedTextAndDropItIntoEndOfLine(TARGET_LINE_WITH_SAME_TYPE, done);
+          });
+        });
+        after(function(done) {
+          // need an extra undo to restore empty line content
+          utils.undo();
+          undoAndWaitForScriptToBeBackToOriginal(done);
+        });
+
+        it('places dragged content where target line originally was', function(done) {
+          utils.validateLineTextAndType(TARGET_LINE_WITH_SAME_TYPE    , 'The source 1', SOURCE_TYPE);
+          utils.validateLineTextAndType(TARGET_LINE_WITH_SAME_TYPE + 1, 'The source 2', SOURCE_TYPE);
+          utils.validateLineTextAndType(TARGET_LINE_WITH_SAME_TYPE + 2, 'The source 3', SOURCE_TYPE);
+          done();
+        });
+
+        it('does not change any of the lines besides dragged content', function(done) {
+          utils.validateLineTextAndType(TARGET_LINE_WITH_SAME_TYPE - 1, 'Target with different type []', DIFFERENT_TYPE);
+          utils.validateLineTextAndType(TARGET_LINE_WITH_SAME_TYPE + 3, '=======', utils.GENERAL);
+          done();
+        });
+      });
+
+      context('and target line has a different type of the dragged lines', function() {
+        before(function(done) {
+          removeContentFromLine(TARGET_LINE_WITH_DIFFERENT_TYPE, function() {
+            selectAllSourceLines(SOURCE_LINE_1, SOURCE_LINE_3);
+            utils.dragSelectedTextAndDropItIntoEndOfLine(TARGET_LINE_WITH_DIFFERENT_TYPE, done);
+          });
+        });
+        after(function(done) {
+          // need an extra undo to restore empty line content
+          utils.undo();
+          undoAndWaitForScriptToBeBackToOriginal(done);
+        });
+
+        it('places all dragged content above original target line', function(done) {
+          utils.validateLineTextAndType(TARGET_LINE_WITH_DIFFERENT_TYPE    , 'The source 1', SOURCE_TYPE);
+          utils.validateLineTextAndType(TARGET_LINE_WITH_DIFFERENT_TYPE + 1, 'The source 2', SOURCE_TYPE);
+          utils.validateLineTextAndType(TARGET_LINE_WITH_DIFFERENT_TYPE + 2, 'The source 3', SOURCE_TYPE);
+          done();
+        });
+
+        it('does not change any of the lines besides dragged content', function(done) {
+          utils.validateLineTextAndType(TARGET_LINE_WITH_DIFFERENT_TYPE - 1, 'Target with general []', utils.GENERAL);
+          utils.validateLineTextAndType(TARGET_LINE_WITH_DIFFERENT_TYPE + 3, '', DIFFERENT_TYPE);
+          utils.validateLineTextAndType(TARGET_LINE_WITH_DIFFERENT_TYPE + 4, 'Target with same type []', SOURCE_TYPE);
+          done();
+        });
+      });
+
+      context('and target line is a general', function() {
+        before(function(done) {
+          removeContentFromLine(TARGET_GENERAL, function() {
+            selectAllSourceLines(SOURCE_LINE_1, SOURCE_LINE_3);
+            utils.dragSelectedTextAndDropItIntoEndOfLine(TARGET_GENERAL, done);
+          });
+        });
+        after(function(done) {
+          // need an extra undo to restore empty line content
+          utils.undo();
+          undoAndWaitForScriptToBeBackToOriginal(done);
+        });
+
+        it('places all dragged content above original target line', function(done) {
+          utils.validateLineTextAndType(TARGET_GENERAL    , 'The source 1', SOURCE_TYPE);
+          utils.validateLineTextAndType(TARGET_GENERAL + 1, 'The source 2', SOURCE_TYPE);
+          utils.validateLineTextAndType(TARGET_GENERAL + 2, 'The source 3', SOURCE_TYPE);
+          done();
+        });
+
+        it('does not change any of the lines besides dragged content', function(done) {
+          utils.validateLineTextAndType(TARGET_GENERAL - 1, '=======', utils.GENERAL);
+          utils.validateLineTextAndType(TARGET_GENERAL + 3, '', utils.GENERAL);
+          utils.validateLineTextAndType(TARGET_GENERAL + 4, 'Target with different type []', DIFFERENT_TYPE);
+          done();
+        });
+      });
+
+      context('and source and target lines are all generals', function() {
+        before(function(done) {
+          removeContentFromLine(TARGET_GENERAL, function() {
+            selectAllSourceLines(GENERAL_SOURCE_LINE_1, GENERAL_SOURCE_LINE_3);
+            utils.dragSelectedTextAndDropItIntoEndOfLine(TARGET_GENERAL, done);
+          });
+        });
+        after(function(done) {
+          // need an extra undo to restore empty line content
+          utils.undo();
+          undoAndWaitForScriptToBeBackToOriginal(done);
+        });
+
+        it('places dragged content where target line originally was', function(done) {
+          utils.validateLineTextAndType(TARGET_GENERAL    , 'The source with general 1', utils.GENERAL);
+          utils.validateLineTextAndType(TARGET_GENERAL + 1, 'The source with general 2', utils.GENERAL);
+          utils.validateLineTextAndType(TARGET_GENERAL + 2, 'The source with general 3', utils.GENERAL);
+          done();
+        });
+
+        it('does not change any of the lines besides dragged content', function(done) {
+          utils.validateLineTextAndType(TARGET_GENERAL - 1, '=======', utils.GENERAL);
+          utils.validateLineTextAndType(TARGET_GENERAL + 3, 'Target with different type []', DIFFERENT_TYPE);
+          done();
+        });
+      });
+    });
   });
 });
