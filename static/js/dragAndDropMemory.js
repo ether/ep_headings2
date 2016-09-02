@@ -8,7 +8,6 @@ exports.DRAG_END_TAG   = DRAG_END_TAG;
 // variables that need to be calculated when DnD is finished, but that can be checked later,
 // even after changing the DOM structure
 var droppedAtBeginningOfNonGeneral,
-    droppedAtEmptyLine,
     droppedAtEndOfGeneral,
     droppedAtBeginningOfGeneral;
 
@@ -21,7 +20,6 @@ exports.init = function() {
     textOfLastTargetLine = $(lastTargetLine).text();
   }).on('dragend', function(e) {
     droppedAtBeginningOfNonGeneral = checkIfDroppedContentAtBeginningOfNonGeneral(lastTargetLine);
-    droppedAtEmptyLine             = textOfLastTargetLine.length === 0;
     droppedAtEndOfGeneral          = checkIfDroppedContentAtEndOfGeneral(lastTargetLine, textOfLastTargetLine);
     droppedAtBeginningOfGeneral    = checkIfDroppedContentAtBeginningOfGeneral(lastTargetLine, textOfLastTargetLine);
   });
@@ -29,9 +27,6 @@ exports.init = function() {
 
 exports.droppedContentAtBeginningOfNonGeneral = function() {
   return droppedAtBeginningOfNonGeneral;
-}
-exports.droppedContentAtEmptyLine = function() {
-  return droppedAtEmptyLine;
 }
 exports.droppedContentAtEndOfGeneral = function() {
   return droppedAtEndOfGeneral;

@@ -17,6 +17,11 @@ describe('ep_script_elements - drag and drop', function() {
   var SOURCE_TYPE = 'action';
   var DIFFERENT_TYPE = 'dialogue';
 
+  var SOURCE_TEXT = {
+    action: 'The source 1\nThe source 2\nThe source 3',
+    general: 'The source with general 1\nThe source with general 2\nThe source with general 3'
+  };
+
   var createScript = function(done) {
     var target_general  = utils.general('Target with general []');
     var target_dialogue = utils.dialogue('Target with different type []');
@@ -87,6 +92,7 @@ describe('ep_script_elements - drag and drop', function() {
 
   context('when user drags part of a line', function() {
     var selectPartOfOneSourceLine = function(sourceLine) {
+      // select text "source" from line
       var $source = utils.getLine(sourceLine);
       var start = 'The '.length;
       var end = start + 'source'.length;
@@ -175,6 +181,23 @@ describe('ep_script_elements - drag and drop', function() {
       helper.selectLines($firstSourceLine, $lastSourceLine);
     }
 
+    var testMovedNonGeneralsAreStillSelected = function() {
+      testDroppedContentIsStillSelected(SOURCE_TYPE);
+    }
+    var testMovedGeneralsAreStillSelected = function() {
+      testDroppedContentIsStillSelected('general');
+    }
+    var testDroppedContentIsStillSelected = function(typeOfSourceLines) {
+      it('keeps dropped text still selected', function(done) {
+        var expectedText = SOURCE_TEXT[typeOfSourceLines];
+
+        // text might take a while to be fully processed
+        helper.waitFor(function() {
+          return utils.getSelectedText() === expectedText;
+        }).done(done);
+      });
+    }
+
     context('and drops them into the middle of a line with script element', function() {
       context('and target line has the same type of the dragged lines', function() {
         before(function(done) {
@@ -184,6 +207,8 @@ describe('ep_script_elements - drag and drop', function() {
         after(function(done) {
           undoAndWaitForScriptToBeBackToOriginal(done);
         });
+
+        testMovedNonGeneralsAreStillSelected();
 
         it('merges first line of dragged content with first half of target line', function(done) {
           utils.validateLineTextAndType(TARGET_LINE_WITH_SAME_TYPE, 'Target with same type [The source 1', SOURCE_TYPE);
@@ -214,6 +239,8 @@ describe('ep_script_elements - drag and drop', function() {
             undoAndWaitForScriptToBeBackToOriginal(done);
           });
 
+          testMovedGeneralsAreStillSelected();
+
           it('splits first half of target line', function(done) {
             utils.validateLineTextAndType(TARGET_LINE_WITH_DIFFERENT_TYPE, 'Target with different type [', DIFFERENT_TYPE);
             done();
@@ -240,6 +267,8 @@ describe('ep_script_elements - drag and drop', function() {
           after(function(done) {
             undoAndWaitForScriptToBeBackToOriginal(done);
           });
+
+          testMovedNonGeneralsAreStillSelected();
 
           it('splits first half of target line', function(done) {
             utils.validateLineTextAndType(TARGET_LINE_WITH_DIFFERENT_TYPE, 'Target with different type [', DIFFERENT_TYPE);
@@ -272,6 +301,8 @@ describe('ep_script_elements - drag and drop', function() {
           undoAndWaitForScriptToBeBackToOriginal(done);
         });
 
+        testMovedNonGeneralsAreStillSelected();
+
         it('splits first half of target line', function(done) {
           utils.validateLineTextAndType(TARGET_GENERAL, 'Target with general [', utils.GENERAL);
           done();
@@ -298,6 +329,8 @@ describe('ep_script_elements - drag and drop', function() {
         after(function(done) {
           undoAndWaitForScriptToBeBackToOriginal(done);
         });
+
+        testMovedGeneralsAreStillSelected();
 
         it('merges first line of dragged content with first half of target line', function(done) {
           utils.validateLineTextAndType(TARGET_GENERAL, 'Target with general [The source with general 1', utils.GENERAL);
@@ -326,6 +359,8 @@ describe('ep_script_elements - drag and drop', function() {
           undoAndWaitForScriptToBeBackToOriginal(done);
         });
 
+        testMovedNonGeneralsAreStillSelected();
+
         it('merges last line of dragged content with target line', function(done) {
           utils.validateLineTextAndType(TARGET_LINE_WITH_SAME_TYPE + 2, 'The source 3Target with same type []', SOURCE_TYPE);
           done();
@@ -346,6 +381,8 @@ describe('ep_script_elements - drag and drop', function() {
         after(function(done) {
           undoAndWaitForScriptToBeBackToOriginal(done);
         });
+
+        testMovedNonGeneralsAreStillSelected();
 
         it('does not merge any text with target line, nor splits it anywhere', function(done) {
           utils.validateLineTextAndType(TARGET_LINE_WITH_DIFFERENT_TYPE + 3, 'Target with different type []', DIFFERENT_TYPE);
@@ -369,6 +406,8 @@ describe('ep_script_elements - drag and drop', function() {
           undoAndWaitForScriptToBeBackToOriginal(done);
         });
 
+        testMovedNonGeneralsAreStillSelected();
+
         it('does not merge any text with target line, nor splits it anywhere', function(done) {
           utils.validateLineTextAndType(TARGET_GENERAL + 3, 'Target with general []', utils.GENERAL);
           done();
@@ -390,6 +429,8 @@ describe('ep_script_elements - drag and drop', function() {
         after(function(done) {
           undoAndWaitForScriptToBeBackToOriginal(done);
         });
+
+        testMovedGeneralsAreStillSelected();
 
         it('merges last line of dragged content with target line', function(done) {
           utils.validateLineTextAndType(TARGET_GENERAL + 2, 'The source with general 3Target with general []', utils.GENERAL);
@@ -414,6 +455,8 @@ describe('ep_script_elements - drag and drop', function() {
           undoAndWaitForScriptToBeBackToOriginal(done);
         });
 
+        testMovedNonGeneralsAreStillSelected();
+
         it('merges first line of dragged content with target line', function(done) {
           utils.validateLineTextAndType(TARGET_LINE_WITH_SAME_TYPE, 'Target with same type []The source 1', SOURCE_TYPE);
           done();
@@ -434,6 +477,8 @@ describe('ep_script_elements - drag and drop', function() {
         after(function(done) {
           undoAndWaitForScriptToBeBackToOriginal(done);
         });
+
+        testMovedNonGeneralsAreStillSelected();
 
         it('does not merge any text with target line, nor splits it anywhere', function(done) {
           utils.validateLineTextAndType(TARGET_LINE_WITH_DIFFERENT_TYPE, 'Target with different type []', DIFFERENT_TYPE);
@@ -457,6 +502,8 @@ describe('ep_script_elements - drag and drop', function() {
           undoAndWaitForScriptToBeBackToOriginal(done);
         });
 
+        testMovedNonGeneralsAreStillSelected();
+
         it('does not merge any text with target line, nor splits it anywhere', function(done) {
           utils.validateLineTextAndType(TARGET_GENERAL, 'Target with general []', utils.GENERAL);
           done();
@@ -478,6 +525,8 @@ describe('ep_script_elements - drag and drop', function() {
         after(function(done) {
           undoAndWaitForScriptToBeBackToOriginal(done);
         });
+
+        testMovedGeneralsAreStillSelected();
 
         it('merges first line of dragged content with target line', function(done) {
           utils.validateLineTextAndType(TARGET_GENERAL, 'Target with general []The source with general 1', utils.GENERAL);
@@ -519,6 +568,8 @@ describe('ep_script_elements - drag and drop', function() {
           undoAndWaitForScriptToBeBackToOriginal(done);
         });
 
+        testMovedNonGeneralsAreStillSelected();
+
         it('places dragged content where target line originally was', function(done) {
           utils.validateLineTextAndType(TARGET_LINE_WITH_SAME_TYPE    , 'The source 1', SOURCE_TYPE);
           utils.validateLineTextAndType(TARGET_LINE_WITH_SAME_TYPE + 1, 'The source 2', SOURCE_TYPE);
@@ -545,6 +596,8 @@ describe('ep_script_elements - drag and drop', function() {
           utils.undo();
           undoAndWaitForScriptToBeBackToOriginal(done);
         });
+
+        testMovedNonGeneralsAreStillSelected();
 
         it('places all dragged content above original target line', function(done) {
           utils.validateLineTextAndType(TARGET_LINE_WITH_DIFFERENT_TYPE    , 'The source 1', SOURCE_TYPE);
@@ -574,6 +627,8 @@ describe('ep_script_elements - drag and drop', function() {
           undoAndWaitForScriptToBeBackToOriginal(done);
         });
 
+        testMovedNonGeneralsAreStillSelected();
+
         it('places all dragged content above original target line', function(done) {
           utils.validateLineTextAndType(TARGET_GENERAL    , 'The source 1', SOURCE_TYPE);
           utils.validateLineTextAndType(TARGET_GENERAL + 1, 'The source 2', SOURCE_TYPE);
@@ -601,6 +656,8 @@ describe('ep_script_elements - drag and drop', function() {
           utils.undo();
           undoAndWaitForScriptToBeBackToOriginal(done);
         });
+
+        testMovedGeneralsAreStillSelected();
 
         it('places dragged content where target line originally was', function(done) {
           utils.validateLineTextAndType(TARGET_GENERAL    , 'The source with general 1', utils.GENERAL);

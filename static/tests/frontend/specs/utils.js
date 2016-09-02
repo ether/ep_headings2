@@ -139,6 +139,12 @@ ep_script_elements_test_helper.utils = {
 
     return columnWhereCaretIsOnElement;
   },
+  getSelectedText: function() {
+    var inner$ = helper.padInner$;
+    var selectedText = inner$.document.getSelection().toString();
+
+    return selectedText;
+  },
 
   // first line === getLine(0)
   // second line === getLine(1)
@@ -327,6 +333,7 @@ ep_script_elements_test_helper.utils = {
   },
   _moveSelectionIntoTarget: function(draggedHtml, targetLineNumber, placeCaretAtTargetPosition, done) {
     var innerDocument = helper.padInner$.document;
+    var self = this;
 
     // delete original content
     innerDocument.execCommand('delete');
@@ -336,8 +343,20 @@ ep_script_elements_test_helper.utils = {
       // insert content
       innerDocument.execCommand('insertHTML', false, draggedHtml);
 
+      // insertHTML looses selection, we need to restore it (only works for multi-line selections)
+      self._selectDnDContent();
+
       done();
     });
+  },
+  _selectDnDContent: function() {
+    var $beginningOfDraggedContent = helper.padInner$('dragstart').next();
+    var $endOfDraggedContent = helper.padInner$('dragend').prev();
+
+    var dndContentFound = $beginningOfDraggedContent.length !== 0;
+    if (dndContentFound) {
+      helper.selectLines($beginningOfDraggedContent, $endOfDraggedContent);
+    }
   },
   _waitForDragIntoEdgeOfLine: function(done) {
     helper.waitFor(function() {

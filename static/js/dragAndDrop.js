@@ -6,6 +6,11 @@ var dndMemory = require('./dragAndDropMemory');
 var DRAG_START_TAG = dndMemory.DRAG_START_TAG;
 var DRAG_END_TAG   = dndMemory.DRAG_END_TAG;
 
+var SELECTION_START_TAG = 'dndSelectionStart';
+var SELECTION_END_TAG   = 'dndSelectionEnd';
+
+// using a <br> inside the drag edge tags was the only way we found to force Chrome
+// to keep them on DOM between dragstart and dragend events
 var DRAG_START_MARKER = '<' + DRAG_START_TAG + '><br></' + DRAG_START_TAG + '>';
 var DRAG_END_MARKER = '<' + DRAG_END_TAG + '><br></' + DRAG_END_TAG + '>';
 
@@ -18,16 +23,19 @@ exports.init = function() {
   $editor.on('dragstart', function(e) {
     setDataTransferWithSelectionContent(e);
   }).on('dragend', function(e) {
-    mergeEdgesOfDroppedContentIfNecessary();
+    keepSelectedTextUnchanged(function() {
+      mergeEdgesOfDroppedContentIfNecessary();
+    });
   });
 }
 
+/******************************* functions used on drag *********************************/
 var setDataTransferWithSelectionContent = function(e) {
   var draggedHtml = getHtmlContentOfSelection();
 
   // we need to mark dragged content edges, so when it is dropped we can merge them to
   // the line it was dropped at, if types are the same.
-  // Only do that if dragging multiple lines, otherwise leave dragged content as it it
+  // Only do that if dragging multiple lines, otherwise leave dragged content as it is
   if (draggingMultipleLines(draggedHtml)) {
     draggedHtml = markEdgesOfDraggedContent(draggedHtml);
   }
@@ -53,8 +61,42 @@ var markEdgesOfDraggedContent = function(draggedHtml) {
   return DRAG_START_MARKER + draggedHtml + DRAG_END_MARKER;
 }
 
+/******************************* functions used on drop *********************************/
+var keepSelectedTextUnchanged = function(actionThatMightChangeSelectedText) {
+  saveSelectedText();
+  actionThatMightChangeSelectedText();
+  restoreSelectedText();
+}
+
+var saveSelectedText = function() {
+  var $firstDroppedLine = utils.getPadInner().find(DRAG_START_TAG).next();
+  var $lastDroppedLine = utils.getPadInner().find(DRAG_END_TAG).prev();
+
+  // add tag inside first and last dropped lines, so even if they are merged the tags will
+  // still be at beginning and end of dropped lines
+  $firstDroppedLine.prepend('<' + SELECTION_START_TAG + '/>');
+  $lastDroppedLine.append('<' + SELECTION_END_TAG + '/>');
+}
+
+var restoreSelectedText = function() {
+  var $selectionStart = utils.getPadInner().find(SELECTION_START_TAG);
+  var $selectionEnd = utils.getPadInner().find(SELECTION_END_TAG);
+
+  var textSelectionFound = $selectionStart.length !== 0;
+  if (textSelectionFound) {
+    var selection = utils.getPadInner().get(0).getSelection();
+    var range = document.createRange();
+
+    range.setStart($selectionStart.get(0), 0);
+    range.setEnd($selectionEnd.get(0), 0);
+
+    selection.removeAllRanges();
+    selection.addRange(range);
+  }
+}
+
 var mergeEdgesOfDroppedContentIfNecessary = function() {
-  var $targetLine = utils.getPadInner().find('div:has(dragstart)');
+  var $targetLine = utils.getPadInner().find('div:has(' + DRAG_START_TAG + ')');
 
   if ($targetLine.length === 0) {
     // content was dropped on a general. We have a completely different behavior, so we handle
@@ -134,7 +176,7 @@ var mergeEdgesOfDroppedContentOnANonGeneral = function($targetLine) {
     // messes up with the type of first dropped line. To avoid that, we need to add the
     // <br> back, so Etherpad will understand that original line was kept unchanged, and
     // leave the other lines around it untouched
-    if (dndMemory.droppedContentAtEmptyLine()) {
+    if ($targetLine.text().length === 0) {
       // need to insert <br> as a sibling of dropped content edges, otherwise original
       // line type will be lost
       $('<br>').insertBefore($targetLine.find(DRAG_START_TAG));
