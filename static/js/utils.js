@@ -4,7 +4,6 @@ exports.SCENE_MARK_SELECTOR  = require("ep_script_scene_marks/static/js/shared")
 
 var LINE_ELEMENTS_SELECTOR   = _.union(SCRIPT_ELEMENTS_SELECTOR, exports.SCENE_MARK_SELECTOR).join(", ");
 var SE_TAGS_AND_GENERAL      = _.union(SCRIPT_ELEMENTS_SELECTOR, ["general"]);
-exports.SE_TAGS_AND_GENERAL  = SE_TAGS_AND_GENERAL;
 exports.DEFAULT_LINE_ATTRIBS = ['author', 'lmkr', 'insertorder', 'start'];
 
 exports.CHANGE_ELEMENT_EVENT = 'insertscriptelement';

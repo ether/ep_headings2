@@ -12,7 +12,6 @@ var mergeLines     = require('./mergeLines');
 var undoPagination = require('./undoPagination');
 var fixSmallZooms  = require('./fixSmallZooms');
 var cutEvents      = require('./cutEvents');
-var dragAndDrop    = require('./dragAndDrop');
 
 var ENTER          = 13;
 var cssFiles       = ['ep_script_elements/static/css/editor.css'];
@@ -42,7 +41,6 @@ exports.postAceInit = function(hook, context) {
   preventCharacterKeysAndEnterOnSelectionMultiLine(context);
   fixSmallZooms.init();
   cutEvents.init(context);
-  dragAndDrop.init();
 
   var script_element_selection = $('#script_element-selection');
   script_element_selection.on('change', function() {
