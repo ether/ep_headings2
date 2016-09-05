@@ -1,5 +1,17 @@
 var ep_script_elements_test_helper = ep_script_elements_test_helper || {};
 ep_script_elements_test_helper.utils = {
+  actName: function(text) {
+    return "<act_name>" + text + "</act_name><br/>";
+  },
+  actSummary: function(text){
+    return "<act_summary>" + text + "</act_summary><br/>"
+  },
+  sequenceName: function(text) {
+    return "<sequence_name>" + text + "</sequence_name><br/>";
+  },
+  sequenceSummary: function(text){
+    return "<sequence_summary>" + text + "</sequence_summary><br/>";
+  },
   heading: function(text) {
     return "<heading>" + text + "</heading><br/>";
   },

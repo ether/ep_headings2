@@ -2,17 +2,22 @@ describe('ep_script_elements - drag and drop', function() {
   var utils;
 
   // separator =====
-  var TARGET_GENERAL = 1;
-  var TARGET_LINE_WITH_DIFFERENT_TYPE = 2;
-  var TARGET_LINE_WITH_SAME_TYPE = 3;
+  var TARGET_GENERAL                  = 1;
+  var TARGET_ACT_NAME                 = TARGET_GENERAL + 1;
+  var TARGET_ACT_SUMMARY              = TARGET_ACT_NAME + 1;
+  var TARGET_SEQ_NAME                 = TARGET_ACT_SUMMARY + 1;
+  var TARGET_SEQ_SUMMARY              = TARGET_SEQ_NAME + 1;
+  var TARGET_HEADING_WITH_SM          = TARGET_SEQ_SUMMARY + 1;
+  var TARGET_LINE_WITH_DIFFERENT_TYPE = TARGET_HEADING_WITH_SM + 1;
+  var TARGET_LINE_WITH_SAME_TYPE      = TARGET_LINE_WITH_DIFFERENT_TYPE + 1;
   // separator =====
-  var SOURCE_LINE_1 = 5;
-  var SOURCE_LINE_2 = 6;
-  var SOURCE_LINE_3 = 7;
+  var SOURCE_LINE_1 = TARGET_LINE_WITH_SAME_TYPE + 2;
+  var SOURCE_LINE_2 = SOURCE_LINE_1 + 1;
+  var SOURCE_LINE_3 = SOURCE_LINE_2 + 1;
   // separator =====
-  var GENERAL_SOURCE_LINE_1 = 9;
-  var GENERAL_SOURCE_LINE_2 = 10;
-  var GENERAL_SOURCE_LINE_3 = 11;
+  var GENERAL_SOURCE_LINE_1 = SOURCE_LINE_3 + 2;
+  var GENERAL_SOURCE_LINE_2 = GENERAL_SOURCE_LINE_1 + 1;
+  var GENERAL_SOURCE_LINE_3 = GENERAL_SOURCE_LINE_2 + 1;
 
   var SOURCE_TYPE = 'action';
   var DIFFERENT_TYPE = 'dialogue';
@@ -23,28 +28,37 @@ describe('ep_script_elements - drag and drop', function() {
   };
 
   var createScript = function(done) {
-    var target_general  = utils.general('Target with general []');
-    var target_dialogue = utils.dialogue('Target with different type []');
-    var target_action   = utils.action('Target with same type []');
+    var smUtils = ep_script_scene_marks_test_helper.utils;
 
-    var source_action1 = utils.action('The source 1');
-    var source_action2 = utils.action('The source 2');
-    var source_action3 = utils.action('The source 3');
+    var targetGeneral         = utils.general('Target with general []');
+    var targetActName         = utils.actName('Target with act name []');
+    var targetActSummary      = utils.actSummary('Target with act summary []');
+    var targetSequenceName    = utils.sequenceName('Target with sequence name []');
+    var targetSequenceSummary = utils.sequenceSummary('Target with sequence summary []');
+    var targetHeading         = utils.heading('Target with heading with scene mark []');
+    var targetScene           = targetActName + targetActSummary + targetSequenceName + targetSequenceSummary + targetHeading;
+    var targetDialogue        = utils.dialogue('Target with different type []');
+    var targetAction          = utils.action('Target with same type []');
 
-    var source_general1 = utils.general('The source with general 1');
-    var source_general2 = utils.general('The source with general 2');
-    var source_general3 = utils.general('The source with general 3');
+    var sourceAction1 = utils.action('The source 1');
+    var sourceAction2 = utils.action('The source 2');
+    var sourceAction3 = utils.action('The source 3');
+
+    var sourceGeneral1 = utils.general('The source with general 1');
+    var sourceGeneral2 = utils.general('The source with general 2');
+    var sourceGeneral3 = utils.general('The source with general 3');
 
     var separator = utils.general('=======');
     var lastLine = utils.general('last line');
 
     var script = separator +
-                 target_general + target_dialogue + target_action +
+                 targetGeneral + targetScene + targetDialogue + targetAction +
                  separator +
-                 source_action1 + source_action2 + source_action3 +
+                 sourceAction1 + sourceAction2 + sourceAction3 +
                  separator +
-                 source_general1 + source_general2 + source_general3 +
-                 separator + lastLine;
+                 sourceGeneral1 + sourceGeneral2 + sourceGeneral3 +
+                 separator +
+                 lastLine;
 
     utils.createScriptWith(script, 'last line', done);
   }
@@ -55,6 +69,11 @@ describe('ep_script_elements - drag and drop', function() {
     helper.waitFor(function() {
       var textWasRestored =
         utils.getLine(TARGET_GENERAL).text()                  === 'Target with general []' &&
+        utils.getLine(TARGET_ACT_NAME).text()                 === 'Target with act name []' &&
+        utils.getLine(TARGET_ACT_SUMMARY).text()              === 'Target with act summary []' &&
+        utils.getLine(TARGET_SEQ_NAME).text()                 === 'Target with sequence name []' &&
+        utils.getLine(TARGET_SEQ_SUMMARY).text()              === 'Target with sequence summary []' &&
+        utils.getLine(TARGET_HEADING_WITH_SM).text()          === 'Target with heading with scene mark []' &&
         utils.getLine(TARGET_LINE_WITH_DIFFERENT_TYPE).text() === 'Target with different type []' &&
         utils.getLine(TARGET_LINE_WITH_SAME_TYPE).text()      === 'Target with same type []' &&
         utils.getLine(SOURCE_LINE_1).text()                   === 'The source 1' &&
@@ -65,6 +84,11 @@ describe('ep_script_elements - drag and drop', function() {
         utils.getLine(GENERAL_SOURCE_LINE_3).text()           === 'The source with general 3';
       var typesWereRestored =
         utils.getLineType(TARGET_GENERAL)                  === utils.GENERAL &&
+        utils.getLineType(TARGET_ACT_NAME)                 === 'act_name' &&
+        utils.getLineType(TARGET_ACT_SUMMARY)              === 'act_summary' &&
+        utils.getLineType(TARGET_SEQ_NAME)                 === 'sequence_name' &&
+        utils.getLineType(TARGET_SEQ_SUMMARY)              === 'sequence_summary' &&
+        utils.getLineType(TARGET_HEADING_WITH_SM)          === utils.HEADING &&
         utils.getLineType(TARGET_LINE_WITH_DIFFERENT_TYPE) === DIFFERENT_TYPE &&
         utils.getLineType(TARGET_LINE_WITH_SAME_TYPE)      === SOURCE_TYPE &&
         utils.getLineType(SOURCE_LINE_1)                   === SOURCE_TYPE &&
@@ -443,6 +467,30 @@ describe('ep_script_elements - drag and drop', function() {
           done();
         });
       });
+
+      context('and target line is a heading with scene marks', function() {
+        before(function(done) {
+          selectAllSourceLines(SOURCE_LINE_1, SOURCE_LINE_3);
+          utils.dragSelectedTextAndDropItIntoBeginningOfLine(TARGET_HEADING_WITH_SM, done);
+        });
+        after(function(done) {
+          undoAndWaitForScriptToBeBackToOriginal(done);
+        });
+
+        testMovedNonGeneralsAreStillSelected();
+
+        it('does not merge any text with target line, nor splits it anywhere', function(done) {
+          utils.validateLineTextAndType(TARGET_HEADING_WITH_SM + 3, 'Target with heading with scene mark []', utils.HEADING);
+          done();
+        });
+
+        it('places all dragged content above scene marks of target line', function(done) {
+          utils.validateLineTextAndType(TARGET_ACT_NAME    , 'The source 1', SOURCE_TYPE);
+          utils.validateLineTextAndType(TARGET_ACT_NAME + 1, 'The source 2', SOURCE_TYPE);
+          utils.validateLineTextAndType(TARGET_ACT_NAME + 2, 'The source 3', SOURCE_TYPE);
+          done();
+        });
+      });
     });
 
     context('and drops them into the end of a line with script element', function() {
@@ -607,7 +655,7 @@ describe('ep_script_elements - drag and drop', function() {
         });
 
         it('does not change any of the lines besides dragged content', function(done) {
-          utils.validateLineTextAndType(TARGET_LINE_WITH_DIFFERENT_TYPE - 1, 'Target with general []', utils.GENERAL);
+          utils.validateLineTextAndType(TARGET_LINE_WITH_DIFFERENT_TYPE - 1, 'Target with heading with scene mark []', utils.HEADING);
           utils.validateLineTextAndType(TARGET_LINE_WITH_DIFFERENT_TYPE + 3, '', DIFFERENT_TYPE);
           utils.validateLineTextAndType(TARGET_LINE_WITH_DIFFERENT_TYPE + 4, 'Target with same type []', SOURCE_TYPE);
           done();
@@ -639,7 +687,7 @@ describe('ep_script_elements - drag and drop', function() {
         it('does not change any of the lines besides dragged content', function(done) {
           utils.validateLineTextAndType(TARGET_GENERAL - 1, '=======', utils.GENERAL);
           utils.validateLineTextAndType(TARGET_GENERAL + 3, '', utils.GENERAL);
-          utils.validateLineTextAndType(TARGET_GENERAL + 4, 'Target with different type []', DIFFERENT_TYPE);
+          utils.validateLineTextAndType(TARGET_GENERAL + 4, 'Target with act name []', 'act_name');
           done();
         });
       });
@@ -668,7 +716,41 @@ describe('ep_script_elements - drag and drop', function() {
 
         it('does not change any of the lines besides dragged content', function(done) {
           utils.validateLineTextAndType(TARGET_GENERAL - 1, '=======', utils.GENERAL);
-          utils.validateLineTextAndType(TARGET_GENERAL + 3, 'Target with different type []', DIFFERENT_TYPE);
+          utils.validateLineTextAndType(TARGET_GENERAL + 3, 'Target with act name []', 'act_name');
+          done();
+        });
+      });
+
+      context('and target line is a heading with scene marks', function() {
+        before(function(done) {
+          removeContentFromLine(TARGET_HEADING_WITH_SM, function() {
+            selectAllSourceLines(SOURCE_LINE_1, SOURCE_LINE_3);
+            utils.dragSelectedTextAndDropItIntoEndOfLine(TARGET_HEADING_WITH_SM, done);
+          });
+        });
+        after(function(done) {
+          // need an extra undo to restore empty line content
+          utils.undo();
+          undoAndWaitForScriptToBeBackToOriginal(done);
+        });
+
+        testMovedNonGeneralsAreStillSelected();
+
+        it('places all dragged content above scene marks of target line', function(done) {
+          utils.validateLineTextAndType(TARGET_ACT_NAME    , 'The source 1', SOURCE_TYPE);
+          utils.validateLineTextAndType(TARGET_ACT_NAME + 1, 'The source 2', SOURCE_TYPE);
+          utils.validateLineTextAndType(TARGET_ACT_NAME + 2, 'The source 3', SOURCE_TYPE);
+          done();
+        });
+
+        it('does not change any of the lines besides dragged content', function(done) {
+          utils.validateLineTextAndType(TARGET_ACT_NAME - 1, 'Target with general []', utils.GENERAL);
+          // check the entire block of heading + SMs
+          utils.validateLineTextAndType(TARGET_ACT_NAME + 3, 'Target with act name []', 'act_name');
+          utils.validateLineTextAndType(TARGET_ACT_NAME + 4, 'Target with act summary []', 'act_summary');
+          utils.validateLineTextAndType(TARGET_ACT_NAME + 5, 'Target with sequence name []', 'sequence_name');
+          utils.validateLineTextAndType(TARGET_ACT_NAME + 6, 'Target with sequence summary []', 'sequence_summary');
+          utils.validateLineTextAndType(TARGET_HEADING_WITH_SM + 3, '', utils.HEADING);
           done();
         });
       });

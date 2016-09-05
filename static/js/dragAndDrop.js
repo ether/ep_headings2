@@ -195,8 +195,19 @@ var moveDroppedContentOutOfTargetLine = function($targetLine, typeOfTargetLine) 
   var lastDroppedLineShouldBeMerged = typeOfLastDroppedLine === typeOfTargetLine;
   var $linesToMoveOutOfLine = lastDroppedLineShouldBeMerged ? $droppedLines.slice(0, -1) : $droppedLines;
 
+  // we cannot split a heading from its SMs, so if $targetLine is a heading, we need to move
+  // dropped content to the beginning of the block SMs-heading
+  var $adjustedTargetLine = getTargetLineSkippingSceneMarks($targetLine);
+
   // move content out of target line
-  $targetLine.before($linesToMoveOutOfLine);
+  $linesToMoveOutOfLine.insertBefore($adjustedTargetLine);
+}
+
+// based on getFirstLineOfItem() of ep_navigator
+var getTargetLineSkippingSceneMarks = function($targetLine) {
+  var lineIsNotASceneMark = ':not(.sceneMark)';
+  var $originalTargetAndItsSceneMarks = $targetLine.prevUntil(lineIsNotASceneMark).andSelf();
+  return $originalTargetAndItsSceneMarks.first();
 }
 
 var mergeDroppedAndTargetLineIfTheyHaveSameType = function($droppedLine, typeOfTargetLine) {
