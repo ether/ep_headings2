@@ -184,6 +184,14 @@ var mergeEdgesOfDroppedContentOnANonGeneral = function($targetLine) {
   }
 
   var $droppedLines = $targetLine.find('div');
+
+  // Bug fix: when dropped content has only two lines and both are merged with target line,
+  // the original line break between the dropped lines is removed. To avoid that, we need
+  // to manually add a <br>
+  if ($droppedLines.length === 2) {
+    $droppedLines.first().append('<br>');
+  }
+
   mergeDroppedAndTargetLineIfTheyHaveSameType($droppedLines.first(), typeOfTargetLine);
   mergeDroppedAndTargetLineIfTheyHaveSameType($droppedLines.last(), typeOfTargetLine);
 }
