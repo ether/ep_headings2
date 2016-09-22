@@ -217,6 +217,7 @@ ep_script_elements_test_helper.utils = {
     e.ctrlKey = true;
     e.shiftKey = isRedo;
     e.which = "z".charCodeAt(0);
+    e.keyCode = 90;
     inner$("#innerdocbody").trigger(e);
   },
   undo: function() {
