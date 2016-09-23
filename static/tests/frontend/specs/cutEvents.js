@@ -2,13 +2,10 @@ describe('ep_script_elements - cut events on multiline selected', function () {
 
   var utils, SMutils, helperFunctions, event;
 
-  before(function(){
+  before(function(done){
     utils = ep_script_elements_test_helper.utils;
     SMutils = ep_script_scene_marks_test_helper.utils;
     helperFunctions = ep_script_elements_test_helper.cutEvents;
-  });
-
-  beforeEach(function(done){
     helper.newPad(function(){
       // create Pad with SM
       helperFunctions.createPadContent(done);
@@ -16,10 +13,11 @@ describe('ep_script_elements - cut events on multiline selected', function () {
     this.timeout(60000);
   });
 
+
   // simulates triple click in a heading
   context('selection begins in a heading and ends in the line break', function(){
 
-    beforeEach(function(done){
+    before(function(done){
       // make the scene marks visible
       var firstHeadingLineNumber = utils.getLineNumberOfElement('heading', 0);
       SMutils.clickOnSceneMarkButtonOfLine(firstHeadingLineNumber);
@@ -42,6 +40,10 @@ describe('ep_script_elements - cut events on multiline selected', function () {
       }, 1000);
     });
 
+    after(function(){
+      utils.undo();
+    })
+
     it('cleans the SM', function(done){
       utils.validateLineTextAndType(0, 'paul', 'character');
       utils.validateLineTextAndType(1, 'dialogue', 'dialogue');
@@ -59,11 +61,17 @@ describe('ep_script_elements - cut events on multiline selected', function () {
       done();
     });
 
+    it('has the plain text in buffer', function(done){
+      var plainText = event.originalEvent.clipboardData.getData('text/plain');
+      expect(plainText).to.be("heading\n");
+      done();
+    });
+
   });
 
   context('selection begins and ends in a script element of the same type', function(){
 
-    beforeEach(function(done){
+    before(function(done){
 
       var inner$ = helper.padInner$;
 
@@ -83,6 +91,10 @@ describe('ep_script_elements - cut events on multiline selected', function () {
       }, 1000);
     });
 
+    after(function () {
+      utils.undo();
+    });
+
     it('joins the elements', function(done){
       utils.validateLineTextAndType(0, 'pohn', 'character');
       utils.validateLineTextAndType(1, 'ACT OF SM text', 'act_name');
@@ -96,11 +108,17 @@ describe('ep_script_elements - cut events on multiline selected', function () {
       done();
     });
 
+    it('has the plain text in buffer', function(done){
+      var plainText = event.originalEvent.clipboardData.getData('text/plain');
+      expect(plainText).to.be("aul\ndialogue\nj");
+      done();
+    });
+
   });
 
   context('selection begins in a script element and ends in a scene mark', function(){
 
-    beforeEach(function(done){
+    before(function(done){
       // make the scene marks visible
       var firstHeadingLineNumber = utils.getLineNumberOfElement('heading', 0);
       SMutils.clickOnSceneMarkButtonOfLine(firstHeadingLineNumber);
@@ -124,6 +142,10 @@ describe('ep_script_elements - cut events on multiline selected', function () {
       }, 1000);
     });
 
+    after(function () {
+      utils.undo();
+    });
+
     it('removes the script elements and cleans the scene marks', function(done){
       utils.validateLineTextAndType(0, 'paul', 'character');
       utils.validateLineTextAndType(1, '', 'dialogue');
@@ -143,11 +165,18 @@ describe('ep_script_elements - cut events on multiline selected', function () {
       done();
     });
 
+    it('has the plain text in buffer', function(done){
+      var plainText = event.originalEvent.clipboardData.getData('text/plain');
+      var resultText = "dialogue\njohn\nACT OF SM text\nSUMMARY OF ACT OF SM text";
+      expect(plainText).to.be(resultText);
+      done();
+    });
+
   });
 
   context('selection begins in a SE has SM in the middle and ends in a SE', function(){
 
-    beforeEach(function(done){
+    before(function(done){
       // make the scene marks visible
       var firstHeadingLineNumber = utils.getLineNumberOfElement('heading', 0);
       SMutils.clickOnSceneMarkButtonOfLine(firstHeadingLineNumber);
@@ -171,6 +200,10 @@ describe('ep_script_elements - cut events on multiline selected', function () {
       }, 1000);
     });
 
+    after(function () {
+      utils.undo();
+    });
+
     it('removes the scripts elements and scene marks', function(done){
       var inner$ = helper.padInner$;
       var scriptLines = inner$("div").length;
@@ -190,6 +223,13 @@ describe('ep_script_elements - cut events on multiline selected', function () {
       done();
     });
 
+    it('has the plain text in buffer', function(done){
+      var plainText = event.originalEvent.clipboardData.getData('text/plain');
+      var resultText = "paul\ndialogue\njohn\nACT OF SM text\nSUMMARY OF ACT OF SM text\n" +
+                       "SEQUENCE OF SM text\nSUMMARY OF SEQUENCE OF SM text\nheading\nlast text"
+      expect(plainText).to.be(resultText);
+      done();
+    });
   });
 });
 

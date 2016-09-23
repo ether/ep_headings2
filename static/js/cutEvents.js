@@ -22,9 +22,11 @@ var handleCutOnScriptElements = function(){
     var multiLineSelected = isMultiLineSelected(rep, editorInfo);
 
     if(lineIsScriptElement && multiLineSelected){
+      var plainText = getPlainText();
       // remove scene marks tags
       var htmlReadyToPaste = getHtmlFromSelectionAndRemoveTagsNotAllowed();
       e.originalEvent.clipboardData.setData('text/html', htmlReadyToPaste);
+      e.originalEvent.clipboardData.setData('text/plain', plainText);
 
       // In this line we apply the same rules of deletion in multi line selected,
       // implemented in the mergeLines module of this plugin
@@ -54,6 +56,26 @@ var getHtmlFromSelectionAndRemoveTagsNotAllowed = function(){
   replaceTagsNotAllowedBySpan($html);
 
   return $html.html();
+}
+
+var getPlainText = function(){
+  var range = utils.getPadInner()[0].getSelection().getRangeAt(0);
+  var $hiddenDiv = createHiddenDiv(range);
+  var lines = $hiddenDiv[0].childNodes;
+  var textOfLines = getTextOfLines(lines);
+
+  var textWithLineBreaks = _.reduce(textOfLines, function(memo, text){
+    var textOfLine = '\n' + text;
+    return memo + textOfLine;
+  });
+
+  return textWithLineBreaks;
+}
+
+var getTextOfLines = function(lines){
+  return _.map(lines, function(line){
+    return line.innerText;
+  });
 }
 
 var createHiddenDiv = function(range){
