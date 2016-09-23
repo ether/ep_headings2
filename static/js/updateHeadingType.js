@@ -2,10 +2,7 @@ var _ = require('ep_etherpad-lite/static/js/underscore');
 
 var utils = require("./utils");
 var sceneMarksUtils = require("ep_script_scene_marks/static/js/utils");
-// var findHeadingTargetBelow;
-// var findHeadingTargetAbove;
 var SM_ADDED_OR_REMOVED_EVENT = sceneMarksUtils.SCENE_MARK_ADD_EVENT + ' ' + sceneMarksUtils.SCENE_MARK_REMOVED_EVENT;
-// var FIND_HEADING_TARGET_ON_DIRECTION = {}
 var FIND_HEADING_TARGET_ON_DIRECTION = {
   'sceneMarkRemoved': findHeadingTargetAbove,
   'sceneMarkAdded': findHeadingTargetBelow
