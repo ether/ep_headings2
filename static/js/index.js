@@ -2,20 +2,20 @@ var $ = require('ep_etherpad-lite/static/js/rjquery').$;
 var _ = require('ep_etherpad-lite/static/js/underscore');
 
 var scriptElementTransitionUtils = require("ep_script_element_transitions/static/js/utils");
-var sceneMarkUtils = require("ep_script_scene_marks/static/js/utils");
 
-var tags           = require('ep_script_elements/static/js/shared').tags;
-var sceneTag       = require('ep_script_elements/static/js/shared').sceneTag;
-var utils          = require('./utils');
-var SM_AND_HEADING = _.union(utils.SCENE_MARK_SELECTOR, ['heading']);
-var shortcuts      = require('./shortcuts');
-var mergeLines     = require('./mergeLines');
-var undoPagination = require('./undoPagination');
-var fixSmallZooms  = require('./fixSmallZooms');
-var cutEvents      = require('./cutEvents');
+var tags              = require('ep_script_elements/static/js/shared').tags;
+var sceneTag          = require('ep_script_elements/static/js/shared').sceneTag;
+var utils             = require('./utils');
+var SM_AND_HEADING    = _.union(utils.SCENE_MARK_SELECTOR, ['heading']);
+var shortcuts         = require('./shortcuts');
+var mergeLines        = require('./mergeLines');
+var undoPagination    = require('./undoPagination');
+var fixSmallZooms     = require('./fixSmallZooms');
+var cutEvents         = require('./cutEvents');
 var updateHeadingType = require('./updateHeadingType');
 
-var UNDO_REDO_EVENT = 'undoRedoEvent';
+var UNDO_REDO_EVENT   = 'undoRedoEvent';
+var PASTE_ON_SE_CLASS = 'pasteOnSE';
 
 var ENTER          = 13;
 var cssFiles       = ['ep_script_elements/static/css/editor.css'];
@@ -127,6 +127,17 @@ var keyEventIsUndoOrRedo = function(evt){
   var KeyZ = evt.keyCode === 90;
 
   return  cmdWasPressed && KeyZ;
+}
+
+exports.acePaste = function(hook, context){
+  var rep = context.rep;
+  var currentLine = rep.selStart[0];
+  var e = context.e;
+  var lineIsScriptElement = utils.lineIsScriptElement(currentLine);
+  if (lineIsScriptElement){
+    var $line = utils.getPadInner().find("div").slice(currentLine, currentLine + 1);
+    $line.addClass(PASTE_ON_SE_CLASS);
+  }
 }
 
 var preventCharacterKeysAndEnterOnSelectionMultiLine = function(context){
