@@ -229,6 +229,27 @@ describe("ep_script_elements - dropdown", function(){
 
     });
   });
+
+  // this context test only one case but the reason why this happens affects other scenarios
+  // all of them happen for the same reason, though. We need to remove the SE before add a new one.
+  context("when it changes to a element and user performs undo", function(){
+    beforeEach(function (done) {
+        helperFunctions.createElement("character", function(){
+          helperFunctions.changeLineToElement(0, utils.ACTION, function(){
+            utils.undo();
+            done();
+          });
+        });
+      this.timeout(60000);
+    });
+
+    it("returns to the original element", function(done){
+      helper.waitFor(function() {
+        var selectedValue = helper.padChrome$('#script_element-selection option:selected').text();
+        return selectedValue === "Character";
+      }, 2000).done(done);
+    })
+  })
 });
 
 var ep_script_elements_test_helper = ep_script_elements_test_helper || {};
@@ -246,6 +267,28 @@ ep_script_elements_test_helper.dropdown = {
 
     var script = general + act + sequence + heading;
     utils.createScriptWith(script, lastLineText, done);
+  },
+  createElement: function(element, cb) {
+    var line = "<"+ element + ">Line!</"+ element + "><br/>";
+    var inner$ = helper.padInner$;
+    var $firstTextElement = inner$("div").first();
+
+    $firstTextElement.html(line);
+    cb();
+  },
+  changeLineToElement: function(line, element, cb) {
+    var utils = ep_script_elements_test_helper.utils;
+    var $line = helper.padInner$("div").slice(line, line + 1);
+    $line.sendkeys("{selectall}");
+
+    setTimeout(function() {
+      utils.changeToElement(element);
+
+      helper.waitFor(function(){
+        var $line = helper.padInner$("div").slice(line, line + 1);
+        return $line.find(element).length === 1;
+      }).done(cb);
+    }, 1000);
   },
   // interval = 1, only one line
   // interval = 2, two lines
