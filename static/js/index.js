@@ -306,13 +306,7 @@ function addAttributeIfElementIsNotSM(lineNumber, attributeManager, value) {
   // avoid applying SE attrib on SM tags
   var isLineScriptElement = utils.lineIsScriptElement(lineNumber);
   if(isLineScriptElement){
-    // firstly we need remove the SE attrib otherwise the undo won't work
-    // for some reason, we can't do it on headings otherwise the undo won't work.
-    var elementOfLine = attributeManager.getAttributeOnLine(lineNumber, "script_element")
-    if(elementOfLine !== "heading"){
-      attributeManager.removeAttributeOnLine(lineNumber, 'script_element');
-    }
-
+    attributeManager.removeAttributeOnLine(lineNumber, 'script_element');
     attributeManager.setAttributeOnLine(lineNumber, 'script_element', value);
   }
 }
