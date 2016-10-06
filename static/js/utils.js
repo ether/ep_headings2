@@ -46,3 +46,18 @@ var typeOf = function($line) {
  return tagName.toLowerCase();
 }
 exports.typeOf = typeOf;
+
+var isMultipleLinesSelected = function(rep) {
+  var firstLineSelected = rep.selStart[0];
+  var lastLineSelected = rep.selEnd[0];
+  return (firstLineSelected !== lastLineSelected);
+}
+exports.isMultipleLinesSelected = isMultipleLinesSelected;
+
+var getLineNumberFromDOMLine = function ($line, rep) {
+  var lineId     = $line.attr("id");
+  var lineNumber = rep.lines.indexOfKey(lineId);
+
+  return lineNumber;
+}
+exports.getLineNumberFromDOMLine = getLineNumberFromDOMLine;

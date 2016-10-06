@@ -46,16 +46,9 @@ exports.updateHeadingsType = updateHeadingsType;
 var getHeadingsLine = function ($headings, rep) {
   return _.map($headings, function (heading) {
     var $heading = $(heading);
-    var line = getLineNumberFromDOMLine($heading, rep);
+    var line = utils.getLineNumberFromDOMLine($heading, rep);
     return line;
   });
-}
-
-var getLineNumberFromDOMLine = function ($line, rep) {
-  var lineId     = $line.attr("id");
-  var lineNumber = rep.lines.indexOfKey(lineId);
-
-  return lineNumber;
 }
 
 // listen to events that changes the heading type which can be triggered for any plugin
@@ -113,13 +106,13 @@ var getHeadingOfChange = function (line, rep, event) {
 function findHeadingTargetAbove (line, rep){
   var $line = utils.getPadInner().find("div").slice(line, line + 1);
   var $targetLine = $line.prevUntil("div:has(heading)").addBack().first().prev();
-  var lineTarget = getLineNumberFromDOMLine($targetLine, rep)
+  var lineTarget = utils.getLineNumberFromDOMLine($targetLine, rep)
   return lineTarget;
 }
 
 function findHeadingTargetBelow (line, rep) {
   var $line = utils.getPadInner().find("div").slice(line, line + 1);
   var $targetLine = $line.nextUntil("div:has(heading)").last().next();
-  var lineTarget = getLineNumberFromDOMLine($targetLine, rep)
+  var lineTarget = utils.getLineNumberFromDOMLine($targetLine, rep)
   return lineTarget;
 }
