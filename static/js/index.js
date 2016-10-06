@@ -16,7 +16,7 @@ var updateHeadingType = require('./updateHeadingType');
 
 var UNDO_REDO_EVENT   = 'undoRedoEvent';
 var PASTE_ON_SE_CLASS = 'pasteOnSE';
-
+var FIRST_LINE        = 0;
 var ENTER          = 13;
 var cssFiles       = ['ep_script_elements/static/css/editor.css'];
 
@@ -47,10 +47,12 @@ var eventIsUndoOrRedo = function(eventType){
 // Bind the event handler to the toolbar buttons
 exports.postAceInit = function(hook, context) {
   // prevent keys insert text and enter
+  var ace = context.ace;
   preventCharacterKeysAndEnterOnSelectionMultiLine(context);
   fixSmallZooms.init();
   cutEvents.init(context);
-  updateHeadingType.init(context.ace);
+  updateHeadingType.init(ace);
+  updateDropdownWhenPadLoads(ace);
 
   var script_element_selection = $('#script_element-selection');
   script_element_selection.on('change', function() {
@@ -59,7 +61,7 @@ exports.postAceInit = function(hook, context) {
     var selectedOption = $(this).find("option:selected");
     var l10nLabel = selectedOption.attr("data-l10n-id");
     if(!_.isNaN(intValue)) {
-      context.ace.callWithAce(function(ace) {
+      ace.callWithAce(function(ace) {
         ace.ace_doInsertScriptElement(intValue);
         ace.ace_updateDropdownWithValueChosen();
       }, utils.CHANGE_ELEMENT_EVENT, true);
@@ -67,6 +69,48 @@ exports.postAceInit = function(hook, context) {
     }
   })
 };
+
+var updateDropdownWhenPadLoads = function(ace){
+  ace.callWithAce(function(ace) {
+    // as when we load the pad the SMs is hidden we place the caret at the first SE
+    placeCaretOnTheFirstScriptElement(ace);
+    ace.ace_updateDropdownWithValueChosen();
+  });
+}
+
+var placeCaretOnTheFirstScriptElement = function(ace) {
+  var rep = ace.ace_getRep();
+  var $lineOfFirstScriptElement = getFirstScriptElementOfText();
+  var lineOfFirstScriptElement = getLineNumberFromDOMLine($lineOfFirstScriptElement, rep);
+  var line = rep.lines.atIndex(lineOfFirstScriptElement);
+  var firstCharLinePosition = lineHasMarker(line) ? 1 : 0;
+  var firstPositionOfLine = [lineOfFirstScriptElement, firstCharLinePosition];
+  placeCaretOnLine(ace, firstPositionOfLine);
+}
+
+var getFirstScriptElementOfText = function() {
+  var $firstLine = utils.getPadInner().find('div').first();
+  var $firstScriptElementOfScript = $firstLine;
+  var firstLineIsScriptElement = utils.lineIsScriptElement(FIRST_LINE);
+  if(!firstLineIsScriptElement){
+    $firstScriptElementOfScript = $firstLine.nextUntil(':not(.sceneMark)').last().next();
+  }
+  return $firstScriptElementOfScript;
+}
+
+var getLineNumberFromDOMLine = function ($line, rep) {
+  var lineId     = $line.attr("id");
+  var lineNumber = rep.lines.indexOfKey(lineId);
+
+  return lineNumber;
+}
+
+var placeCaretOnLine = function(editorInfo, linePosition){
+  editorInfo.ace_inCallStackIfNecessary("placeCaretAfterRemoveSelection", function(){
+    editorInfo.ace_performSelectionChange(linePosition, linePosition, true);
+    editorInfo.ace_updateBrowserSelectionFromRep();
+  })
+}
 
 function updateDropdownWithValueChosen() {
   updateDropdownToCaretLine(this);

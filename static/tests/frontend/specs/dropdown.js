@@ -5,16 +5,12 @@
 var GENERALS_PER_PAGE = 58;
 
 describe("ep_script_elements - dropdown", function(){
-  var utils, SMUtils, helperFunctions;
-  before(function(){
+  var utils, SMUtils, helperFunctions, padId;
+  before(function(cb){
     utils = ep_script_elements_test_helper.utils;
     helperFunctions = ep_script_elements_test_helper.dropdown;
     SMUtils = ep_script_scene_marks_test_helper.utils;
-  });
-
-  //create a new pad before each test run
-  beforeEach(function(cb){
-    helper.newPad(function(){
+    padId = helper.newPad(function(){
       helper.waitFor(function(){
         var pluginIsNotLoaded = (undefined === helper.padChrome$.window.clientVars.plugins.plugins.ep_script_scene_marks);
         return !pluginIsNotLoaded;
@@ -64,8 +60,78 @@ describe("ep_script_elements - dropdown", function(){
     });
   });
 
+  context("when it reloads a pad", function(){
+    context("and first element is a scene mark", function(){
+      var eventTriggered = false;
+      before(function (done) {
+        helperFunctions.createPadWithSM(function(){
+          // to test if the dropdown has changed we have to validate the text of the dropdown
+          // and if the event which makes the this value changed was triggered
+          var chrome$ = helper.padChrome$;
+          chrome$('#script_element-selection').on('selectElementChange', function() {
+            eventTriggered = true;
+          });
+          done();
+        });
+      });
+
+      after(function (done) {
+        utils.cleanPad(done);
+      });
+
+      it('changes the value on the dropdown', function(done) {
+        this.timeout(10000);
+        setTimeout(function() {
+          // reload the pad
+          helper.newPad(function(){
+            // wait for the event which changes the dropdown value to be triggered
+            helper.waitFor(function(){
+              return eventTriggered;
+            }).done(function(){
+              helperFunctions.waitDropdownChangeToElement("Heading", done);
+            });
+          }, padId);
+        }, 1000);
+      });
+    });
+
+    context("and first element is a script element", function(){
+      var eventTriggered = false;
+      before(function (done) {
+        helperFunctions.createPadWithSE(function(){
+          // to test if the dropdown has changed we have to validate the text of the dropdown
+          // and if the event which makes the this value changed was triggered
+          var chrome$ = helper.padChrome$;
+          chrome$('#script_element-selection').on('selectElementChange', function() {
+            eventTriggered = true;
+          });
+          done();
+        });
+      });
+
+      after(function (done) {
+        utils.cleanPad(done);
+      });
+
+      it('changes the value on the dropdown to the first script element', function(done) {
+        this.timeout(10000);
+        setTimeout(function() {
+          // reload the pad
+          helper.newPad(function(){
+            // wait for the event which changes the dropdown value to be triggered
+            helper.waitFor(function(){
+              return eventTriggered;
+            }).done(function(){
+              helperFunctions.waitDropdownChangeToElement("Action", done);
+            });
+          }, padId);
+        }, 1000);
+      });
+    });
+  });
+
   context("when pad has lines with different element types", function() {
-    beforeEach(function(cb) {
+    before(function(cb) {
       var inner$ = helper.padInner$;
       var $firstTextElement = inner$("div").first();
 
@@ -144,11 +210,11 @@ describe("ep_script_elements - dropdown", function(){
   });
 
   context("when caret is in a scene mark", function(){
-    beforeEach(function(cb) {
+    before(function(cb) {
       var actLines = [0]; // creates act and sequence in the 1st heading
       var seqLines = [];
       var numOfHeadings = 1;
-      helper.newPad(function(){
+      utils.cleanPad(function(){
         SMUtils.writeScenesWithSceneMarks(actLines, seqLines, numOfHeadings, function(){
           SMUtils.clickOnSceneMarkButtonOfLine(4);
           cb();
@@ -169,7 +235,7 @@ describe("ep_script_elements - dropdown", function(){
           // places caret on action
           var $action = inner$("div").last();
           $action.sendkeys("{selectall}");
-
+          this.timeout(10000);
           // validate select shows "Action"
           helper.waitFor(function() {
             var chrome$ = helper.padChrome$;
@@ -196,23 +262,25 @@ describe("ep_script_elements - dropdown", function(){
   context("when has a selection begins in a SE and includes a SM", function(){
     // create a pad beginning with a SE
     beforeEach(function(done){
-      helperFunctions.createPadWithSEandSM(function(){
-        // make SM visible
-        var firstHeadingLineNumber = utils.getLineNumberOfElement('heading', 0);
-        SMUtils.clickOnSceneMarkButtonOfLine(firstHeadingLineNumber);
-        var inner$ = helper.padInner$;
+      utils.cleanPad(function(){
+        helperFunctions.createPadWithSEandSM(function(){
+          // make SM visible
+          var firstHeadingLineNumber = utils.getLineNumberOfElement('heading', 0);
+          SMUtils.clickOnSceneMarkButtonOfLine(firstHeadingLineNumber);
+          var inner$ = helper.padInner$;
 
-        // selects since the first line
-        var $firstElement = inner$("div").first();
-        var $lastElement = inner$('div:has(sequence_summary)').last();
-        var lastLineLength = $lastElement.text().length;
-        var offsetAtFirstElement = 0;
-        var offsetAtlastElement = lastLineLength;
+          // selects since the first line
+          var $firstElement = inner$("div").first();
+          var $lastElement = inner$('div:has(sequence_summary)').last();
+          var lastLineLength = $lastElement.text().length;
+          var offsetAtFirstElement = 0;
+          var offsetAtlastElement = lastLineLength;
 
-        // make the selection
-        helper.selectLines($firstElement, $lastElement, offsetAtFirstElement, offsetAtlastElement);
-        done();
-      });
+          // make the selection
+          helper.selectLines($firstElement, $lastElement, offsetAtFirstElement, offsetAtlastElement);
+          done();
+        });
+      })
       this.timeout(6000);
     });
     context("and user changes the element on dropdown", function(){
@@ -233,13 +301,15 @@ describe("ep_script_elements - dropdown", function(){
   // this context test only one case but the reason why this happens affects other scenarios
   // all of them happen for the same reason, though. We need to remove the SE before add a new one.
   context("when it changes to a element and user performs undo", function(){
-    beforeEach(function (done) {
+    before(function (done) {
+      utils.cleanPad(function(){
         helperFunctions.createElement("character", function(){
           helperFunctions.changeLineToElement(0, utils.ACTION, function(){
             utils.undo();
             done();
           });
         });
+      });
       this.timeout(60000);
     });
 
@@ -267,6 +337,36 @@ ep_script_elements_test_helper.dropdown = {
 
     var script = general + act + sequence + heading;
     utils.createScriptWith(script, lastLineText, done);
+  },
+  createPadWithSM: function(done) {
+    var utils = ep_script_elements_test_helper.utils;
+    var SMUtils = ep_script_scene_marks_test_helper.utils;
+
+    var sceneText = "scene";
+    var act = SMUtils.act(sceneText);
+    var sequence = SMUtils.sequence(sceneText);
+    var lastLineText = "heading";
+    var heading = utils.heading(lastLineText);
+
+    var script = act + sequence + heading;
+    utils.createScriptWith(script, lastLineText, done);
+  },
+  createPadWithSE: function(done) {
+    var utils = ep_script_elements_test_helper.utils;
+
+    var lastLineText = "general";
+    var action = utils.action("action");
+    var general = utils.general(lastLineText);
+
+    var script = action + general;
+    utils.createScriptWith(script, lastLineText, done);
+  },
+  waitDropdownChangeToElement: function(element, cb) {
+    helper.waitFor(function() {
+      var chrome$ = helper.padChrome$;
+      var selectedValue = chrome$('#script_element-selection option:selected').text();
+      return selectedValue === element;
+    }, 2000).done(cb);
   },
   createElement: function(element, cb) {
     var line = "<"+ element + ">Line!</"+ element + "><br/>";
