@@ -191,7 +191,7 @@ ep_script_elements_test_helper.updateHeadingType = {
   },
   addSceneMarkToLine: function(line, sceneMarkToAddToLine, done){
     var outer$ = helper.padOuter$;
-    var mouseShortcutsUtils =  ep_mouse_shortcuts_test_helper.sceneMarksItemsVisibility;
+    var mouseShortcutsUtils =  ep_mouse_shortcuts_test_helper.utils;
 
     mouseShortcutsUtils.rightClickOnLine(line, function(){
       var $mouseWindow = outer$('.mouseWindow');
