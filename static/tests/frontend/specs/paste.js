@@ -253,8 +253,8 @@ ep_script_elements_test_helper.pasteOnSE = {
         '<div class="sceneMark hidden"><act_summary><br></act_summary></div>' +
         '<div class="sceneMark hidden"><sm_icon><empty /></sm_icon><trash_icon><empty /></trash_icon><sequence_name><br></sequence_name></div>' +
         '<div class="sceneMark hidden"><sequence_summary><br></sequence_summary></div>' +
-        '<div></div>';
-      '</shot></div>' +
+        '<div></div>' +
+      '</shot></div>';
     this.pasteTextOnLine(copiedHTML, lineTargetOfPaste, cb);
   },
   simulatePasteOfLineWithTripleClick: function(lineTargetOfPaste, cb) {

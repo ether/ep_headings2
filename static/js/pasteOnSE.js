@@ -10,6 +10,12 @@ var TAG_ALREADY_PROCESSED_CLASS = 'processed_find_sm_interval';
 exports.prepareLineToHavePastedContentCleanedUp = function(currentLine){
   var $line = utils.getPadInner().find("div").slice(currentLine, currentLine + 1);
   $line.addClass(PASTE_ON_SE_CLASS);
+
+  // in some scenarios (e.g. copy a line, which is followed by a SM hidden,
+  // with and its line break and pasting it in the first char of a heading
+  // with SM) the caret is sent to the next line, avoiding the line marked
+  // with the class to be collected.
+  forceCollectLine($line);
 }
 
 // This hook only collect text nodes. Empty nodes, e.g. <tag><br></tag>, are not collected in this hook
@@ -20,6 +26,10 @@ exports.collectContentLineText = function(hook, context) {
     removeEmptyHiddenSceneMarks($lineTargetOfPaste);
     changeToActionIfItIsPartOfAnInvalidSM(context, $lineTargetOfPaste);
   }
+}
+
+var forceCollectLine = function($line) {
+  $("<style \>").appendTo($line);
 }
 
 // we change to actions every scene mark which is not part of a valid scene mark
