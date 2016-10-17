@@ -23,13 +23,16 @@ var changeToActionIfItIsPartOfAnInvalidSM = function(context, $lineTargetOfPaste
   var $node = $(context.node);
   var state = context.state;
   var lineAttributes = state.lineAttributes;
-  var $linesPasted = $lineTargetOfPaste.children("div");
+  var $linesPasted = $lineTargetOfPaste.find("div");
   var hasSceneMarkPasted = $linesPasted.find('act_name, act_summary, sequence_name, sequence_summary').length;
 
   if(!hasSceneMarkPasted){
     return;
   }
+  removeSMLinesIfNecessary($linesPasted);
   markSceneMarksValid($linesPasted);
+
+  // invalid scene mark, it is a scene mark line without the sm_name and heading reference
   changeInvalidSceneMarksToAction($node, lineAttributes);
 }
 
@@ -94,4 +97,24 @@ var removeEmptyHiddenSceneMarks = function($line) {
       $line.remove();
     }
   });
+}
+
+// we remove SM lines and the empty div when copying with triple click an element
+// which is followed by a scene mark hidden. In this case, it copies to the
+// buffer, besides of the element selected, the scene marks hidden and an
+// empty div that follow the element selected
+var removeSMLinesIfNecessary = function ($linePasted) {
+  var $sceneMarkHidden = $linePasted.filter('.sceneMark.hidden');
+  var hasSceneMarkHidden = $sceneMarkHidden.length;
+  if (hasSceneMarkHidden) {
+    // if the line has the heading class and has not a heading as children,
+    // it is the case of copying with triple click
+    var $lineAfterSceneMarks = $sceneMarkHidden.last().next();
+    var hasHeadingOfReference = $lineAfterSceneMarks.find('heading').length;
+    var lineAfterSceneMarksHasHeadingClass = $lineAfterSceneMarks.filter('div.withHeading').length;
+    if(!hasHeadingOfReference && lineAfterSceneMarksHasHeadingClass) {
+      $lineAfterSceneMarks.remove();
+      $sceneMarkHidden.remove();
+    }
+  }
 }

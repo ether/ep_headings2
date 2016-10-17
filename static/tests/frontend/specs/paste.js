@@ -29,9 +29,43 @@ describe('ep_script_elements - handle paste on script elements', function () {
       done();
     });
 
-    context('when user performs undo', function(){
+    context('and user performs undo', function(){
       before(function () {
         utils.undo();
+      });
+
+      it('returns to the original text', function(done){
+        helperFunctions.hasTheOriginalText();
+        done();
+      });
+    });
+  });
+
+  context('when user copies a SE followed by a SM hidden with triple click and pastes in an empty SE', function() {
+    before(function (done) {
+      utils.placeCaretInTheBeginningOfLine(SHOT_LINE, function(){
+        // make shot line empty
+        helperFunctions.simulatePasteOfLineWithTripleClickOnEmptyLine(SHOT_LINE, done);
+      });
+    });
+
+    it('pastes the element copied and removes the scene marks', function (done) {
+      helper.waitFor(function(){
+        var $targetLine = helperFunctions.getLineTarget(SHOT_LINE);
+        var targetLineText = $targetLine.text();
+        return targetLineText === "shot";
+      }).done(function(){
+        utils.validateLineTextAndType(SHOT_LINE - 1, '------', 'dialogue');
+        utils.validateLineTextAndType(SHOT_LINE, 'shot', 'shot');
+        utils.validateLineTextAndType(SHOT_LINE + 1, '------', 'dialogue');
+        done();
+      });
+    });
+
+    context('and user performs undo', function(){
+      before(function (done) {
+        utils.undo();
+        done();
       });
 
       it('returns to the original text', function(done){
@@ -59,7 +93,7 @@ describe('ep_script_elements - handle paste on script elements', function () {
       done();
     });
 
-    context('when user performs undo', function(){
+    context('and user performs undo', function(){
       before(function () {
         utils.undo();
       });
@@ -86,7 +120,7 @@ describe('ep_script_elements - handle paste on script elements', function () {
       done();
     });
 
-    context('when user performs undo', function(){
+    context('and user performs undo', function(){
       before(function () {
         utils.undo();
       });
@@ -117,7 +151,7 @@ describe('ep_script_elements - handle paste on script elements', function () {
       done();
     });
 
-    context('when user performs undo', function(){
+    context('and user performs undo', function(){
       before(function () {
         utils.undo();
       });
@@ -146,7 +180,7 @@ describe('ep_script_elements - handle paste on script elements', function () {
       done();
     });
 
-    context('when user performs undo', function(){
+    context('and user performs undo', function(){
       before(function () {
         utils.undo();
       });
@@ -210,6 +244,18 @@ ep_script_elements_test_helper.pasteOnSE = {
 
     utils.createScriptWith(script, lastLineText, done)
 
+  },
+  simulatePasteOfLineWithTripleClickOnEmptyLine: function(lineTargetOfPaste, cb) {
+    var copiedHTML =
+      '<div><shot>shot' +
+        '<div class="sceneMark hidden"><sm_icon class="scene_mark_button--act"><empty /></sm_icon>' +
+        '<trash_icon><empty /></trash_icon><act_name><br></act_name></div>' +
+        '<div class="sceneMark hidden"><act_summary><br></act_summary></div>' +
+        '<div class="sceneMark hidden"><sm_icon><empty /></sm_icon><trash_icon><empty /></trash_icon><sequence_name><br></sequence_name></div>' +
+        '<div class="sceneMark hidden"><sequence_summary><br></sequence_summary></div>' +
+        '<div></div>';
+      '</shot></div>' +
+    this.pasteTextOnLine(copiedHTML, lineTargetOfPaste, cb);
   },
   simulatePasteOfLineWithTripleClick: function(lineTargetOfPaste, cb) {
     var copiedHTML =
@@ -298,7 +344,6 @@ ep_script_elements_test_helper.pasteOnSE = {
       // WARNING: here we assume the element has only one children, with headings won't work
       var $lineTarget = _this.getLineTarget(lineTargetOfPaste);
       $lineTarget.html(htmlToPaste);
-      debugger;
       cb();
     }, 1000);
   },
