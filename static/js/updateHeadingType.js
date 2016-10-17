@@ -62,13 +62,13 @@ var updateHeadingTypeWhenItsSMIsChanged = function (ace) {
 }
 
 var findSceneMarkOfHeading = function (line) {
-  var stuff;
+  var firstSceneMarkOfHeading;
   var $line = utils.getPadInner().find("div").slice(line, line + 1);
   var $sceneMarksAbove = $line.prevUntil("div:not(.sceneMark)").addBack();
   if($sceneMarksAbove.first().find("sequence_name").length !== 0){
-    stuff = "sequence_name";
+    firstSceneMarkOfHeading = "sequence_name";
   }
-  return stuff;
+  return firstSceneMarkOfHeading;
 }
 
 exports.updateHeadingType = function (line, event) {
@@ -77,8 +77,8 @@ exports.updateHeadingType = function (line, event) {
   var rep              = this.rep;
 
   var headingLine = getHeadingOfChange(line, rep, event);
-  var stuff = findSceneMarkOfHeading(headingLine);
-  var headingTypeValue = HEADING_TYPE_VALUE[stuff];
+  var firstSceneMarkOfHeading = findSceneMarkOfHeading(headingLine);
+  var headingTypeValue = HEADING_TYPE_VALUE[firstSceneMarkOfHeading];
 
   editorInfo.ace_inCallStackIfNecessary("nonundoable", function(){
     if(headingTypeValue !== undefined){
