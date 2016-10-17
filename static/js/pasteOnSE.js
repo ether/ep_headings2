@@ -3,13 +3,18 @@ var _ = require('ep_etherpad-lite/static/js/underscore');
 var utils   = require('./utils');
 var SMUtils = require('ep_script_scene_marks/static/js/utils');
 
-var PASTE_ON_SE_CLASS = '.pasteOnSE';
+var PASTE_ON_SE_CLASS = 'pasteOnSE';
 var PART_OF_COMPLETE_SM_CLASS = 'part_of_sm_complete';
 var TAG_ALREADY_PROCESSED_CLASS = 'processed_find_sm_interval';
 
+exports.prepareLineToHavePastedContentCleanedUp = function(currentLine){
+  var $line = utils.getPadInner().find("div").slice(currentLine, currentLine + 1);
+  $line.addClass(PASTE_ON_SE_CLASS);
+}
+
 // This hook only collect text nodes. Empty nodes, e.g. <tag><br></tag>, are not collected in this hook
 exports.collectContentLineText = function(hook, context) {
-  var $lineTargetOfPaste = utils.getPadInner().find(PASTE_ON_SE_CLASS);
+  var $lineTargetOfPaste = utils.getPadInner().find("." + PASTE_ON_SE_CLASS);
   var pasteOnSE = $lineTargetOfPaste.length;
   if(pasteOnSE){
     removeEmptyHiddenSceneMarks($lineTargetOfPaste);

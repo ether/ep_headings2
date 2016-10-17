@@ -14,9 +14,9 @@ var fixSmallZooms     = require('./fixSmallZooms');
 var cutEvents         = require('./cutEvents');
 var updateHeadingType = require('./updateHeadingType');
 var dropdown          = require('./dropdown');
+var pasteOnSE         = require('./pasteOnSE');
 
 var UNDO_REDO_EVENT   = 'undoRedoEvent';
-var PASTE_ON_SE_CLASS = 'pasteOnSE';
 
 var ENTER          = 13;
 var cssFiles       = ['ep_script_elements/static/css/editor.css'];
@@ -111,11 +111,9 @@ var keyEventIsUndoOrRedo = function(evt){
 exports.acePaste = function(hook, context){
   var rep = context.rep;
   var currentLine = rep.selStart[0];
-  var e = context.e;
   var lineIsScriptElement = utils.lineIsScriptElement(currentLine);
   if (lineIsScriptElement){
-    var $line = utils.getPadInner().find("div").slice(currentLine, currentLine + 1);
-    $line.addClass(PASTE_ON_SE_CLASS);
+    pasteOnSE.prepareLineToHavePastedContentCleanedUp(currentLine);
   }
 }
 
