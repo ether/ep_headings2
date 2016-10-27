@@ -7,6 +7,7 @@ var SE_TAGS_AND_GENERAL      = _.union(SCRIPT_ELEMENTS_SELECTOR, ["general"]);
 exports.DEFAULT_LINE_ATTRIBS = ['author', 'lmkr', 'insertorder', 'start'];
 
 exports.CHANGE_ELEMENT_EVENT = 'insertscriptelement';
+exports.HEADING_ADD_EVENT    = 'headingAdded';
 
 // Easier access to outer pad
 var padOuter;
@@ -27,7 +28,9 @@ exports.SCENE_MARK_TYPE = {
   1 : 'withAct',
   2 : 'withSeq',
   3 : 'withSeq',
-  4 : 'withHeading',
+  4 : 'withSceneSynopsis',
+  5 : 'withSceneSynopsis',
+  6 : 'withHeading',
 }
 
 var lineIsScriptElement = function(lineNumber){

@@ -96,6 +96,14 @@ function addAttributeIfElementIsNotSM(lineNumber, attributeManager, value) {
   if(isLineScriptElement){
     attributeManager.removeAttributeOnLine(lineNumber, 'script_element');
     attributeManager.setAttributeOnLine(lineNumber, 'script_element', value);
+    emitEventWhenAddHeading(value, lineNumber);
+  }
+}
+
+var emitEventWhenAddHeading = function(element, lineNumber) {
+  if (element === "heading") {
+    var $innerDocument = utils.getPadInner().find('#innerdocbody');
+    $innerDocument.trigger(utils.HEADING_ADD_EVENT, lineNumber);
   }
 }
 
