@@ -64,3 +64,10 @@ var getLineNumberFromDOMLine = function ($line, rep) {
   return lineNumber;
 }
 exports.getLineNumberFromDOMLine = getLineNumberFromDOMLine;
+
+exports.emitEventWhenAddHeading = function(element, lineNumber) {
+  if (element === "heading") {
+    var $innerDocument = exports.getPadInner().find('#innerdocbody');
+    $innerDocument.trigger(exports.HEADING_ADD_EVENT, lineNumber);
+  }
+}

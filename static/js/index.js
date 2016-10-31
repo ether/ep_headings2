@@ -29,14 +29,22 @@ exports.aceRegisterBlockElements = function() {
 exports.aceEditEvent = function(hook, context) {
   var editorInfo = context.editorInfo;
   var rep = context.rep;
+  var attributeManager = context.documentAttributeManager;
   var eventType = context.callstack.editEvent.eventType;
+  var wasLineChangedByShortcut = lineWasChangedByShortcut(eventType);
 
-
-  if (lineWasChangedByShortcut(eventType) || eventIsUndoOrRedo(eventType)) {
+  if (wasLineChangedByShortcut || eventIsUndoOrRedo(eventType)) {
     dropdown.updateDropdownToCaretLine(context);
     updateHeadingType.updateHeadingsTypeWhenUndoOrRedo(editorInfo, rep);
   }
+
+  if (wasLineChangedByShortcut) {
+    var lineNumber = context.callstack.editEvent.data.lineNumber;
+    var scriptElementOfLine = attributeManager.getAttributeOnLine(lineNumber, 'script_element');
+    utils.emitEventWhenAddHeading(scriptElementOfLine, lineNumber);
+  }
 }
+
 var lineWasChangedByShortcut = function(eventType) {
   return eventType === scriptElementTransitionUtils.CHANGE_ELEMENT_BY_SHORTCUT_EVENT;
 }
