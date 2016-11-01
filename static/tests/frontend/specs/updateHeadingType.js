@@ -4,19 +4,16 @@ describe('ep_script_elements - update heading type', function(){
   var SECOND_HEADING_POSITION             = 1;
   var THIRD_HEADING_POSITION              = 2;
   var FOURTH_HEADING_POSITION             = 3;
-  var ACT_NAME_OF_SECOND_HEADING_LINE     = 8;
-  var SECOND_HEADING_LINE                 = 13;
-  var SEQUENCE_NAME_OF_THIRD_HEADING_LINE = 14;
-  var THIRD_HEADING_LINE                  = 16;
-  var FOURTH_HEADING_LINE                 = 19;
+  var ACT_NAME_OF_SECOND_HEADING_LINE     = 10;
+  var SECOND_HEADING_LINE                 = 16;
+  var SEQUENCE_NAME_OF_THIRD_HEADING_LINE = 18;
+  var THIRD_HEADING_LINE                  = 22;
+  var FOURTH_HEADING_LINE                 = 27;
 
   before(function (done) {
     utils = ep_script_elements_test_helper.utils;
     helperFunctions = ep_script_elements_test_helper.updateHeadingType;
-    padId = helper.newPad(function(){
-      helperFunctions.createScript(done);
-    });
-    this.timeout(60000);
+    padId = helperFunctions.createNewPadAndFillWithContent(this, done);
   });
 
   context('when user loads the script', function(){
@@ -167,27 +164,44 @@ describe('ep_script_elements - update heading type', function(){
 var ep_script_elements_test_helper = ep_script_elements_test_helper || {};
 ep_script_elements_test_helper.updateHeadingType = {
   SEQUENCE_CLASS: '.sceneWithSequence',
-  createScript: function(done){
-    var SMUtils = ep_script_scene_marks_test_helper.utils;
-    var utils = ep_script_elements_test_helper.utils;
+  utils: null,
+  createNewPadAndFillWithContent: function (test, done) {
+    var self = this;
+    var padId = helper.newPad(function(){
+      self.utils = ep_script_elements_test_helper.utils;
+      self.createPadContent(done);
+    });
+    test.timeout(60000);
+    return padId;
+  },
+  createPadContent: function(done){
     var firstSceneText = "SCENE 1";
     var secondSceneText = "SCENE 2";
     var thirdSceneText = "SCENE 3";
     var fourthSceneText = "SCENE 4"
     var lastLineText = "last line";
 
-    var headingWithAct = SMUtils.act(firstSceneText) + SMUtils.sequence(firstSceneText) + SMUtils.heading(firstSceneText);
-    var headingWithAct2 = SMUtils.act(secondSceneText) + SMUtils.sequence(secondSceneText) + SMUtils.heading(secondSceneText);
-    var headingWithSeq = SMUtils.sequence(thirdSceneText) + SMUtils.heading(thirdSceneText);
-    var heading = SMUtils.heading(fourthSceneText);
-    var action = utils.action(lastLineText);
-    var firstScene = headingWithAct + utils.action("action 1") + utils.action("action 1.1") + utils.action("action 1.2");
-    var secondScene = headingWithAct2 + utils.action("action 2");
-    var thirdScene = headingWithSeq + utils.action("action 3") + utils.action("action 3.1");
+    var headingWithAct = this.buildHeadingWithAct(firstSceneText);
+    var headingWithAct2 = this.buildHeadingWithAct(secondSceneText);
+    var headingWithSeq = this.buildHeadingWithSequence(thirdSceneText);
+    var heading = this.buildHeadingWithSynopsis(fourthSceneText);
+    var action = this.utils.action(lastLineText);
+    var firstScene = headingWithAct + this.utils.action("action 1") + this.utils.action("action 1.1") + this.utils.action("action 1.2");
+    var secondScene = headingWithAct2 + this.utils.action("action 2");
+    var thirdScene = headingWithSeq + this.utils.action("action 3") + this.utils.action("action 3.1");
     var fourthScene = heading + action;
 
     var script = firstScene + secondScene + thirdScene + fourthScene;
-    utils.createScriptWith(script, lastLineText, done);
+    this.utils.createScriptWith(script, lastLineText, done);
+  },
+  buildHeadingWithAct: function(text) {
+    return this.utils.act(text) + this.buildHeadingWithSequence(text);
+  },
+  buildHeadingWithSequence: function(text) {
+    return this.utils.sequence(text) + this.buildHeadingWithSynopsis(text);
+  },
+  buildHeadingWithSynopsis: function(text) {
+    return this.utils.synopsis(text) + this.utils.heading(text);
   },
   addSceneMarkToLine: function(line, sceneMarkToAddToLine, done){
     var outer$ = helper.padOuter$;
@@ -218,28 +232,34 @@ ep_script_elements_test_helper.updateHeadingType = {
     expect(headingHasClassSeq).to.be(false);
   },
   keepsTheSameText: function(){
-    var utils = ep_script_elements_test_helper.utils;
-
-    utils.validateLineTextAndType(0  , 'ACT OF SCENE 1'                 , 'act_name');
-    utils.validateLineTextAndType(1  , 'SUMMARY OF ACT OF SCENE 1'      , 'act_summary');
-    utils.validateLineTextAndType(2  , 'SEQUENCE OF SCENE 1'            , 'sequence_name');
-    utils.validateLineTextAndType(3  , 'SUMMARY OF SEQUENCE OF SCENE 1' , 'sequence_summary');
-    utils.validateLineTextAndType(4  , 'SCENE 1'                        , 'heading');
-    utils.validateLineTextAndType(5  , 'action 1'                       , 'action');
-    utils.validateLineTextAndType(6  , 'action 1.1'                     , 'action');
-    utils.validateLineTextAndType(7  , 'action 1.2'                     , 'action');
-    utils.validateLineTextAndType(8  , 'ACT OF SCENE 2'                 , 'act_name');
-    utils.validateLineTextAndType(9  , 'SUMMARY OF ACT OF SCENE 2'      , 'act_summary');
-    utils.validateLineTextAndType(10 , 'SEQUENCE OF SCENE 2'            , 'sequence_name');
-    utils.validateLineTextAndType(11 , 'SUMMARY OF SEQUENCE OF SCENE 2' , 'sequence_summary');
-    utils.validateLineTextAndType(12 , 'SCENE 2'                        , 'heading');
-    utils.validateLineTextAndType(13 , 'action 2'                       , 'action');
-    utils.validateLineTextAndType(14 , 'SEQUENCE OF SCENE 3'            , 'sequence_name');
-    utils.validateLineTextAndType(15 , 'SUMMARY OF SEQUENCE OF SCENE 3' , 'sequence_summary');
-    utils.validateLineTextAndType(16 , 'SCENE 3'                        , 'heading');
-    utils.validateLineTextAndType(17 , 'action 3'                       , 'action');
-    utils.validateLineTextAndType(18 , 'action 3.1'                     , 'action');
-    utils.validateLineTextAndType(19 , 'SCENE 4'                        , 'heading');
-    utils.validateLineTextAndType(20 , 'last line'                      , 'action');
+    this.utils.validateLineTextAndType(0  , 'SCENE 1'    , 'act_name');
+    this.utils.validateLineTextAndType(1  , 'SCENE 1'    , 'act_summary');
+    this.utils.validateLineTextAndType(2  , 'SCENE 1'    , 'sequence_name');
+    this.utils.validateLineTextAndType(3  , 'SCENE 1'    , 'sequence_summary');
+    this.utils.validateLineTextAndType(4  , 'SCENE 1'    , 'scene_name');
+    this.utils.validateLineTextAndType(5  , 'SCENE 1'    , 'scene_summary');
+    this.utils.validateLineTextAndType(6  , 'SCENE 1'    , 'heading');
+    this.utils.validateLineTextAndType(7  , 'action 1'   , 'action');
+    this.utils.validateLineTextAndType(8  , 'action 1.1' , 'action');
+    this.utils.validateLineTextAndType(9  , 'action 1.2' , 'action');
+    this.utils.validateLineTextAndType(10 , 'SCENE 2'    , 'act_name');
+    this.utils.validateLineTextAndType(11 , 'SCENE 2'    , 'act_summary');
+    this.utils.validateLineTextAndType(12 , 'SCENE 2'    , 'sequence_name');
+    this.utils.validateLineTextAndType(13 , 'SCENE 2'    , 'sequence_summary');
+    this.utils.validateLineTextAndType(14 , 'SCENE 2'    , 'scene_name');
+    this.utils.validateLineTextAndType(15 , 'SCENE 2'    , 'scene_summary');
+    this.utils.validateLineTextAndType(16 , 'SCENE 2'    , 'heading');
+    this.utils.validateLineTextAndType(17 , 'action 2'   , 'action');
+    this.utils.validateLineTextAndType(18 , 'SCENE 3'    , 'sequence_name');
+    this.utils.validateLineTextAndType(19 , 'SCENE 3'    , 'sequence_summary');
+    this.utils.validateLineTextAndType(20 , 'SCENE 3'    , 'scene_name');
+    this.utils.validateLineTextAndType(21 , 'SCENE 3'    , 'scene_summary');
+    this.utils.validateLineTextAndType(22 , 'SCENE 3'    , 'heading');
+    this.utils.validateLineTextAndType(23 , 'action 3'   , 'action');
+    this.utils.validateLineTextAndType(24 , 'action 3.1' , 'action');
+    this.utils.validateLineTextAndType(25 , 'SCENE 4'    , 'scene_name');
+    this.utils.validateLineTextAndType(26 , 'SCENE 4'    , 'scene_summary');
+    this.utils.validateLineTextAndType(27 , 'SCENE 4'    , 'heading');
+    this.utils.validateLineTextAndType(28 , 'last line'  , 'action');
   }
 }

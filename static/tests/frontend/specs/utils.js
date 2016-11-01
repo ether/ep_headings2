@@ -1,16 +1,26 @@
 var ep_script_elements_test_helper = ep_script_elements_test_helper || {};
 ep_script_elements_test_helper.utils = {
+  act: function(text) {
+    return this.actName(text) + this.actSummary(text);
+  },
   actName: function(text) {
     return "<act_name>" + text + "</act_name><br/>";
   },
   actSummary: function(text){
     return "<act_summary>" + text + "</act_summary><br/>"
   },
+  sequence: function (text) {
+    return this.sequenceName(text) + this.sequenceSummary(text);
+  },
   sequenceName: function(text) {
     return "<sequence_name>" + text + "</sequence_name><br/>";
   },
   sequenceSummary: function(text){
     return "<sequence_summary>" + text + "</sequence_summary><br/>";
+  },
+  synopsis: function(text) {
+    return "<scene_name>" + text + "</scene_name><br/>" +
+           "<scene_summary>" + text + "</scene_summary><br/>";
   },
   heading: function(text) {
     return "<heading>" + text + "</heading><br/>";
@@ -241,7 +251,7 @@ ep_script_elements_test_helper.utils = {
   },
 
   SCRIPT_ELEMENT_TYPE_SELECTOR: 'heading, action, character, dialogue, parenthetical, shot, transition',
-  SCENE_MARK_TYPE_SELECTOR: 'act_name, act_summary, sequence_name, sequence_summary',
+  SCENE_MARK_TYPE_SELECTOR: 'act_name, act_summary, sequence_name, sequence_summary, scene_name, scene_summary',
   getLineType: function(lineNumber) {
     var sceneElementsAndSceneMarks = this.SCRIPT_ELEMENT_TYPE_SELECTOR + ',' + this.SCENE_MARK_TYPE_SELECTOR;
     var $line = this.getLine(lineNumber);

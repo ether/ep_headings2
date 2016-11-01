@@ -3,18 +3,9 @@ var _ = require('ep_etherpad-lite/static/js/underscore');
 var utils = require("./utils");
 var sceneMarksUtils = require("ep_script_scene_marks/static/js/utils");
 var SM_ADDED_OR_REMOVED_EVENT = sceneMarksUtils.SCENE_MARK_ADD_EVENT + ' ' + sceneMarksUtils.SCENE_MARK_REMOVED_EVENT;
-var FIND_HEADING_TARGET_ON_DIRECTION = {
-  'sceneMarkRemoved': findHeadingTargetAbove,
-  'sceneMarkAdded': findHeadingTargetBelow
-};
 
-// we only mark the headings with sequences
-// to mark the heading with acts uncomment the line below
-var HEADING_TYPE_VALUE = {
-  // act_name: 'sceneWithAct',
-  sequence_name: 'sceneWithSequence',
-};
 var HEADING_TYPE_KEY = 'headingType';
+var HEADING_TYPE_VALUE = 'sceneWithSequence';
 
 exports.init = function (ace) {
   updateHeadingsType(ace);
@@ -56,61 +47,49 @@ var updateHeadingTypeWhenItsSMIsChanged = function (ace) {
   var $innerDocument = utils.getPadInner().find("#innerdocbody");
   $innerDocument.on(SM_ADDED_OR_REMOVED_EVENT, function(event, line) {
     ace.callWithAce(function(ace){
-      ace.ace_updateHeadingType(line, event);
+      ace.ace_updateHeadingType(line);
     });
   });
 }
 
-var findSceneMarkOfHeading = function (line) {
-  var firstSceneMarkOfHeading;
+var isFirstSMOfHeadingASequence = function (line) {
   var $line = utils.getPadInner().find("div").slice(line, line + 1);
   var $sceneMarksAbove = $line.prevUntil("div:not(.sceneMark)").addBack();
-  if($sceneMarksAbove.first().find("sequence_name").length !== 0){
-    firstSceneMarkOfHeading = "sequence_name";
-  }
-  return firstSceneMarkOfHeading;
+  var isFirstSMOfHeadingASequence = $sceneMarksAbove.first().find("sequence_name").length !== 0;
+
+  return isFirstSMOfHeadingASequence;
 }
 
-exports.updateHeadingType = function (line, event) {
+exports.updateHeadingType = function (line) {
   var attributeManager = this.documentAttributeManager;
   var editorInfo       = this.editorInfo;
   var rep              = this.rep;
 
-  var headingLine = getHeadingOfChange(line, rep, event);
-  var firstSceneMarkOfHeading = findSceneMarkOfHeading(headingLine);
-  var headingTypeValue = HEADING_TYPE_VALUE[firstSceneMarkOfHeading];
+  var headingLine = getHeadingOfChange(line, rep);
+  var firstSMOfHeadingIsASequence = isFirstSMOfHeadingASequence(headingLine);
 
   editorInfo.ace_inCallStackIfNecessary("nonundoable", function(){
-    if(headingTypeValue !== undefined){
-      attributeManager.setAttributeOnLine(headingLine, HEADING_TYPE_KEY, headingTypeValue);
+    if(firstSMOfHeadingIsASequence){
+      attributeManager.setAttributeOnLine(headingLine, HEADING_TYPE_KEY, HEADING_TYPE_VALUE);
     }else{
       attributeManager.removeAttributeOnLine(headingLine, HEADING_TYPE_KEY);
     }
   });
 }
 
-var getHeadingOfChange = function (line, rep, event) {
+var getHeadingOfChange = function (line, rep) {
   var lineNumberOfHeadingOfChange = line;
   var $line = utils.getPadInner().find("div").slice(line, line + 1)
   var lineHasHeading = $line.find("heading").length === 1;
-
   if(!lineHasHeading){
-    // when user adds a scene mark the heading goes down, when user removes it goes up.
-    // As we listen to both events, we have to know if we have to look up or down
-    // for the new heading position
-    lineNumberOfHeadingOfChange = FIND_HEADING_TARGET_ON_DIRECTION[event.type](line, rep);
+    // in both add or remove SM events the line returned is the above
+    // of the heading of reference.
+    lineNumberOfHeadingOfChange = findHeadingTargetBelow(line, rep);
   }
   return lineNumberOfHeadingOfChange;
 }
 
-function findHeadingTargetAbove (line, rep){
-  var $line = utils.getPadInner().find("div").slice(line, line + 1);
-  var $targetLine = $line.prevUntil("div:has(heading)").addBack().first().prev();
-  var lineTarget = utils.getLineNumberFromDOMLine($targetLine, rep)
-  return lineTarget;
-}
-
-function findHeadingTargetBelow (line, rep) {
+var findHeadingTargetBelow  = function(line, rep) {
   var $line = utils.getPadInner().find("div").slice(line, line + 1);
   var $targetLine = $line.nextUntil("div:has(heading)").last().next();
   var lineTarget = utils.getLineNumberFromDOMLine($targetLine, rep)

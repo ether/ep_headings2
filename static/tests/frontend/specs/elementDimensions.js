@@ -65,25 +65,25 @@ describe("ep_script_elements - element dimensions", function(){
     });
 
     it("displays headings with 61 chars per line", function(done) {
-      var elementLine = 4;
+      var elementLine = 2;
       var maxChars = 61;
       dimensions.testElementCanHoldCharsPerLine("heading", elementLine, maxChars, done);
     });
 
     it("displays actions with 61 chars per line", function(done) {
-      var elementLine = 5;
+      var elementLine = 3;
       var maxChars = 61;
       dimensions.testElementCanHoldCharsPerLine("action", elementLine, maxChars, done);
     });
 
     it("displays characters with 38 chars per line", function(done) {
-      var elementLine = 6;
+      var elementLine = 4;
       var maxChars = 38;
       dimensions.testElementCanHoldCharsPerLine("character", elementLine, maxChars, done);
     });
 
     it("displays parentheticals with 25 chars per line", function(done) {
-      var elementLine = 7;
+      var elementLine = 5;
       // parentheticals have a different behavior on tests because the ")" in the end of
       // line is moved to next line when parenthetical reaches the char limit. So instead of
       // testing it with its max (25), we test with max-1
@@ -92,25 +92,25 @@ describe("ep_script_elements - element dimensions", function(){
     });
 
     it("displays dialogues with 35 chars per line", function(done) {
-      var elementLine = 8;
+      var elementLine = 6;
       var maxChars = 35;
       dimensions.testElementCanHoldCharsPerLine("dialogue", elementLine, maxChars, done);
     });
 
     it("displays shots with 61 chars per line", function(done) {
-      var elementLine = 9;
+      var elementLine = 7;
       var maxChars = 61;
       dimensions.testElementCanHoldCharsPerLine("shot", elementLine, maxChars, done);
     });
 
     it("displays transitions with 16 chars per line", function(done) {
-      var elementLine = 10;
+      var elementLine = 8;
       var maxChars = 16;
       dimensions.testElementCanHoldCharsPerLine("transition", elementLine, maxChars, done);
     });
 
     it("displays generals with 61 chars per line", function(done) {
-      var elementLine = 11;
+      var elementLine = 9;
       var maxChars = 61;
       var noInnerTag = true; // general has no <general> tag under <div>
       dimensions.testElementCanHoldCharsPerLine("general", elementLine, maxChars, done, noInnerTag);
@@ -124,6 +124,7 @@ ep_script_elements_test_helper.dimensions = {
   buildScript: function() {
     var utils = ep_script_elements_test_helper.utils;
 
+    var synopsis      = utils.synopsis("&nbsp;");
     var heading       = utils.heading("&nbsp;");
     var action        = utils.action("&nbsp;");
     var character     = utils.character("&nbsp;");
@@ -133,7 +134,8 @@ ep_script_elements_test_helper.dimensions = {
     var transition    = utils.transition("&nbsp;");
     var general       = utils.general("last line");
 
-    return heading + action + character + parenthetical + dialogue + shot + transition + general;
+    return synopsis + heading + action + character +
+      parenthetical + dialogue + shot + transition + general;
   },
 
   buildStringWithLength: function(length) {

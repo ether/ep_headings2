@@ -6,10 +6,7 @@ describe('ep_script_elements - handle paste on script elements', function () {
   before(function (done) {
     utils = ep_script_elements_test_helper.utils;
     helperFunctions = ep_script_elements_test_helper.pasteOnSE;
-    helper.newPad(function(){
-      helperFunctions.createScript(done);
-    });
-    this.timeout(60000);
+    helperFunctions.createNewPadAndFillWithContent(this, done);
   });
 
   context('when user copies a script element followed by a scene mark hidden with triple click', function () {
@@ -51,7 +48,7 @@ describe('ep_script_elements - handle paste on script elements', function () {
 
     it('pastes the element copied and removes the scene marks', function (done) {
       helper.waitFor(function(){
-        var $targetLine = helperFunctions.getLineTarget(SHOT_LINE);
+        var $targetLine = utils.getLine(SHOT_LINE);
         var targetLineText = $targetLine.text();
         return targetLineText === "shot";
       }).done(function(){
@@ -214,10 +211,16 @@ describe('ep_script_elements - handle paste on script elements', function () {
 
 var ep_script_elements_test_helper = ep_script_elements_test_helper || {};
 ep_script_elements_test_helper.pasteOnSE = {
+  utils: null,
+  createNewPadAndFillWithContent: function(test, done) {
+    var self = this;
+    helper.newPad(function(){
+      self.utils = ep_script_elements_test_helper.utils;
+      self.createScript(done);
+    });
+    test.timeout(60000);
+  },
   createScript: function(done) {
-    var utils = ep_script_elements_test_helper.utils;
-    var SMUtils = ep_script_scene_marks_test_helper.utils;
-
     var smText        = "SM TEXT";
     var secondSMText  = "SM 2 TEXT"
     var headingText   = "HEADING";
@@ -228,21 +231,21 @@ ep_script_elements_test_helper.pasteOnSE = {
     var generalText   = "general";
     var lastLineText  = lastHeading;
 
-    var act            = SMUtils.act(smText);
-    var sequence       = SMUtils.sequence(smText);
-    var heading        = utils.heading(headingText);
-    var dialogue       = utils.dialogue(dialogueText);
-    var shot           = utils.shot(shotText);
-    var action         = utils.action(actionText);
-    var general        = utils.general(generalText)
-    var secondAct      = SMUtils.act(secondSMText);
-    var secondSequence = SMUtils.sequence(secondSMText);
-    var secondHeading  = utils.heading(lastHeading);
+    var act            = this.utils.act(smText);
+    var sequence       = this.utils.sequence(smText);
+    var heading        = this.utils.heading(headingText);
+    var dialogue       = this.utils.dialogue(dialogueText);
+    var shot           = this.utils.shot(shotText);
+    var action         = this.utils.action(actionText);
+    var general        = this.utils.general(generalText)
+    var secondAct      = this.utils.act(secondSMText);
+    var secondSequence = this.utils.sequence(secondSMText);
+    var secondHeading  = this.utils.heading(lastHeading);
 
     var script = act + sequence + heading +  dialogue + shot + dialogue +
      action + general + secondAct + secondSequence + secondHeading;
 
-    utils.createScriptWith(script, lastLineText, done)
+    this.utils.createScriptWith(script, lastLineText, done)
 
   },
   simulatePasteOfLineWithTripleClickOnEmptyLine: function(lineTargetOfPaste, cb) {
@@ -333,16 +336,13 @@ ep_script_elements_test_helper.pasteOnSE = {
       '<div><heading><span>heading</span></heading></div>';
     this.pasteTextOnLine(copiedHTML, lineTargetOfPaste, cb)
   },
-  getLineTarget: function(line) {
-    return helper.padInner$("div").slice(line, line + 1);
-  },
   pasteTextOnLine: function(htmlToPaste, lineTargetOfPaste, cb) {
     var _this = this;
     setTimeout(function() {
-      _this.triggerEventPaste();
+      _this.triggerEventPaste(lineTargetOfPaste);
 
       // WARNING: here we assume the element has only one children, with headings won't work
-      var $lineTarget = _this.getLineTarget(lineTargetOfPaste);
+      var $lineTarget = _this.utils.getLine(lineTargetOfPaste);
       $lineTarget.html(htmlToPaste);
       cb();
     }, 1000);
@@ -350,47 +350,45 @@ ep_script_elements_test_helper.pasteOnSE = {
   pasteTextOnChildren: function(htmlToPaste, lineTargetOfPaste, cb) {
     var _this = this;
     setTimeout(function() {
-      _this.triggerEventPaste();
+      _this.triggerEventPaste(lineTargetOfPaste);
 
       // WARNING: here we assume the element has only one children, with headings won't work
-      var $lineTarget = _this.getLineTarget(lineTargetOfPaste).children();
+      var $lineTarget = _this.utils.getLine(lineTargetOfPaste).children().first();
       $lineTarget.html(htmlToPaste);
       cb();
     }, 1000);
   },
-  triggerEventPaste: function() {
+  triggerEventPaste: function(lineTargetOfPaste) {
     var event = $.Event("paste");
     var e = { clipboardData: { getData: function(any) { return;} } };
     event.originalEvent = e;
-    var $firstLine = this.getLineTarget(1);
+    var $firstLine = this.utils.getLine(lineTargetOfPaste);
     $firstLine.trigger(event);
   },
   waitCollectLinesPasted: function(test, lineTarget, done) {
     var _this = this;
     test.timeout(10000);
     helper.waitFor(function(){
-      var $lineTarget = _this.getLineTarget(lineTarget);
+      var $lineTarget = _this.utils.getLine(lineTarget);
       var createdNewLines = $lineTarget.find("div").length === 0;
       return createdNewLines;
     }, 5000).done(done);
   },
   hasTheOriginalText: function() {
-    var utils = ep_script_elements_test_helper.utils;
-
-    utils.validateLineTextAndType(0, 'ACT OF SM TEXT', 'act_name');
-    utils.validateLineTextAndType(1, 'SUMMARY OF ACT OF SM TEXT', 'act_summary');
-    utils.validateLineTextAndType(2, 'SEQUENCE OF SM TEXT', 'sequence_name');
-    utils.validateLineTextAndType(3, 'SUMMARY OF SEQUENCE OF SM TEXT', 'sequence_summary');
-    utils.validateLineTextAndType(4, 'HEADING', 'heading');
-    utils.validateLineTextAndType(5, '------', 'dialogue');
-    utils.validateLineTextAndType(6, ' ', 'shot');
-    utils.validateLineTextAndType(7, '------', 'dialogue');
-    utils.validateLineTextAndType(8, 'action', 'action');
-    utils.validateLineTextAndType(9, 'general', 'general');
-    utils.validateLineTextAndType(10, 'ACT OF SM 2 TEXT', 'act_name');
-    utils.validateLineTextAndType(11, 'SUMMARY OF ACT OF SM 2 TEXT', 'act_summary');
-    utils.validateLineTextAndType(12, 'SEQUENCE OF SM 2 TEXT', 'sequence_name');
-    utils.validateLineTextAndType(13, 'SUMMARY OF SEQUENCE OF SM 2 TEXT', 'sequence_summary');
-    utils.validateLineTextAndType(14, 'HEADING 2', 'heading');
+    this.utils.validateLineTextAndType(0  , 'SM TEXT'   , 'act_name');
+    this.utils.validateLineTextAndType(1  , 'SM TEXT'   , 'act_summary');
+    this.utils.validateLineTextAndType(2  , 'SM TEXT'   , 'sequence_name');
+    this.utils.validateLineTextAndType(3  , 'SM TEXT'   , 'sequence_summary');
+    this.utils.validateLineTextAndType(4  , 'HEADING'   , 'heading');
+    this.utils.validateLineTextAndType(5  , '------'    , 'dialogue');
+    this.utils.validateLineTextAndType(6  , ' '         , 'shot');
+    this.utils.validateLineTextAndType(7  , '------'    , 'dialogue');
+    this.utils.validateLineTextAndType(8  , 'action'    , 'action');
+    this.utils.validateLineTextAndType(9  , 'general'   , 'general');
+    this.utils.validateLineTextAndType(10 , 'SM 2 TEXT' , 'act_name');
+    this.utils.validateLineTextAndType(11 , 'SM 2 TEXT' , 'act_summary');
+    this.utils.validateLineTextAndType(12 , 'SM 2 TEXT' , 'sequence_name');
+    this.utils.validateLineTextAndType(13 , 'SM 2 TEXT' , 'sequence_summary');
+    this.utils.validateLineTextAndType(14 , 'HEADING 2' , 'heading');
   },
 }
