@@ -97,7 +97,7 @@ describe('ep_script_elements - cut events on multiline selected', function () {
 
     it('joins the elements', function(done){
       utils.validateLineTextAndType(0, 'pohn', 'character');
-      utils.validateLineTextAndType(1, 'ACT OF SM text', 'act_name');
+      utils.validateLineTextAndType(1, 'SM text', 'act_name');
       done();
     });
 
@@ -126,7 +126,7 @@ describe('ep_script_elements - cut events on multiline selected', function () {
       var inner$ = helper.padInner$;
 
       var $firstElement = inner$('div:has(dialogue)').first();
-      var $lastElement = inner$('div:has(act_summary)').first();
+      var $lastElement = inner$('div:has(scene_summary)').first();
 
       var lastLineLength = $lastElement.text().length;
       var offsetAtFirstElement = 0;
@@ -151,23 +151,27 @@ describe('ep_script_elements - cut events on multiline selected', function () {
       utils.validateLineTextAndType(1, '', 'dialogue');
       utils.validateLineTextAndType(2, '', 'act_name');
       utils.validateLineTextAndType(3, '', 'act_summary');
+      utils.validateLineTextAndType(4, '', 'sequence_name');
+      utils.validateLineTextAndType(5, '', 'sequence_summary');
+      utils.validateLineTextAndType(6, '', 'scene_name');
+      utils.validateLineTextAndType(7, '', 'scene_summary');
       done();
     });
 
     it('pastes the content without SM tags', function(done){
       var dataFromGetData = event.originalEvent.clipboardData.getData('text/html');
-      var bufferHasNotSMTags = $(dataFromGetData).find("act_name, act_summary, sequence_name, sequence_summary").length === 0;
+      var bufferHasNotSMTags = $(dataFromGetData).find(SMutils.SCENE_MARKS_TAGS).length === 0;
       var hasReplaceSMBySpan = $(dataFromGetData).find("span").length;
 
-      // 4 spans original + 2 spans that was SM before
-      expect(hasReplaceSMBySpan).to.be(6);
+      // 8 spans original + 6 spans that was SM before
+      expect(hasReplaceSMBySpan).to.be(14);
       expect(bufferHasNotSMTags).to.be(true);
       done();
     });
 
     it('has the plain text in buffer', function(done){
       var plainText = event.originalEvent.clipboardData.getData('text/plain');
-      var resultText = "dialogue\njohn\nACT OF SM text\nSUMMARY OF ACT OF SM text";
+      var resultText = "dialogue\njohn\nSM text\nSM text\nSM text\nSM text\nSM text\nSM text";
       expect(plainText).to.be(resultText);
       done();
     });
@@ -214,20 +218,61 @@ describe('ep_script_elements - cut events on multiline selected', function () {
 
     it('pastes the content without SM tags', function(done){
       var dataFromGetData = event.originalEvent.clipboardData.getData('text/html');
-      var bufferHasNotSMTags = $(dataFromGetData).find("act_name, act_summary, sequence_name, sequence_summary").length === 0;
+      var bufferHasNotSMTags = $(dataFromGetData).find(SMutils.SCENE_MARKS_TAGS).length === 0;
       var hasReplaceSMBySpan = $(dataFromGetData).find("span").length;
 
-      // 5 spans original + 8 spans that was SM before
-      expect(hasReplaceSMBySpan).to.be(13);
+      // 5 spans original + 12 spans that was SM before
+      expect(hasReplaceSMBySpan).to.be(17);
       expect(bufferHasNotSMTags).to.be(true);
       done();
     });
 
     it('has the plain text in buffer', function(done){
       var plainText = event.originalEvent.clipboardData.getData('text/plain');
-      var resultText = "paul\ndialogue\njohn\nACT OF SM text\nSUMMARY OF ACT OF SM text\n" +
-                       "SEQUENCE OF SM text\nSUMMARY OF SEQUENCE OF SM text\nheading\nlast text"
+      var resultText = "paul\ndialogue\njohn\nSM text\nSM text\n" +
+                       "SM text\nSM text\nSM text\nSM text\nheading\nlast text"
       expect(plainText).to.be(resultText);
+      done();
+    });
+  });
+
+  context('selection begins in a SE and goes until part of a heading', function () {
+    before(function(done){
+      // make the scene marks visible
+      var firstHeadingLineNumber = utils.getLineNumberOfElement('heading', 0);
+      SMutils.clickOnSceneMarkButtonOfLine(firstHeadingLineNumber);
+
+      var inner$ = helper.padInner$;
+
+      var $firstElement = inner$('div:has(character)').first();
+      var $lastElement = inner$('div:has(heading)').first();
+
+      var offsetAtFirstElement = 2; // select from PA
+      var offsetAtlastElement = 2; // select until HE
+
+      // make the selection
+      helper.selectLines($firstElement, $lastElement, offsetAtFirstElement, offsetAtlastElement);
+
+      // trigger cut
+      setTimeout(function() {
+        event = helperFunctions.triggerCut();
+        done();
+      }, 1000);
+    });
+
+    after(function () {
+      // utils.undo();
+    });
+
+    it('removes the script elements and cleans the scene marks', function(done){
+      utils.validateLineTextAndType(0, 'pa', 'character');
+      utils.validateLineTextAndType(1, '', 'act_name');
+      utils.validateLineTextAndType(2, '', 'act_summary');
+      utils.validateLineTextAndType(3, '', 'sequence_name');
+      utils.validateLineTextAndType(4, '', 'sequence_summary');
+      utils.validateLineTextAndType(5, '', 'scene_name');
+      utils.validateLineTextAndType(6, '', 'scene_summary');
+      utils.validateLineTextAndType(7, 'ading', 'heading');
       done();
     });
   });
@@ -237,7 +282,6 @@ var ep_script_elements_test_helper = ep_script_elements_test_helper || {};
 ep_script_elements_test_helper.cutEvents = {
   createPadContent: function(cb){
     var utils = ep_script_elements_test_helper.utils;
-    var SMutils = ep_script_scene_marks_test_helper.utils;
 
     var smText            = 'SM text';
     var lastLineText      = 'last text';
@@ -245,12 +289,13 @@ ep_script_elements_test_helper.cutEvents = {
     var character       = utils.character('paul');
     var dialogue        = utils.dialogue('dialogue');
     var secondCharacter = utils.character('john');
-    var act             = SMutils.act(smText);
-    var sequence        = SMutils.sequence(smText);
+    var act             = utils.act(smText);
+    var sequence        = utils.sequence(smText);
+    var synopsis        = utils.synopsis(smText);
     var heading         = utils.heading('heading');
     var action          = utils.action(lastLineText);
 
-    var script = character + dialogue + secondCharacter + act + sequence + heading + action;
+    var script = character + dialogue + secondCharacter + act + sequence + synopsis + heading + action;
 
     utils.createScriptWith(script, lastLineText, cb)
   },

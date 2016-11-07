@@ -1,6 +1,6 @@
-var utils = require('./utils');
-var BLACKLIST_TAGS = "act_name, act_summary, sequence_name, sequence_summary";
-var mergeLines = require('./mergeLines');
+var utils          = require('./utils');
+var sceneMarkUtils = require("ep_script_scene_marks/static/js/utils");
+var mergeLines     = require('./mergeLines');
 
 
 exports.init = function(context){
@@ -53,7 +53,7 @@ var getHtmlFromSelectionAndRemoveTagsNotAllowed = function(){
   var $html = $("<span></span>").html(htmlFromSelection);
 
   // replace SM with spans
-  replaceTagsNotAllowedBySpan($html);
+  replaceSceneMarksTagsWithSpan($html);
 
   return $html.html();
 }
@@ -85,8 +85,9 @@ var createHiddenDiv = function(range){
   return $hiddenDiv;
 };
 
-var replaceTagsNotAllowedBySpan = function($html){
-  $html.find(BLACKLIST_TAGS).replaceWith(function(){
+var replaceSceneMarksTagsWithSpan = function($html){
+  var sceneMarks = sceneMarkUtils.sceneMarkTags.toString();
+  $html.find(sceneMarks).replaceWith(function(){
     return $("<span></span>").html($(this).contents());
   });
 }

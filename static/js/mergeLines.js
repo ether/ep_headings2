@@ -145,23 +145,28 @@ var linesWillBeMerged = function(lineToBeMerged, context) {
 var processTextSelected = function(context){
   // For deletion of selection of multiple lines, where the first line of selection is a script element we have the cases:
   //
-  //  1. Beginning of selection is a heading with SM
+  //  [1]. Beginning of selection is a heading completely selected
   //   (we remove the heading and the SM, update the selection target excluding this part removed, and let the rest
   //   to be processed with some rule below
   //
-  //  2. Beginning completely selected and end partially selected
-  //   (it needs to remove the selection and reapply attribute in the last line selected)
-  //
-  //  3. Beginning and end of selection partially selected and it is different elements
-  //   (it needs to remove the selection, create a new line, and reapply attribute in the last line selected)
-  //
-  //  4. End of selection is completely selected
-  //  5. Beginning and end of selection partially selected and it is the same element
-  //   (it only needs to remove the selection)
-  //
-  //  6. Beginning of selection is a script element end of selection is a scene mark
+  //  [2]. End of selection is a scene mark
   //   (goes backwards - clean the scene marks at the end, remove the script elements from the scene mark until the
   //   beginning of the selection)
+  //
+  //  [3]. End of a selection is a heading partially selected - we remove the text of the scene marks partially selected,
+  //   remove the part selected of the heading and remove the rest.
+  //
+  //  [4]. Beginning and end of selection partially selected and it is different elements
+  //   (it needs to remove the selection, create a new line, and reapply attribute in the last line selected)
+  //
+  //  [5]. End of selection is completely selected
+  //  (it only needs to remove the selection)
+  //
+  //  [6]. Beginning completely selected and end partially selected
+  //   (it needs to remove the selection and reapply attribute in the last line selected)
+  //
+  //  [7]. Beginning and end of selection partially selected and it is the same element
+  //   (it only needs to remove the selection)
   var editorInfo       = context.editorInfo;
   var attributeManager = context.documentAttributeManager;
   var rep              = context.rep;
@@ -173,56 +178,53 @@ var processTextSelected = function(context){
   var lineToSetAttributes = firstLineSelected;
   var shouldCreateNewLine = false;
   var shouldRecoverAttribsOfLastLineSelected = true;
+  var beginningOfLastSceneMarkOfSelection;
+  var prevLineOfStartOfLastSMOfSelection;
+  var firstLineIsAHeadingCompletelySelected = isFirstLineSelectedAHeadingCompletelySelected(attributeManager, rep);
 
-  var firstLineIsAHeadingWithSMCompletelySelected = isFirstLineSeletedAHeadingWithSM(attributeManager, rep);
-
-  // if the first line selected is a heading with SM we have to remove the SM as well
-  if(firstLineIsAHeadingWithSMCompletelySelected){
+  // [1] - if the first line selected is a heading and it is completely selected we have to remove the SM as well
+  if(firstLineIsAHeadingCompletelySelected){
     var firstSMOfSceneSelected = sceneMarkUtils.getFirstSceneMarkOfScene(firstLineSelected, rep);
-    var endOfHeadingSelected = [firstLineSelected, getLength(firstLineSelected, rep)];
-
     beginningOfSelectionPosition = [firstSMOfSceneSelected, 0];
     lineToSetAttributes = firstSMOfSceneSelected;
   }
 
-  var endOfSelectionIsSceneMark = getSceneMarkTypeOfLine(lastLineSelected, attributeManager);
+  var endOfSelectionIsSceneMark = sceneMarkUtils.lineIsSceneMark(lastLineSelected, attributeManager);
   if(endOfSelectionIsSceneMark){
-    // when the selection begins in a script element and ends in a scene mark we remove in two steps:
+    // [2] - when the selection begins in a script element and ends in a scene mark we remove in two steps:
     // 1. clean the last scene marks selected
     // 2. remove everything (SE, SM) before the this scene mark cleaned
 
     // clean the scene mark
-    var beginningOfLastSceneMarkOfSelection = sceneMarkUtils.getFirstSceneMarkOfScene(lastLineSelected, rep);
+    beginningOfLastSceneMarkOfSelection = sceneMarkUtils.getFirstSceneMarkOfScene(lastLineSelected, rep);
     sceneMarkHandleMultiLineDeletion.cleanLinesSceneMark(beginningOfLastSceneMarkOfSelection, lastLineSelected, context);
-
     shouldRecoverAttribsOfLastLineSelected = false;
 
     // the part to be removed will end in the previous line of the beginning of scene mark cleaned
-    var prevLineOfStartOfLastSMOfSelection =  beginningOfLastSceneMarkOfSelection - 1;
+    prevLineOfStartOfLastSMOfSelection =  beginningOfLastSceneMarkOfSelection - 1;
     var lengthOfprevLineOfStartOfLastSMOfSelection = getLength(prevLineOfStartOfLastSMOfSelection, rep);
     endOfSelectionPosition = [prevLineOfStartOfLastSMOfSelection, lengthOfprevLineOfStartOfLastSMOfSelection];
 
-  // end of selection is a script element
   }else{
-    var endOfSelectionIsHeadingWithSceneMark = isLineAHeadingWithSceneMark(lastLineSelected, attributeManager);
-    var boundariesOfSelectionHasSameType = checkIfLinesIsTheSameScriptElement(firstLineSelected, lastLineSelected, attributeManager);
-    if(endOfSelectionIsHeadingWithSceneMark){
-      // removes part of the heading
+    // end of selection is a script element
+    var endOfSelectionIsHeading = lineIsHeading(lastLineSelected);
+    var boundariesOfSelectionHasSameType = checkIfLinesIsTheSameScriptElement(firstLineSelected, lastLineSelected);
+    if(endOfSelectionIsHeading){
+      // [3] - removes part of the heading
       var beginningOfHeadingSelected = [lastLineSelected, 1];
       removeLines.removeAndProcessSelection(context, beginningOfHeadingSelected, endOfSelectionPosition, false, false, false);
 
       // clean the scene marks
-      var beginningOfLastSceneMarkOfSelection = sceneMarkUtils.getFirstSceneMarkOfScene(lastLineSelected, rep);
+      beginningOfLastSceneMarkOfSelection = sceneMarkUtils.getFirstSceneMarkOfScene(lastLineSelected, rep);
       var lastLineOfLastSceneMark = lastLineSelected - 1
       sceneMarkHandleMultiLineDeletion.cleanLinesSceneMark(beginningOfLastSceneMarkOfSelection, lastLineOfLastSceneMark, context);
 
       // the new part to be processed will end in the previous line of the beginning of scene mark cleaned
-      var prevLineOfStartOfLastSMOfSelection = beginningOfLastSceneMarkOfSelection - 1;
+      prevLineOfStartOfLastSMOfSelection = beginningOfLastSceneMarkOfSelection - 1;
       endOfSelectionPosition = [prevLineOfStartOfLastSMOfSelection, getLength(prevLineOfStartOfLastSMOfSelection, rep)];
-
       shouldRecoverAttribsOfLastLineSelected = false;
-    // when the boundaries of selection has different types we prevent of merge the lines
     }else if(isBothLinesBoundariesOfSelectionPartiallySelected(context) && !boundariesOfSelectionHasSameType){
+      // [4] - when the boundaries of selection has different types we prevent of merge the lines
       // to avoid merging the rest of content not selected in the lines selected, we remove the selection
       // create a new line after the first line selected, with the rest of the content not selected in the
       // last line of selection
@@ -233,7 +235,7 @@ var processTextSelected = function(context){
       lineToSetAttributes = nextLineAfterFirstLineSelected;
 
     }else if(isLastLineCompletelySelected(context)){
-      // all the line is removed, so we don't need to reapply any attribute
+      // [5] - all the line is removed, so we don't need to reapply any attribute
       shouldRecoverAttribsOfLastLineSelected = false;
     }
   }
@@ -243,45 +245,28 @@ var processTextSelected = function(context){
 }
 exports.processTextSelected = processTextSelected;
 
-var isFirstLineSeletedAHeadingWithSM = function(attributeManager, rep){
+var isFirstLineSelectedAHeadingCompletelySelected = function(attributeManager, rep){
   var firstLineSelected = rep.selStart[0];
-  var lineIsAHeadingWithSceneMark = isLineAHeadingWithSceneMark(firstLineSelected, attributeManager)
-  selectionStartInBeginningOfLine =  rep.selStart[1] === 1;
+  var firstLineSelectedIsHeading = lineIsHeading(firstLineSelected)
+  var selectionStartInBeginningOfLine =  rep.selStart[1] === 1;
 
-  return lineIsAHeadingWithSceneMark && selectionStartInBeginningOfLine;
+  return firstLineSelectedIsHeading && selectionStartInBeginningOfLine;
 }
 
-var isLineAHeadingWithSceneMark = function(line, attributeManager){
-  var previousLine = line - 1;
-  var headingHasSceneMark = false;
-  var lineAttrib = getScriptElementOfLine(line, attributeManager);
-
-  // avoid getting attrib of line -1
-  if(previousLine > 0){
-    var previousLineAttrib = getSceneMarkTypeOfLine(previousLine, attributeManager);
-    headingHasSceneMark = previousLineAttrib === "sequence_summary"
-  }
-
-  return lineAttrib === "heading" && headingHasSceneMark;
+var lineIsHeading = function (lineNumber) {
+  var $line = utils.getPadInner().find("div").slice(lineNumber, lineNumber + 1);
+  var typeOfLine = utils.typeOf($line);
+  return typeOfLine === "heading";
 }
 
-var getSceneMarkTypeOfLine = function(line, attributeManager){
-  var isAct      = attributeManager.getAttributeOnLine(line, 'act_scene_mark');
-  var isSequence = attributeManager.getAttributeOnLine(line, 'sequence_scene_mark');
+var checkIfLinesIsTheSameScriptElement = function(firstLine, lastLine){
+  var lineIsScriptElement = utils.lineIsScriptElement(firstLine);
+  var $firstLine = utils.getPadInner().find("div").slice(firstLine, firstLine + 1);
+  var $lastLine = utils.getPadInner().find("div").slice(lastLine, lastLine + 1);
+  var firstLineType = utils.typeOf($firstLine);
+  var lastLineType = utils.typeOf($lastLine);
 
-  return isAct || isSequence;
-}
-
-var checkIfLinesIsTheSameScriptElement = function(firstLine, lastLine, attributeManager){
-  var firstLineSelection = getScriptElementOfLine(firstLine, attributeManager);
-  var lastLineSelection = getScriptElementOfLine(lastLine, attributeManager);
-
-  return firstLineSelection === lastLineSelection;
-}
-
-var getScriptElementOfLine = function(line, attributeManager){
-  var scriptElement = attributeManager.getAttributeOnLine(line, 'script_element');
-  return scriptElement;
+  return lineIsScriptElement && (firstLineType === lastLineType);
 }
 
 var isMultiLineSelected = function(rep){
