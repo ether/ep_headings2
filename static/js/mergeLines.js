@@ -1,8 +1,8 @@
-var sceneMarkUtils = require("ep_script_scene_marks/static/js/utils");
-var sceneMark      = require("ep_script_scene_marks/static/js/handleMultiLineDeletion");
-var utils          = require("./utils");
-var removeLines    = require("./removeLines");
-var _              = require('ep_etherpad-lite/static/js/underscore');
+var sceneMarkUtils                   = require("ep_script_scene_marks/static/js/utils");
+var sceneMarkHandleMultiLineDeletion = require("ep_script_scene_marks/static/js/handleMultiLineDeletion");
+var utils                            = require("./utils");
+var removeLines                      = require("./removeLines");
+var _                                = require('ep_etherpad-lite/static/js/underscore');
 
 var BACKSPACE = 8;
 var DELETE = 46;
@@ -49,7 +49,7 @@ var handleBackspace = function(context) {
   var rep              = context.rep;
 
   var currentLine  = rep.selStart[0];
-  var previousLine = getPreviousLineWithScriptElement(currentLine, rep, attributeManager);
+  var previousLine = getPreviousLineWithScriptElement(currentLine, attributeManager);
 
   var currentLineHasDifferentTypeOfPreviousLine = thisLineTypeIsDifferentFromPreviousLine(currentLine);
 
@@ -84,7 +84,7 @@ var handleDelete = function(context) {
   var rep              = context.rep;
 
   var currentLine = rep.selStart[0];
-  var nextLine    = getNextLineWithScriptElement(currentLine, rep, attributeManager);
+  var nextLine    = getNextLineWithScriptElement(currentLine, attributeManager);
 
   var currentLineHasDifferentTypeOfNextLine = thisLineTypeIsDifferentFromPreviousLine(nextLine);
 
@@ -116,19 +116,19 @@ var handleDelete = function(context) {
   return blockDelete;
 }
 
-var getPreviousLineWithScriptElement = function(currentLine, rep, attributeManager) {
+var getPreviousLineWithScriptElement = function(currentLine, attributeManager) {
   var previousLine = currentLine - 1;
 
   // skip lines with scene marks
-  while (sceneMarkUtils.lineIsSceneMark(previousLine, rep, attributeManager)) previousLine--;
+  while (sceneMarkUtils.lineIsSceneMark(previousLine, attributeManager)) previousLine--;
 
   return previousLine;
 }
-var getNextLineWithScriptElement = function(currentLine, rep, attributeManager) {
+var getNextLineWithScriptElement = function(currentLine, attributeManager) {
   var nextLine = currentLine + 1;
 
   // skip lines with scene marks
-  while (sceneMarkUtils.lineIsSceneMark(nextLine, rep, attributeManager)) nextLine++;
+  while (sceneMarkUtils.lineIsSceneMark(nextLine, attributeManager)) nextLine++;
 
   return nextLine;
 }
@@ -178,7 +178,7 @@ var processTextSelected = function(context){
 
   // if the first line selected is a heading with SM we have to remove the SM as well
   if(firstLineIsAHeadingWithSMCompletelySelected){
-    var firstSMOfSceneSelected = sceneMark.getFirstSceneMarkOfScene(firstLineSelected, rep);
+    var firstSMOfSceneSelected = sceneMarkUtils.getFirstSceneMarkOfScene(firstLineSelected, rep);
     var endOfHeadingSelected = [firstLineSelected, getLength(firstLineSelected, rep)];
 
     beginningOfSelectionPosition = [firstSMOfSceneSelected, 0];
@@ -192,8 +192,8 @@ var processTextSelected = function(context){
     // 2. remove everything (SE, SM) before the this scene mark cleaned
 
     // clean the scene mark
-    var beginningOfLastSceneMarkOfSelection = sceneMark.getFirstSceneMarkOfScene(lastLineSelected, rep);
-    sceneMark.cleanLinesSceneMark(beginningOfLastSceneMarkOfSelection, lastLineSelected, context);
+    var beginningOfLastSceneMarkOfSelection = sceneMarkUtils.getFirstSceneMarkOfScene(lastLineSelected, rep);
+    sceneMarkHandleMultiLineDeletion.cleanLinesSceneMark(beginningOfLastSceneMarkOfSelection, lastLineSelected, context);
 
     shouldRecoverAttribsOfLastLineSelected = false;
 
@@ -212,9 +212,9 @@ var processTextSelected = function(context){
       removeLines.removeAndProcessSelection(context, beginningOfHeadingSelected, endOfSelectionPosition, false, false, false);
 
       // clean the scene marks
-      var beginningOfLastSceneMarkOfSelection = sceneMark.getFirstSceneMarkOfScene(lastLineSelected, rep);
+      var beginningOfLastSceneMarkOfSelection = sceneMarkUtils.getFirstSceneMarkOfScene(lastLineSelected, rep);
       var lastLineOfLastSceneMark = lastLineSelected - 1
-      sceneMark.cleanLinesSceneMark(beginningOfLastSceneMarkOfSelection, lastLineOfLastSceneMark, context);
+      sceneMarkHandleMultiLineDeletion.cleanLinesSceneMark(beginningOfLastSceneMarkOfSelection, lastLineOfLastSceneMark, context);
 
       // the new part to be processed will end in the previous line of the beginning of scene mark cleaned
       var prevLineOfStartOfLastSMOfSelection = beginningOfLastSceneMarkOfSelection - 1;
@@ -259,7 +259,7 @@ var isLineAHeadingWithSceneMark = function(line, attributeManager){
   // avoid getting attrib of line -1
   if(previousLine > 0){
     var previousLineAttrib = getSceneMarkTypeOfLine(previousLine, attributeManager);
-    var headingHasSceneMark = previousLineAttrib === "sequence_summary"
+    headingHasSceneMark = previousLineAttrib === "sequence_summary"
   }
 
   return lineAttrib === "heading" && headingHasSceneMark;
