@@ -19,8 +19,13 @@ ep_script_elements_test_helper.utils = {
     return "<sequence_summary>" + text + "</sequence_summary><br/>";
   },
   synopsis: function(text) {
-    return "<scene_name>" + text + "</scene_name><br/>" +
-           "<scene_summary>" + text + "</scene_summary><br/>";
+    return this.sceneName(text) + this.sceneSummary(text);
+  },
+  sceneName: function(text) {
+    return "<scene_name>" + text + "</scene_name><br/>";
+  },
+  sceneSummary: function(text) {
+    return "<scene_summary>" + text + "</scene_summary><br/>";
   },
   heading: function(text) {
     return "<heading>" + text + "</heading><br/>";
