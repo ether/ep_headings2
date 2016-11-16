@@ -13,7 +13,6 @@ describe('ep_script_elements - cut events on multiline selected', function () {
     this.timeout(60000);
   });
 
-
   // simulates triple click in a heading
   context('selection begins in a heading and ends in the line break', function(){
 
