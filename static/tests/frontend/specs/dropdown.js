@@ -142,7 +142,7 @@ describe("ep_script_elements - dropdown", function(){
 
       // wait for Etherpad to finish processing lines
       helper.waitFor(function(){
-        $secondTextElement = inner$("div").first().next();
+        var $secondTextElement = inner$("div").first().next();
         return $secondTextElement.text() === "Second Line!";
       }, 2000).done(cb);
     });
@@ -214,16 +214,17 @@ describe("ep_script_elements - dropdown", function(){
       var actLines = [0]; // creates act and sequence in the 1st heading
       var seqLines = [];
       var numOfHeadings = 1;
+      var headingLine = 6;
       utils.cleanPad(function(){
         SMUtils.writeScenesWithSceneMarks(actLines, seqLines, numOfHeadings, function(){
-          SMUtils.clickOnSceneMarkButtonOfLine(4);
+          SMUtils.clickOnSceneMarkButtonOfLine(headingLine);
           cb();
         });
       });
       this.timeout(10000);
     });
 
-    var sceneMarks = ['act_name', 'act_summary', 'sequence_name', 'sequence_summary'];
+    var sceneMarks = ['act_name', 'act_summary', 'sequence_name', 'sequence_summary', 'scene_name', 'scene_summary'];
     sceneMarks.forEach(function(sceneMark){
 
       context("and sceneMark is " + sceneMark , function(){
@@ -332,23 +333,24 @@ ep_script_elements_test_helper.dropdown = {
     var sceneText = "scene";
     var act = SMUtils.act(sceneText);
     var sequence = SMUtils.sequence(sceneText);
+    var synopsis = utils.synopsis(sceneText);
     var lastLineText = "heading";
     var heading = utils.heading(lastLineText);
 
-    var script = general + act + sequence + heading;
+    var script = general + act + sequence + synopsis + heading;
     utils.createScriptWith(script, lastLineText, done);
   },
   createPadWithSM: function(done) {
     var utils = ep_script_elements_test_helper.utils;
-    var SMUtils = ep_script_scene_marks_test_helper.utils;
 
     var sceneText = "scene";
-    var act = SMUtils.act(sceneText);
-    var sequence = SMUtils.sequence(sceneText);
+    var act = utils.act(sceneText);
+    var sequence = utils.sequence(sceneText);
+    var synopsis = utils.synopsis(sceneText);
     var lastLineText = "heading";
     var heading = utils.heading(lastLineText);
 
-    var script = act + sequence + heading;
+    var script = act + sequence + synopsis + heading;
     utils.createScriptWith(script, lastLineText, done);
   },
   createPadWithSE: function(done) {

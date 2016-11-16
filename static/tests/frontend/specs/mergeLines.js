@@ -472,8 +472,8 @@ describe("ep_script_elements - merge lines", function(){
   });
 
   context('when first line of script is an empty element and there is a heading with scene marks after it', function() {
-    var LINE_WITH_HEADING = 5;
-    var ORIGINAL_NUMBER_OF_LINES = 7;
+    var LINE_WITH_HEADING = 7;
+    var ORIGINAL_NUMBER_OF_LINES = 9;
 
     var lineIsRemoved = function() {
       var $lines = helper.padInner$("div");
@@ -495,7 +495,9 @@ describe("ep_script_elements - merge lines", function(){
           utils.validateLineTextAndType(1, sceneMarkUtils.actSummaryOf('heading'), 'act_summary');
           utils.validateLineTextAndType(2, sceneMarkUtils.sequenceNameOf('heading'), 'sequence_name');
           utils.validateLineTextAndType(3, sceneMarkUtils.sequenceSummaryOf('heading'), 'sequence_summary');
-          utils.validateLineTextAndType(4, 'heading', 'heading');
+          utils.validateLineTextAndType(4, sceneMarkUtils.sceneNameOf('heading'), 'scene_name');
+          utils.validateLineTextAndType(5, sceneMarkUtils.sceneSummaryOf('heading'), 'scene_summary');
+          utils.validateLineTextAndType(6, 'heading', 'heading');
 
           done();
         });
@@ -523,7 +525,9 @@ describe("ep_script_elements - merge lines", function(){
             utils.validateLineTextAndType(2, sceneMarkUtils.actSummaryOf('heading'), 'act_summary');
             utils.validateLineTextAndType(3, sceneMarkUtils.sequenceNameOf('heading'), 'sequence_name');
             utils.validateLineTextAndType(4, sceneMarkUtils.sequenceSummaryOf('heading'), 'sequence_summary');
-            utils.validateLineTextAndType(5, 'heading', 'heading');
+            utils.validateLineTextAndType(5, sceneMarkUtils.sceneNameOf('heading'), 'scene_name');
+            utils.validateLineTextAndType(6, sceneMarkUtils.sceneSummaryOf('heading'), 'scene_summary');
+            utils.validateLineTextAndType(7, 'heading', 'heading');
 
             done();
           });
@@ -594,9 +598,10 @@ ep_script_elements_test_helper.mergeLines = {
     var empty     = utils.general('');
     var act       = sceneMarkUtils.act('heading');
     var sequence  = sceneMarkUtils.sequence('heading');
+    var synopsis  = sceneMarkUtils.synopsis('heading');
     var heading   = utils.heading('heading');
     var character = utils.character('character');
-    var script    = empty + act + sequence + heading + character;
+    var script    = empty + act + sequence + synopsis + heading + character;
 
     utils.cleanPad(function() {
       utils.createScriptWith(script, 'character', function() {
