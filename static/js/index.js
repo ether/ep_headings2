@@ -116,15 +116,6 @@ var keyEventIsUndoOrRedo = function(evt){
   return  cmdWasPressed && KeyZ;
 }
 
-exports.acePaste = function(hook, context){
-  var rep = context.rep;
-  var currentLine = rep.selStart[0];
-  var lineIsScriptElement = utils.lineIsScriptElement(currentLine);
-  if (lineIsScriptElement){
-    pasteOnSE.prepareLineToHavePastedContentCleanedUp(currentLine);
-  }
-}
-
 var preventCharacterKeysAndEnterOnSelectionMultiLine = function(context){
   var $innerDocument = utils.getPadInner().find("#innerdocbody");
 
