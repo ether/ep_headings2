@@ -14,7 +14,6 @@ var fixSmallZooms     = require('./fixSmallZooms');
 var cutEvents         = require('./cutEvents');
 var updateHeadingType = require('./updateHeadingType');
 var dropdown          = require('./dropdown');
-var pasteOnSE         = require('./pasteOnSE');
 
 var UNDO_REDO_EVENT   = 'undoRedoEvent';
 
