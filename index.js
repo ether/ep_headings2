@@ -3,6 +3,8 @@ var Changeset = require("ep_etherpad-lite/static/js/Changeset");
 var Security = require('ep_etherpad-lite/static/js/security');
 var Security = require('ep_etherpad-lite/static/js/security');
 
+var sceneMarkUtils  = require("ep_script_scene_marks/utils");
+
 exports.eejsBlock_editbarMenuLeft = function (hook_name, args, cb) {
   args.content = args.content + eejs.require("ep_script_elements/templates/editbarButtons.ejs");
   return cb();
@@ -20,13 +22,14 @@ exports.stylesForExport = function(hook, padId, cb){
 exports.getLineHTMLForExport = function (hook, context) {
   var attribLine = context.attribLine;
   var apool = context.apool;
-  var hasSceneMark = hasAnySceneMark(attribLine, apool);
+  var hasSceneMark = sceneMarkUtils.findSceneMarkAttribKey(context);
   if (hasSceneMark){ // if it is a scene mark it is not a script element (including a general)
     return;
   }
   var script_element = null;
   script_element = findAttrib(attribLine, apool, "script_element");
-  //try to find a scene line attributes. if it's found mount the HTML with it
+
+  //try to find a scene line attributes. if it's found it mount the HTML with it
   var dataAttributes = mountAdditionalSceneData(context);
   var text = context.lineContent;
   if (script_element) {
@@ -53,24 +56,23 @@ function findAttrib(alineAttrs, apool, attrib) {
 
 //check if there's any scene tag as a lineattribute, if so return it formatted
 function mountAdditionalSceneData(context) {
-  var sceneTag = ["scene-name", "scene-number", "scene-duration", "scene-temporality", "scene-workstate", "scene-index", "scene-time", "scene-summary"];
+  var sceneTag = ["scene-number", "scene-duration", "scene-temporality", "scene-workstate", "scene-index", "scene-time"];
   var dataAttributes = "";
+  var sceneDataTags = "";
   for (var i = 0; i < sceneTag.length; i++) {
     var attribute = findAttrib(context.attribLine, context.apool, sceneTag[i]);
-    if (attribute !=="") dataAttributes += formatTagOutput(sceneTag[i],attribute);
-  };
-  if (dataAttributes) dataAttributes = "<scene"+dataAttributes+"></scene>"
-  return dataAttributes;
+    if (attribute){
+      dataAttributes += formatTagOutput(sceneTag[i],attribute);
+    }
+  }
+  if (dataAttributes){
+    sceneDataTags = "<scene"+dataAttributes+"></scene>";
+  }
+  return sceneDataTags;
 }
 
 //helper to output the sceneTag as tag="value"
 function formatTagOutput(key, value) {
-  value =  Security.escapeHTML(value);
+  value = Security.escapeHTML(value);
   return  " "+key+"=\""+value+"\"";
-}
-
-var hasAnySceneMark = function(attribLine, apool){
-  var hasAct = findAttrib(attribLine, apool, "act_scene_mark");
-  var hasSequence = findAttrib(attribLine, apool, "sequence_scene_mark");
-  return (hasAct || hasSequence);
 }

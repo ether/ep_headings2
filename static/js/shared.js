@@ -33,7 +33,6 @@ var collectContentPost = function(hook, context){
     for (var i = 0; i < usedLineAttributes.length ; i++) {
       delete lineAttributes[usedLineAttributes[i]];
     }
-
   }
 };
 
