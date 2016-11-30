@@ -13,6 +13,7 @@ var undoPagination    = require('./undoPagination');
 var fixSmallZooms     = require('./fixSmallZooms');
 var cutEvents         = require('./cutEvents');
 var dropdown          = require('./dropdown');
+var updateHeadingType = require('./updateHeadingType');
 
 var UNDO_REDO_EVENT   = 'undoRedoEvent';
 
@@ -25,12 +26,15 @@ exports.aceRegisterBlockElements = function() {
 }
 
 exports.aceEditEvent = function(hook, context) {
+  var editorInfo = context.editorInfo;
+  var rep = context.rep;
   var attributeManager = context.documentAttributeManager;
   var eventType = context.callstack.editEvent.eventType;
   var wasLineChangedByShortcut = lineWasChangedByShortcut(eventType);
 
   if (wasLineChangedByShortcut || eventIsUndoOrRedo(eventType)) {
     dropdown.updateDropdownToCaretLine(context);
+    updateHeadingType.updateHeadingsTypeWhenUndoOrRedo(editorInfo, rep);
   }
 
   if (wasLineChangedByShortcut) {
@@ -56,6 +60,7 @@ exports.postAceInit = function(hook, context) {
   fixSmallZooms.init();
   cutEvents.init(context);
   dropdown.init(ace);
+  updateHeadingType.init(ace);
 };
 
 // On caret position change show the current script element
@@ -141,7 +146,9 @@ var isCaretStartPositionInAScriptElement = function(rep){
 
 // Our script element attribute will result in a script_element:heading... :transition class
 exports.aceAttribsToClasses = function(hook, context) {
-  if (context.key == 'script_element') {
+  if (context.key === 'headingType'){
+    return [ 'headingType:' + context.value];
+  } else if (context.key === 'script_element') {
     return [ 'script_element:' + context.value ];
   } else if (context.key === undoPagination.UNDO_FIX_ATTRIB) {
     return [ undoPagination.UNDO_FIX_ATTRIB ];
@@ -184,14 +191,16 @@ var findExtraFlagForLine = function($node) {
 // Here we convert the class script_element:heading into a tag
 var processScriptElementAttribute = function(cls) {
   var scriptElementType = /(?:^| )script_element:([A-Za-z0-9]*)/.exec(cls);
+  var headintTypeAttrib = /(?:^| )headingType:([A-Za-z0-9]*)/.exec(cls);
   var tagIndex;
 
   if (scriptElementType) tagIndex = _.indexOf(tags, scriptElementType[1]);
 
   if (tagIndex !== undefined && tagIndex >= 0) {
     var tag = tags[tagIndex];
+    var headingClass = getExtraHeadingClasses(tag, headintTypeAttrib);
     var modifier = {
-      preHtml: '<' + tag + '>',
+      preHtml: '<' + tag + headingClass + '>',
       postHtml: '</' + tag + '>',
       processedMarker: true
     };
@@ -200,6 +209,15 @@ var processScriptElementAttribute = function(cls) {
 
   return [];
 }
+
+var getExtraHeadingClasses = function(tag, headintTypeAttrib) {
+  var headingExtraClass = '';
+  if(tag === 'heading' && headintTypeAttrib){
+    headingExtraClass =  ' class="' + headintTypeAttrib[1] + '"';
+  }
+  return headingExtraClass;
+}
+
 
 var processUndoFixAttribute = function(cls) {
   if (cls.includes(undoPagination.UNDO_FIX_ATTRIB)) {
@@ -224,6 +242,7 @@ exports.aceInitialized = function(hook, context) {
   editorInfo.ace_doInsertScriptElement = _(dropdown.doInsertScriptElement).bind(context);
   editorInfo.ace_updateDropdownWithValueChosen = _(dropdown.updateDropdownWithValueChosen).bind(context);
   editorInfo.ace_cutEventsHandleCutOnScriptElements = _(cutEvents.handleCutOnScriptElements).bind(context);
+  editorInfo.ace_updateHeadingType = _(updateHeadingType.updateHeadingType).bind(context);
 }
 
 exports.aceEditorCSS = function() {
