@@ -201,6 +201,26 @@ describe('ep_script_elements - update heading type', function(){
       undoKeepTheSameTextAndRemoveTheClassOnHeading(SECOND_HEADING_POSITION, 'seq');
     });
   });
+
+  context('integration with ep_script_elements_transitions', function() {
+    context('when user presses cmd + 1', function() {
+      before(function (done) {
+        utils.placeCaretOnLine(FIRST_ACTION_LINE, function() {
+          helperFunctions.pressCmdOne();
+          done();
+        });
+      });
+
+      after(function () {
+        utils.undo();
+      });
+
+      it('creates a heading with headingWithSynopsis class', function (done) {
+        helperFunctions.addClassOnHeading(SECOND_HEADING_POSITION, 'syn');
+        done();
+      });
+    });
+  });
 });
 
 var ep_script_elements_test_helper = ep_script_elements_test_helper || {};
@@ -324,5 +344,10 @@ ep_script_elements_test_helper.updateHeadingType = {
     this.utils.validateLineTextAndType(26 , 'SCENE 4'    , 'scene_summary');
     this.utils.validateLineTextAndType(27 , 'SCENE 4'    , 'heading');
     this.utils.validateLineTextAndType(28 , 'last line'  , 'action');
+  },
+  pressCmdOne: function () {
+    var transitionsCommandNumber = ep_script_element_transitions_test_helper.commandNumber;
+    var shortCut = transitionsCommandNumber.buildShortcut(1);
+    shortCut();
   },
 }

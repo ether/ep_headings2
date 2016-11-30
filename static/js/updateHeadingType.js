@@ -57,10 +57,17 @@ var updateHeadingTypeWhenItsSMIsChanged = function (ace) {
 }
 
 var getFirstSMOfHeading = function(line) {
+  var tagName;
   var $line = utils.getPadInner().find("div").slice(line, line + 1);
   var $sceneMarksAbove = $line.prevUntil("div:not(.sceneMark)").addBack();
   var $firstSMOfHeading = $sceneMarksAbove.first().find(sceneMarksUtils.SCENE_MARK_TITLES_SELECTOR);
-  var tagName = $firstSMOfHeading[0].localName;
+
+  // avoid error of not finding the scene mark when creating heading without SM yet
+  // for example when it creates a scene with cmd + 1
+  if($firstSMOfHeading.length){
+    tagName = $firstSMOfHeading[0].localName;
+  }
+
   return tagName;
 }
 
