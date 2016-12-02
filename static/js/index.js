@@ -11,7 +11,6 @@ var shortcuts         = require('./shortcuts');
 var mergeLines        = require('./mergeLines');
 var undoPagination    = require('./undoPagination');
 var fixSmallZooms     = require('./fixSmallZooms');
-var cutEvents         = require('./cutEvents');
 var dropdown          = require('./dropdown');
 var updateHeadingType = require('./updateHeadingType');
 
@@ -58,7 +57,6 @@ exports.postAceInit = function(hook, context) {
   var ace = context.ace;
   preventCharacterKeysAndEnterOnSelectionMultiLine(context);
   fixSmallZooms.init();
-  cutEvents.init(context);
   dropdown.init(ace);
   updateHeadingType.init(ace);
 };
@@ -241,7 +239,6 @@ exports.aceInitialized = function(hook, context) {
   editorInfo.ace_removeSceneTagFromSelection = _(removeSceneTagFromSelection).bind(context);
   editorInfo.ace_doInsertScriptElement = _(dropdown.doInsertScriptElement).bind(context);
   editorInfo.ace_updateDropdownWithValueChosen = _(dropdown.updateDropdownWithValueChosen).bind(context);
-  editorInfo.ace_cutEventsHandleCutOnScriptElements = _(cutEvents.handleCutOnScriptElements).bind(context);
   editorInfo.ace_updateHeadingType = _(updateHeadingType.updateHeadingType).bind(context);
 }
 
