@@ -1,7 +1,7 @@
 var _ = require('ep_etherpad-lite/static/js/underscore');
 
 var tags = ['heading', 'action', 'character', 'parenthetical', 'dialogue', 'transition', 'shot'];
-var sceneTag = ["scene-name", "scene-number", "scene-duration", "scene-temporality", "scene-workstate", "scene-time", "scene-summary"];
+var sceneTag = ["scene-number", "scene-duration", "scene-temporality", "scene-workstate", "scene-time"];
 
 var collectContentPre = function(hook, context){
   var tname = context.tname;
