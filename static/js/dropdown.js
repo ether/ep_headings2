@@ -42,7 +42,6 @@ var doInsertScriptElement = function(level) {
   var isRemovingAttribute = (level < 0);
 
   var action = isRemovingAttribute ? removeAttribute : addAttributeIfElementIsNotSM;
-
   _(_.range(firstLine, lastLine + 1)).each(function(lineNumber) {
     action(lineNumber, attributeManager, newValue);
 
@@ -88,6 +87,7 @@ var lineHasMarker = function(line) {
 
 function removeAttribute(lineNumber, attributeManager) {
   attributeManager.removeAttributeOnLine(lineNumber, 'script_element');
+  attributeManager.removeAttributeOnLine(lineNumber, 'headingType');
 }
 
 function addAttributeIfElementIsNotSM(lineNumber, attributeManager, value) {

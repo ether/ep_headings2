@@ -35,28 +35,45 @@ describe("ep_script_elements - dropdown", function(){
     }).done(done);
   });
 
-  it("clears style when General is selected", function(done) {
-    var inner$ = helper.padInner$;
+  context('when it changes element to a general', function(){
+    before(function (done) {
+      var inner$ = helper.padInner$;
+      utils.cleanPad(function(){
+        var $firstTextElement = inner$("div").first();
+        $firstTextElement.sendkeys('First Line!');
 
-    var $firstTextElement = inner$("div").first();
-    $firstTextElement.sendkeys('First Line!');
+        // sets first line to heading
+        utils.changeToElement(utils.HEADING);
 
-    // sets first line to heading
-    utils.changeToElement(utils.ACTION);
+        helper.waitFor(function(){
+          // wait for element to be processed and changed
+          // $firstTextElement = inner$("div").first(); // need to get it again because line is changed by Content Collector
+          var $lineChanged = utils.getLine(2);
+          return $lineChanged.find("heading").length === 1;
+        }).done(function(){
+          // sets first line to general
+          utils.changeToElement(utils.GENERAL);
+          done();
+        });
+      });
+    });
 
-    helper.waitFor(function(){
-      // wait for element to be processed and changed
-      $firstTextElement = inner$("div").first(); // need to get it again because line is changed by Content Collector
-      return $firstTextElement.find("action").length === 1;
-    }).done(function(){
-      // sets first line to general
-      utils.changeToElement(utils.GENERAL);
-
+    it("removes the script element attributes", function(done) {
       helper.waitFor(function(){
         // wait for element to be processed and changed
-        $firstTextElement = inner$("div").first(); // need to get it again because line is changed by Content Collector
-        return $firstTextElement.find("action").length === 0;
+        var inner$ = helper.padInner$;
+        var $firstTextElement = inner$("div").first();
+        return $firstTextElement.find("heading").length === 0;
       }).done(done);
+    });
+
+    context('and the element changed is a heading', function(){
+      it('does not show a "*"', function(done){
+        var inner$ = helper.padInner$;
+        var $firstTextElement = inner$("div").first();
+        expect($firstTextElement.text()).to.be("First Line!");
+        done();
+      });
     });
   });
 
@@ -91,7 +108,7 @@ describe("ep_script_elements - dropdown", function(){
               helperFunctions.waitDropdownChangeToElement("Heading", done);
             });
           }, padId);
-        }, 1000);
+        }, 2000);
       });
     });
 
