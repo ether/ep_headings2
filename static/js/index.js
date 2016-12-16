@@ -27,7 +27,6 @@ exports.aceRegisterBlockElements = function() {
 exports.aceEditEvent = function(hook, context) {
   var editorInfo = context.editorInfo;
   var rep = context.rep;
-  var attributeManager = context.documentAttributeManager;
   var eventType = context.callstack.editEvent.eventType;
   var wasLineChangedByShortcut = lineWasChangedByShortcut(eventType);
 
@@ -37,9 +36,7 @@ exports.aceEditEvent = function(hook, context) {
   }
 
   if (wasLineChangedByShortcut) {
-    var lineNumber = context.callstack.editEvent.data.lineNumber;
-    var scriptElementOfLine = attributeManager.getAttributeOnLine(lineNumber, 'script_element');
-    utils.emitEventWhenAddHeading(scriptElementOfLine, lineNumber);
+    emitEventWhenAddHeadingForLinesChanged(context);
   }
 }
 
@@ -49,6 +46,15 @@ var lineWasChangedByShortcut = function(eventType) {
 
 var eventIsUndoOrRedo = function(eventType){
   return eventType === UNDO_REDO_EVENT;
+}
+
+var emitEventWhenAddHeadingForLinesChanged = function(context) {
+  var attributeManager = context.documentAttributeManager;
+  var linesChanged = context.callstack.editEvent.data.lineNumbers;
+  _.each(linesChanged, function(line){
+    var scriptElementOfLine = attributeManager.getAttributeOnLine(line, 'script_element');
+    utils.emitEventWhenAddHeading(scriptElementOfLine, line);
+  });
 }
 
 // Bind the event handler to the toolbar buttons

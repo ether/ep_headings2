@@ -138,7 +138,7 @@ var linesWillBeMerged = function(lineToBeMerged, context) {
   // so that other plugins know that this change happened
   if (context.callstack) {
     context.callstack.editEvent.eventType = 'scriptElementRemoved';
-    context.callstack.editEvent.data = { lineNumber: lineToBeMerged };
+    context.callstack.editEvent.data = { lineNumbers: [lineToBeMerged] };
   }
 }
 

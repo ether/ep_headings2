@@ -125,7 +125,7 @@ describe("ep_script_elements - dropdown", function(){
               helperFunctions.waitDropdownChangeToElement("Action", done);
             });
           }, padId);
-        }, 1000);
+        }, 2000);
       });
     });
   });
