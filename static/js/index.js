@@ -36,6 +36,7 @@ exports.aceEditEvent = function(hook, context) {
   }
 
   if (wasLineChangedByShortcut) {
+    // when user presses cmd + 1 we have to create synopsis to the heading created
     emitEventWhenAddHeadingForLinesChanged(context);
   }
 }
