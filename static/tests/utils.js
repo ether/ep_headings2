@@ -4,7 +4,6 @@ var apiVersion = 1;
 var supertest = require('ep_etherpad-lite/node_modules/supertest'),
            fs = require('fs'),
          path = require('path'),
-      request = require('request'),
           api = supertest(appUrl),
  randomString = require('ep_etherpad-lite/static/js/pad_utils').randomString;
 
