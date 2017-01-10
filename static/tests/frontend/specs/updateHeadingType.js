@@ -200,6 +200,43 @@ describe('ep_script_elements - update heading type', function(){
 
       undoKeepTheSameTextAndRemoveTheClassOnHeading(SECOND_HEADING_POSITION, 'seq');
     });
+
+    context('integration with ep_script_scene_marks', function(){
+      context('when we remove more than one scene mark using the trash icon', function(){
+        before(function(done){
+          // we have to reload the pad
+          helperFunctions.reloadPad(padId, function(){
+            // make the scene marks visible
+            var secondHeadingLineNumber = utils.getLineNumberOfElement("heading", 1);
+            helperFunctions.clickOnSceneMarkButtonOfLine(secondHeadingLineNumber);
+
+            // delete the act
+            var secondActLineNumber = utils.getLineNumberOfElement("act_name", 1);
+            helperFunctions.clickTrashIcon(secondActLineNumber);
+            // delete the sequence
+            var secondSequenceLineNumber = utils.getLineNumberOfElement("sequence_name", 1);
+            helperFunctions.clickTrashIcon(secondSequenceLineNumber);
+            done();
+          });
+          this.timeout(10000);
+        });
+
+        context("and press undo twice", function(){
+          before(function () {
+            utils.undo();
+            utils.undo();
+          });
+
+          it('performs the undo of the two removals', function (done) {
+            var inner$ = helper.padInner$;
+            var actLines = inner$(".withAct").length;
+            // 2 act_names  + 2 act_summaries
+            expect(actLines).to.be(4);
+            done();
+          });
+        });
+      });
+    });
   });
 
   context('integration with ep_script_elements_transitions', function() {
@@ -349,5 +386,20 @@ ep_script_elements_test_helper.updateHeadingType = {
     var transitionsCommandNumber = ep_script_element_transitions_test_helper.commandNumber;
     var shortCut = transitionsCommandNumber.buildShortcut(1);
     shortCut();
+  },
+  reloadPad: function(padId, cb){
+    // wait some time to reload the pad
+    setTimeout(function() {
+      helper.newPad(cb, padId);
+    }, 1000);
+  },
+  // We pass the heading number so we go up until find the button
+  clickOnSceneMarkButtonOfLine: function(headingLineNumber){
+    var sceneMarkUtils = ep_script_scene_marks_test_helper.utils;
+    sceneMarkUtils.clickOnSceneMarkButtonOfLine(headingLineNumber);
+  },
+  clickTrashIcon: function(lineNumber) {
+    var sceneMarkUtils = ep_script_scene_marks_test_helper.utils;
+    sceneMarkUtils.clickTrashIcon(lineNumber);
   },
 }
