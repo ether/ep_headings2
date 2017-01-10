@@ -70,19 +70,32 @@ exports.updateHeadingType = function (lines) {
   var attributeManager = this.documentAttributeManager;
   var editorInfo       = this.editorInfo;
   var rep              = this.rep;
-
   _.each(lines, function(line){
     var headingLine = getHeadingOfChange(line, rep);
     if(headingLine){
       var firstSMOfHeading = getFirstSMOfHeading(headingLine);
       editorInfo.ace_inCallStackIfNecessary("nonundoable", function(){
         if(firstSMOfHeading){
-          attributeManager.removeAttributeOnLine(headingLine, HEADING_TYPE_KEY);
-          attributeManager.setAttributeOnLine(headingLine, HEADING_TYPE_KEY, HEADING_TYPE_VALUE[firstSMOfHeading]);
+          updateHeadingTypeIfNecessary(attributeManager, headingLine, firstSMOfHeading);
         }
       });
     }
   });
+}
+
+var getHeadingTypeAttribOfLine = function(attributeManager, lineNumber) {
+  return attributeManager.getAttributeOnLine(lineNumber, HEADING_TYPE_KEY);
+}
+
+var updateHeadingTypeIfNecessary = function(attributeManager, headingLine, firstSMOfHeading) {
+  var currentHeadingTypeAttrib = getHeadingTypeAttribOfLine(attributeManager, headingLine);
+  var attribValue = HEADING_TYPE_VALUE[firstSMOfHeading]; // attrib might be applied
+  var lineAlreadyHasTheRightHeadingTypeAttrib = attribValue === currentHeadingTypeAttrib;
+
+  if(!lineAlreadyHasTheRightHeadingTypeAttrib) {
+    attributeManager.removeAttributeOnLine(headingLine, HEADING_TYPE_KEY);
+    attributeManager.setAttributeOnLine(headingLine, HEADING_TYPE_KEY, attribValue);
+  }
 }
 
 var getHeadingOfChange = function (line, rep) {
