@@ -1,4 +1,4 @@
-describe('ep_script_elements - update heading type', function(){
+describe('ep_script_elements - add classes used by EASC modes', function(){
   var utils, helperFunctions, padId;
 
   var ACT_NAME_OF_FIRST_HEADING_LINE      = 0;
