@@ -270,7 +270,7 @@ ep_script_elements_test_helper.utils = {
   getLineNumberOfElement: function(element, position){
     var inner$ = helper.padInner$;
     var $allDivs = inner$('div');
-    var $element = inner$(element).slice(position, position + 1);
+    var $element = inner$(element).eq(position);
     var $elementDiv = $element.closest('div').get(0);
     return _.indexOf($allDivs, $elementDiv);
   },

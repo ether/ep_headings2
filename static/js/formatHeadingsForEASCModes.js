@@ -27,7 +27,7 @@ var markHeadingToBeUpdatedWhenItsSceneMarkIsRemoved = function() {
     var $lines = utils.getPadInner().find('div');
     for (var i = 0; i < lines.length; i++) {
       var lineNumber = lines[i];
-      var $line      = $lines.slice(lineNumber, lineNumber + 1);
+      var $line      = $lines.eq(lineNumber);
       var $heading   = $(getHeadingAssociatedTo($line));
 
       lineHasChanges($heading);

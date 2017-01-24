@@ -324,7 +324,7 @@ ep_script_elements_test_helper.updateHeadingType = {
     var targetClass = this.HEADING_TYPE_CLASS[headingType];
     var inner$ = helper.padInner$;
 
-    var $heading = inner$('div:has(heading)').slice(headingPosition, headingPosition + 1);
+    var $heading = inner$('div:has(heading)').eq(headingPosition);
     var headingHasClass = $heading.is(targetClass);
 
     expect(headingHasClass).to.be(true);
@@ -334,7 +334,7 @@ ep_script_elements_test_helper.updateHeadingType = {
     var targetClass = this.HEADING_TYPE_CLASS[headingType];
     var inner$ = helper.padInner$;
 
-    var $heading = inner$('div:has(heading)').slice(headingPosition, headingPosition + 1);
+    var $heading = inner$('div:has(heading)').eq(headingPosition);
     var headingHasClass = $heading.is(targetClass);
 
     expect($heading.length).to.be(1);

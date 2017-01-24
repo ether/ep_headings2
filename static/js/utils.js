@@ -35,7 +35,7 @@ exports.SCENE_MARK_TYPE = {
 
 var lineIsScriptElement = function(lineNumber){
   var $lines = exports.getPadInner().find("div");
-  var $line = $lines.slice(lineNumber, lineNumber + 1);
+  var $line = $lines.eq(lineNumber);
   var typeOfLine = typeOf($line);
 
   return _.contains(SE_TAGS_AND_GENERAL, typeOfLine);

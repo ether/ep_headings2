@@ -254,15 +254,15 @@ var isFirstLineSelectedAHeadingCompletelySelected = function(attributeManager, r
 }
 
 var lineIsHeading = function (lineNumber) {
-  var $line = utils.getPadInner().find("div").slice(lineNumber, lineNumber + 1);
+  var $line = utils.getPadInner().find("div").eq(lineNumber);
   var typeOfLine = utils.typeOf($line);
   return typeOfLine === "heading";
 }
 
 var checkIfLinesIsTheSameScriptElement = function(firstLine, lastLine){
   var lineIsScriptElement = utils.lineIsScriptElement(firstLine);
-  var $firstLine = utils.getPadInner().find("div").slice(firstLine, firstLine + 1);
-  var $lastLine = utils.getPadInner().find("div").slice(lastLine, lastLine + 1);
+  var $firstLine = utils.getPadInner().find("div").eq(firstLine);
+  var $lastLine = utils.getPadInner().find("div").eq(lastLine);
   var firstLineType = utils.typeOf($firstLine);
   var lastLineType = utils.typeOf($lastLine);
 
@@ -340,7 +340,7 @@ var thisLineTypeIsDifferentFromPreviousLine = function(line) {
 
 var getLineFromLineNumber = function(lineNumber){
   var $lines = utils.getPadInner().find("div");
-  var $line = $lines.slice(lineNumber, lineNumber + 1);
+  var $line = $lines.eq(lineNumber);
   return $line;
 }
 
