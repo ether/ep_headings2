@@ -1,6 +1,6 @@
 describe('ep_script_elements - update heading type', function(){
   var utils, helperFunctions, padId;
-  var action;
+
   var ACT_NAME_OF_FIRST_HEADING_LINE      = 0;
   var FIRST_HEADING_POSITION              = 0;
   var SECOND_HEADING_POSITION             = 1;
@@ -20,68 +20,65 @@ describe('ep_script_elements - update heading type', function(){
   before(function (done) {
     utils = ep_script_elements_test_helper.utils;
     helperFunctions = ep_script_elements_test_helper.updateHeadingType;
+
     padId = helperFunctions.createNewPadAndFillWithContent(this, done);
   });
 
-  var undoKeepTheSameTextAndRemoveTheClassOnHeading = function(headingPosition, headingType) {
-    context('when user presses undo', function(){
+  var testUndoRemovesTheClassOnHeading = function(headingPosition, headingType) {
+    context('and user presses undo', function(){
       before(function () {
         utils.undo();
       });
 
-      it('returns to the original text', function(done){
-        helperFunctions.keepsTheSameText();
+      it('restores the original text', function(done){
+        helperFunctions.testItKeepsTheSameText();
         done();
       });
 
       it('removes the class ' + HEADING_TYPE_CLASS[headingType] + ' added', function(done){
-        helperFunctions.removeClassOnHeading(headingPosition, headingType);
+        helperFunctions.testHeadingDoesNotHaveClass(headingPosition, headingType);
         done();
       });
     });
   }
 
-  var undoKeepTheSameTextAndKeepTheClassOnHeading = function(headingPosition, headingType) {
-    context('when user presses undo', function(){
+  var testUndoKeepsTheClassOnHeading = function(headingPosition, headingType) {
+    context('and user presses undo', function(){
       before(function () {
         utils.undo();
       });
 
-      it('goes back to the original text', function(done){
-        helperFunctions.keepsTheSameText();
+      it('restores the original text', function(done){
+        helperFunctions.testItKeepsTheSameText();
         done();
       });
 
       it('has the class ' + HEADING_TYPE_CLASS[headingType] + ' on the heading', function(done){
-        helperFunctions.addClassOnHeading(headingPosition, headingType);
+        helperFunctions.testHeadingHasClass(headingPosition, headingType);
         done();
       });
     });
   }
 
   context('when user loads the script', function(){
-
-    before(function(cb) {
-      this.timeout(5000);
-
-      setTimeout(function() {
-        helper.newPad(cb, padId);
-      }, 1000);
+    before(function(done) {
+      helperFunctions.reloadPad(padId, done);
+      this.timeout(60000);
     });
 
     it('adds the class "headingWithSynopsis" in the heading with only synopsis', function(done){
-      helperFunctions.addClassOnHeading(FOURTH_HEADING_POSITION, 'syn');
+      helperFunctions.testHeadingHasClass(FOURTH_HEADING_POSITION, 'syn');
       done();
     });
 
     it('adds the class "headingWithSequence" in the heading with only sequence', function(done){
-      helperFunctions.addClassOnHeading(THIRD_HEADING_POSITION, 'seq');
+      helperFunctions.testHeadingHasClass(THIRD_HEADING_POSITION, 'seq');
       done();
     });
 
     it('adds the class "headingWithAct" in the heading with only act', function(done){
-      helperFunctions.addClassOnHeading(FIRST_HEADING_POSITION, 'act');
-      helperFunctions.addClassOnHeading(SECOND_HEADING_POSITION, 'act');
+      helperFunctions.testHeadingHasClass(FIRST_HEADING_POSITION, 'act');
+      helperFunctions.testHeadingHasClass(SECOND_HEADING_POSITION, 'act');
       done();
     });
   });
@@ -89,151 +86,131 @@ describe('ep_script_elements - update heading type', function(){
   context('integration with ep_mouse_shortcuts', function(){
     context('when user adds a SCENE', function(){
       before(function (done) {
-        action = '#addScene';
-        helperFunctions.addSceneMarkToLine(FIRST_ACTION_LINE, action,  done);
+        helperFunctions.addSceneMarkToLine(FIRST_ACTION_LINE, '#addScene', done);
       });
 
       it('adds the class "headingWithSynopsis" in the heading', function(done){
         // the newly heading created is in the second position
-        helperFunctions.addClassOnHeading(SECOND_HEADING_POSITION, 'syn');
+        helperFunctions.testHeadingHasClass(SECOND_HEADING_POSITION, 'syn');
         done();
       });
 
       // actually in this test we remove the heading added, so in the second position
       // it's the heading with act as it was before to add a new heading
-      undoKeepTheSameTextAndKeepTheClassOnHeading(SECOND_HEADING_POSITION, 'act');
+      testUndoKeepsTheClassOnHeading(SECOND_HEADING_POSITION, 'act');
     });
 
     context('when user adds an ACT in a heading with synopsis', function(){
       before(function (done) {
-        action = '#addAct';
-        helperFunctions.addSceneMarkToLine(FOURTH_HEADING_LINE, action,  done);
+        helperFunctions.addSceneMarkToLine(FOURTH_HEADING_LINE, '#addAct', done);
       });
 
       it('removes the class "headingWithSynopsis" from heading', function(done){
-        helperFunctions.removeClassOnHeading(FOURTH_HEADING_POSITION, 'syn');
+        helperFunctions.testHeadingDoesNotHaveClass(FOURTH_HEADING_POSITION, 'syn');
         done();
       });
 
       it('adds the class "headingWithAct" in the heading', function(done){
-        helperFunctions.addClassOnHeading(FOURTH_HEADING_POSITION, 'act');
+        helperFunctions.testHeadingHasClass(FOURTH_HEADING_POSITION, 'act');
         done();
       });
 
-      undoKeepTheSameTextAndKeepTheClassOnHeading(FOURTH_HEADING_POSITION, 'syn');
+      testUndoKeepsTheClassOnHeading(FOURTH_HEADING_POSITION, 'syn');
     });
 
     context('when user adds an SEQ in a heading with synopsis', function(){
       before(function (done) {
-        action = '#addSequence';
-        helperFunctions.addSceneMarkToLine(FOURTH_HEADING_LINE, action,  done);
+        helperFunctions.addSceneMarkToLine(FOURTH_HEADING_LINE, '#addSequence', done);
       });
 
       it('removes the class "headingWithSynopsis" from heading', function(done){
-        helperFunctions.removeClassOnHeading(FOURTH_HEADING_POSITION, 'syn');
+        helperFunctions.testHeadingDoesNotHaveClass(FOURTH_HEADING_POSITION, 'syn');
         done();
       });
 
       it('adds the class "headingWithSequence" in the heading', function(done){
-        helperFunctions.addClassOnHeading(FOURTH_HEADING_POSITION, 'seq');
+        helperFunctions.testHeadingHasClass(FOURTH_HEADING_POSITION, 'seq');
         done();
       });
 
-      undoKeepTheSameTextAndKeepTheClassOnHeading(FOURTH_HEADING_POSITION, 'syn');
+      testUndoKeepsTheClassOnHeading(FOURTH_HEADING_POSITION, 'syn');
     });
 
     context('when user adds an ACT in a heading with sequence', function(){
       before(function (done) {
-        action = '#addAct';
-        helperFunctions.addSceneMarkToLine(THIRD_HEADING_LINE, action,  done);
+        helperFunctions.addSceneMarkToLine(THIRD_HEADING_LINE, '#addAct', done);
       });
 
       it('removes the class "headingWithSequence" from heading', function(done){
-        helperFunctions.removeClassOnHeading(THIRD_HEADING_POSITION, 'seq');
+        helperFunctions.testHeadingDoesNotHaveClass(THIRD_HEADING_POSITION, 'seq');
         done();
       });
 
       it('adds the class "headingWithAct" in the heading', function(done){
-        helperFunctions.addClassOnHeading(THIRD_HEADING_POSITION, 'act');
+        helperFunctions.testHeadingHasClass(THIRD_HEADING_POSITION, 'act');
         done();
       });
 
-      undoKeepTheSameTextAndKeepTheClassOnHeading(THIRD_HEADING_POSITION, 'seq');
+      testUndoKeepsTheClassOnHeading(THIRD_HEADING_POSITION, 'seq');
     });
   });
 
   context('integration with ep_script_scene_marks', function(){
     context('when user removes an act from a heading', function(){
-      before(function () {
-        var sceneMarkUtils = ep_script_scene_marks_test_helper.utils;
-
-        // make the scene mark visible
-        sceneMarkUtils.clickOnSceneMarkButtonOfLine(FIRST_HEADING_LINE);
-
-        // click on the act trash icon
-        sceneMarkUtils.clickTrashIcon(ACT_NAME_OF_FIRST_HEADING_LINE);
+      before(function (done) {
+        helperFunctions.removeSceneMarkFromLine(FIRST_HEADING_LINE, ACT_NAME_OF_FIRST_HEADING_LINE, done);
       });
 
       it('adds the class "headingWithSequence" on the heading', function(done){
-        helperFunctions.addClassOnHeading(FIRST_HEADING_POSITION, 'seq');
+        helperFunctions.testHeadingHasClass(FIRST_HEADING_POSITION, 'seq');
         done();
       });
 
-      undoKeepTheSameTextAndKeepTheClassOnHeading(FIRST_HEADING_POSITION, 'act');
+      testUndoKeepsTheClassOnHeading(FIRST_HEADING_POSITION, 'act');
     });
 
     context('when user removes a sequence from a heading', function(){
-      before(function () {
-        var sceneMarkUtils = ep_script_scene_marks_test_helper.utils;
-
-        // make the scene mark visible
-        sceneMarkUtils.clickOnSceneMarkButtonOfLine(THIRD_HEADING_LINE);
-
-        // click on the act trash icon
-        sceneMarkUtils.clickTrashIcon(SEQUENCE_NAME_OF_THIRD_HEADING_LINE);
+      before(function (done) {
+        helperFunctions.removeSceneMarkFromLine(THIRD_HEADING_LINE, SEQUENCE_NAME_OF_THIRD_HEADING_LINE, done);
       });
 
       it('adds the class "headingWithSynopsis" on the heading', function(done){
-        helperFunctions.addClassOnHeading(THIRD_HEADING_POSITION, 'syn');
+        helperFunctions.testHeadingHasClass(THIRD_HEADING_POSITION, 'syn');
         done();
       });
 
-      undoKeepTheSameTextAndRemoveTheClassOnHeading(SECOND_HEADING_POSITION, 'seq');
+      testUndoRemovesTheClassOnHeading(SECOND_HEADING_POSITION, 'seq');
     });
 
-    context('integration with ep_script_scene_marks', function(){
-      context('when we remove more than one scene mark using the trash icon', function(){
-        before(function(done){
-          // we have to reload the pad
-          helperFunctions.reloadPad(padId, function(){
-            // make the scene marks visible
-            var secondHeadingLineNumber = utils.getLineNumberOfElement("heading", 1);
-            helperFunctions.clickOnSceneMarkButtonOfLine(secondHeadingLineNumber);
+    context('when user removes more than one scene mark using the trash icon', function(){
+      before(function(done){
+        var smUtils = ep_script_scene_marks_test_helper.utils;
 
-            // delete the act
-            var secondActLineNumber = utils.getLineNumberOfElement("act_name", 1);
-            helperFunctions.clickTrashIcon(secondActLineNumber);
-            // delete the sequence
-            var secondSequenceLineNumber = utils.getLineNumberOfElement("sequence_name", 1);
-            helperFunctions.clickTrashIcon(secondSequenceLineNumber);
-            done();
-          });
-          this.timeout(10000);
+        // make the scene marks visible
+        var secondHeadingLineNumber = utils.getLineNumberOfElement("heading", 1);
+        smUtils.clickOnSceneMarkButtonOfLine(secondHeadingLineNumber);
+
+        // delete the act
+        var secondActLineNumber = utils.getLineNumberOfElement("act_name", 1);
+        smUtils.clickTrashIcon(secondActLineNumber);
+        // delete the sequence
+        var secondSequenceLineNumber = utils.getLineNumberOfElement("sequence_name", 1);
+        smUtils.clickTrashIcon(secondSequenceLineNumber);
+        done();
+      });
+
+      context("and press undo twice", function(){
+        before(function () {
+          utils.undo();
+          utils.undo();
         });
 
-        context("and press undo twice", function(){
-          before(function () {
-            utils.undo();
-            utils.undo();
-          });
-
-          it('performs the undo of the two removals', function (done) {
-            var inner$ = helper.padInner$;
-            var actLines = inner$(".withAct").length;
-            // 2 act_names  + 2 act_summaries
-            expect(actLines).to.be(4);
-            done();
-          });
+        it('performs the undo of the two removals', function (done) {
+          var inner$ = helper.padInner$;
+          var actLines = inner$(".withAct").length;
+          // 2 act_names  + 2 act_summaries
+          expect(actLines).to.be(4);
+          done();
         });
       });
     });
@@ -253,7 +230,7 @@ describe('ep_script_elements - update heading type', function(){
       });
 
       it('creates a heading with headingWithSynopsis class', function (done) {
-        helperFunctions.addClassOnHeading(SECOND_HEADING_POSITION, 'syn');
+        helperFunctions.testHeadingHasClass(SECOND_HEADING_POSITION, 'syn');
         done();
       });
     });
@@ -268,7 +245,6 @@ ep_script_elements_test_helper.updateHeadingType = {
     syn: '.headingWithSynopsis',
   },
   utils: null,
-  RIGHT_MOUSE_BUTTON: 3,
   createNewPadAndFillWithContent: function (test, done) {
     var self = this;
     var padId = helper.newPad(function(){
@@ -308,50 +284,64 @@ ep_script_elements_test_helper.updateHeadingType = {
   buildHeadingWithSynopsis: function(text) {
     return this.utils.synopsis(text) + this.utils.heading(text);
   },
+
   addSceneMarkToLine: function(line, sceneMarkToAddToLine, done){
     var outer$ = helper.padOuter$;
+    var mouseUtils = ep_mouse_shortcuts_test_helper.utils;
+    var self = this;
 
-    this.rightClickOnLine(line, function(){
+    mouseUtils.rightClickOnLine(line, function(){
       var $mouseWindow = outer$('.mouseWindow');
 
       // clicks in the button add sm
       $mouseWindow.find(sceneMarkToAddToLine).click();
-      done();
+
+      self.waitForLinesToBeProcessed(done);
     });
   },
-  rightClickOnLine: function(line, cb){
-    var chrome$ = helper.padChrome$;
-    var inner$ = helper.padInner$;
-    var element = inner$("div").slice(line, line + 1);
-    var $el = chrome$(element);
-    var offset = $el.offset();
-    var event = jQuery.Event( "mousedown", {
-      which: this.RIGHT_MOUSE_BUTTON,
-      pageX: offset.left,
-      pageY: offset.top
-    });
-    setTimeout(function() { // it's ugly but without it the caret position it's changed when it triggers the event
-      $el.trigger(event);
-      cb()
-    }, 1000);
+
+  removeSceneMarkFromLine: function(lineWithHeading, lineWithSceneMark, done) {
+    var smUtils = ep_script_scene_marks_test_helper.utils;
+
+    // make the scene mark visible
+    smUtils.clickOnSceneMarkButtonOfLine(lineWithHeading);
+
+    // click on the act trash icon
+    smUtils.clickTrashIcon(lineWithSceneMark);
+
+    this.waitForLinesToBeProcessed(done);
   },
+
+  waitForLinesToBeProcessed: function(done) {
+    helper.waitFor(function() {
+      var hasTempClasses = helper.padInner$('.line_to_be_formatted').length > 0;
+      return !hasTempClasses;
+    }).done(done);
+  },
+
   // headingPostion is 1st(0), 2nd(1), 3rd(2) and so on
-  addClassOnHeading: function(headingPosition, headingType){
+  testHeadingHasClass: function(headingPosition, headingType){
+    var targetClass = this.HEADING_TYPE_CLASS[headingType];
     var inner$ = helper.padInner$;
+
     var $heading = inner$('div:has(heading)').slice(headingPosition, headingPosition + 1);
-    var headingHasClass = $heading.find(this.HEADING_TYPE_CLASS[headingType]).length === 1;
+    var headingHasClass = $heading.is(targetClass);
+
     expect(headingHasClass).to.be(true);
   },
   // headingPostion is 1st(0), 2nd(1), 3rd(2) and so on
-  removeClassOnHeading: function(headingPosition, headingType){
+  testHeadingDoesNotHaveClass: function(headingPosition, headingType){
+    var targetClass = this.HEADING_TYPE_CLASS[headingType];
     var inner$ = helper.padInner$;
+
     var $heading = inner$('div:has(heading)').slice(headingPosition, headingPosition + 1);
-    var headingHasClass = $heading.find(this.HEADING_TYPE_CLASS[headingType]).length === 1;
+    var headingHasClass = $heading.is(targetClass);
 
     expect($heading.length).to.be(1);
     expect(headingHasClass).to.be(false);
   },
-  keepsTheSameText: function(){
+
+  testItKeepsTheSameText: function(){
     this.utils.validateLineTextAndType(0  , 'SCENE 1'    , 'act_name');
     this.utils.validateLineTextAndType(1  , 'SCENE 1'    , 'act_summary');
     this.utils.validateLineTextAndType(2  , 'SCENE 1'    , 'sequence_name');
@@ -382,24 +372,17 @@ ep_script_elements_test_helper.updateHeadingType = {
     this.utils.validateLineTextAndType(27 , 'SCENE 4'    , 'heading');
     this.utils.validateLineTextAndType(28 , 'last line'  , 'action');
   },
+
   pressCmdOne: function () {
     var transitionsCommandNumber = ep_script_element_transitions_test_helper.commandNumber;
     var shortCut = transitionsCommandNumber.buildShortcut(1);
     shortCut();
   },
-  reloadPad: function(padId, cb){
-    // wait some time to reload the pad
+
+  reloadPad: function(padId, done){
+    // wait some time to reload the pad, otherwise last changes won't be saved
     setTimeout(function() {
-      helper.newPad(cb, padId);
+      helper.newPad(done, padId);
     }, 1000);
-  },
-  // We pass the heading number so we go up until find the button
-  clickOnSceneMarkButtonOfLine: function(headingLineNumber){
-    var sceneMarkUtils = ep_script_scene_marks_test_helper.utils;
-    sceneMarkUtils.clickOnSceneMarkButtonOfLine(headingLineNumber);
-  },
-  clickTrashIcon: function(lineNumber) {
-    var sceneMarkUtils = ep_script_scene_marks_test_helper.utils;
-    sceneMarkUtils.clickTrashIcon(lineNumber);
   },
 }

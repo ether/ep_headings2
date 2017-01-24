@@ -87,7 +87,6 @@ var lineHasMarker = function(line) {
 
 function removeAttribute(lineNumber, attributeManager) {
   attributeManager.removeAttributeOnLine(lineNumber, 'script_element');
-  attributeManager.removeAttributeOnLine(lineNumber, 'headingType');
 }
 
 function addAttributeIfElementIsNotSM(lineNumber, attributeManager, value) {
