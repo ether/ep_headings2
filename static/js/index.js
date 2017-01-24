@@ -169,7 +169,7 @@ exports.acePostWriteDomLineHTML = function(hook, context) {
   var extraFlag = findExtraFlagForLine($line);
   if (extraFlag) {
     $line.addClass(extraFlag);
-    formatHeadingsForEASCModes.lineHasChanges($line);
+    formatHeadingsForEASCModes.markLineToBeFormatted($line);
   }
 }
 

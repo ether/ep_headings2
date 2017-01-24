@@ -30,16 +30,16 @@ var markHeadingToBeUpdatedWhenItsSceneMarkIsRemoved = function() {
       var $line      = $lines.eq(lineNumber);
       var $heading   = $(getHeadingAssociatedTo($line));
 
-      lineHasChanges($heading);
+      markLineToBeFormatted($heading);
     }
   });
 }
 
-var lineHasChanges = function($line) {
+var markLineToBeFormatted = function($line) {
   $line.addClass(LINE_WITH_CHANGES);
   hasChangesOnSMsAndHeadings = true;
 }
-exports.lineHasChanges = lineHasChanges;
+exports.markLineToBeFormatted = markLineToBeFormatted;
 
 exports.updateHeadingsIfNecessary = function() {
   if (hasChangesOnSMsAndHeadings) {
@@ -71,9 +71,9 @@ var getHeadingsWithChanges = function($sceneMarksAndHeadingsWithChanges) {
 var getHeadingAssociatedTo = function($line) {
   var $lineWithHeading = $line;
 
-  if ($line.is(':not(.withHeading)')) {
+  if (!$line.hasClass('withHeading')) {
     // $line is not a heading, so find the associated heading below it
-    var $lastSMBelowCurrentLine = $lineWithHeading.nextUntil('div.withHeading').last();
+    var $lastSMBelowCurrentLine = $lineWithHeading.nextUntil('.withHeading').last();
     $lineWithHeading = $lastSMBelowCurrentLine.next();
   }
 
