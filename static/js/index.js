@@ -3,17 +3,16 @@ var _ = require('ep_etherpad-lite/static/js/underscore');
 
 var scriptElementTransitionUtils = require("ep_script_element_transitions/static/js/utils");
 
-var tags              = require('ep_script_elements/static/js/shared').tags;
-var sceneTag          = require('ep_script_elements/static/js/shared').sceneTag;
+var tags     = require('ep_script_elements/static/js/shared').tags;
+var sceneTag = require('ep_script_elements/static/js/shared').sceneTag;
 
-var utils                      = require('./utils');
-var SM_AND_HEADING             = _.union(utils.SCENE_MARK_SELECTOR, ['heading']);
-var shortcuts                  = require('./shortcuts');
-var mergeLines                 = require('./mergeLines');
-var undoPagination             = require('./undoPagination');
-var fixSmallZooms              = require('./fixSmallZooms');
-var dropdown                   = require('./dropdown');
-var formatHeadingsForEASCModes = require('./formatHeadingsForEASCModes');
+var utils          = require('./utils');
+var SM_AND_HEADING = _.union(utils.SCENE_MARK_SELECTOR, ['heading']);
+var shortcuts      = require('./shortcuts');
+var mergeLines     = require('./mergeLines');
+var undoPagination = require('./undoPagination');
+var fixSmallZooms  = require('./fixSmallZooms');
+var dropdown       = require('./dropdown');
 
 // 'undo' & 'redo' are triggered by toolbar buttons; other events are triggered by key shortcuts
 var UNDO_REDO_EVENTS = ['handleKeyEvent', 'undo', 'redo']
@@ -42,9 +41,6 @@ exports.aceEditEvent = function(hook, context) {
   } else if (eventMightBeAnUndo(callstack)) {
     dropdown.updateDropdownToCaretLine(context);
   }
-
-  // ep_script_toggle_view needs some extra formatting to handle different EASC modes
-  formatHeadingsForEASCModes.updateHeadingsIfNecessary();
 }
 
 var lineWasChangedByShortcut = function(eventType) {
@@ -72,7 +68,6 @@ exports.postAceInit = function(hook, context) {
   preventCharacterKeysAndEnterOnSelectionMultiLine(context);
   fixSmallZooms.init();
   dropdown.init(ace);
-  formatHeadingsForEASCModes.init();
 };
 
 // On caret position change show the current script element
@@ -169,7 +164,6 @@ exports.acePostWriteDomLineHTML = function(hook, context) {
   var extraFlag = findExtraFlagForLine($line);
   if (extraFlag) {
     $line.addClass(extraFlag);
-    formatHeadingsForEASCModes.markLineToBeFormatted($line);
   }
 }
 
