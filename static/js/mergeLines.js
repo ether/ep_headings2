@@ -417,7 +417,7 @@ var replaceContentOfTargetLineByNextLine = function(targetLine, editorInfo, rep,
 
   // set line type
   var lineBelowTarget = targetLine + 1;
-  var attributeOfLineToBeKept = attributeManager.getAttributeOnLine(lineBelowTarget, 'script_element');
+  var attributeOfLineToBeKept = utils.getLineType(lineBelowTarget, attributeManager);
   changeLineAttribute(targetLine, attributeOfLineToBeKept, attributeManager);
 
   // replace content

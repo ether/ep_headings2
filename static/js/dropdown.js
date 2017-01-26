@@ -167,7 +167,7 @@ var updateDropdownToCaretLine = function(context) {
       setDropdownValue(-2);
     }else{
       var currentLine = rep.selStart[0];
-      var elementOfCurrentLine = attributeManager.getAttributeOnLine(currentLine, "script_element") || "general";
+      var elementOfCurrentLine = utils.getLineType(currentLine, attributeManager) || 'general';
       setDropdownToElement(elementOfCurrentLine);
     }
   }, 100);
@@ -179,10 +179,10 @@ var isSameElementOnSelection = function(rep, attributeManager) {
   var isSameElement = true;
   var lastLine = Math.max(firstLine, rep.selEnd[0] - ((rep.selEnd[1] === 0) ? 1 : 0));
   //get the first attribute on the selection
-  var firstAttribute = attributeManager.getAttributeOnLine(firstLine, "script_element");
+  var firstAttribute = utils.getLineType(firstLine, attributeManager);
   //check if the first attribute on selection is present in all lines
   _(_.range(firstLine + 1, lastLine + 1)).each(function(line) {
-    var attributeOnline = attributeManager.getAttributeOnLine(line, "script_element");
+    var attributeOnline = utils.getLineType(line, attributeManager);
     if (attributeOnline !== firstAttribute) {
       isSameElement = false;
       return;

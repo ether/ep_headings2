@@ -1,4 +1,4 @@
-var utils    = require("./utils");
+var utils = require("./utils");
 
 // mac has different keycodes in the 'cmd + []' from windows and linux
 var TO_NEXT_SCENE = browser.mac ? 221 : 220;
@@ -84,8 +84,7 @@ function forward(rep, attributeManager) {
 
   // loop through next lines to find on which line is the next scene heading
   for (var lineNumber = currentLine+1; lineNumber < totalLines; lineNumber++) {
-    var lineHasHeading = attributeManager.getAttributeOnLine(lineNumber, "script_element") === "heading";
-    if (lineHasHeading) {
+    if (utils.lineIsHeading(lineNumber, attributeManager)) {
       return lineNumber;
     }
   }
@@ -98,8 +97,7 @@ function backward(rep, attributeManager) {
 
   // loop through previous lines to find on which line is the previous scene heading
   for (var lineNumber = currentLine-1; lineNumber >= 0; lineNumber--) {
-    var lineHasHeading = attributeManager.getAttributeOnLine(lineNumber, "script_element") === "heading";
-    if (lineHasHeading) {
+    if (utils.lineIsHeading(lineNumber, attributeManager)) {
       return lineNumber;
     }
   }

@@ -56,7 +56,7 @@ var emitEventWhenAddHeadingForLinesChanged = function(context) {
   var attributeManager = context.documentAttributeManager;
   var linesChanged = context.callstack.editEvent.data.lineNumbers;
   _.each(linesChanged, function(line){
-    var scriptElementOfLine = attributeManager.getAttributeOnLine(line, 'script_element');
+    var scriptElementOfLine = utils.getLineType(line, attributeManager);
     utils.emitEventWhenAddHeading(scriptElementOfLine, line);
   });
 }

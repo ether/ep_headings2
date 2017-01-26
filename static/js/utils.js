@@ -42,6 +42,15 @@ var lineIsScriptElement = function(lineNumber){
 }
 exports.lineIsScriptElement = lineIsScriptElement;
 
+var getLineType = function(targetLine, attributeManager) {
+  return attributeManager.getAttributeOnLine(targetLine, 'script_element');
+}
+exports.getLineType = getLineType;
+
+exports.lineIsHeading = function(targetLine, attributeManager) {
+  return getLineType(targetLine, attributeManager) === 'heading';
+}
+
 var typeOf = function($line) {
  var $innerElement = $line.find(LINE_ELEMENTS_SELECTOR);
  var tagName = $innerElement.prop("tagName") || "general"; // general does not have inner tag
