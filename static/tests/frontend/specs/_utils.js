@@ -210,30 +210,51 @@ ep_script_elements_test_helper.utils = {
     }).done(cb);
   },
 
-  pressKey: function(CODE) {
+  ENTER: 13,
+  UNDO_REDO: 90,
+  pressEnter: function() {
+    this.pressKey(this.ENTER);
+  },
+  // try to type char 'a'
+  typeChar: function() {
+    var charA = 91;
+    this.pressKey(charA, function(e) {
+      e.which = "a".charCodeAt(0);
+      e.type = 'keypress';
+    });
+  },
+  pressKey: function(CODE, configEvent) {
+    configEvent = configEvent || this.doNothing;
+
     var inner$ = helper.padInner$;
+    var $editor = inner$('#innerdocbody');
     if(inner$(window)[0].bowser.firefox || inner$(window)[0].bowser.modernIE){ // if it's a mozilla or IE
-      var evtType = "keypress";
+      var evtType = 'keypress';
     }else{
-      var evtType = "keydown";
+      var evtType = 'keydown';
     }
     var e = inner$.Event(evtType);
     e.keyCode = CODE;
-    inner$("#innerdocbody").trigger(e);
-  },
-  buildUndoRedo: function(isRedo) {
-    var inner$ = helper.padInner$;
-    if(inner$(window)[0].bowser.firefox || inner$(window)[0].bowser.modernIE){ // if it's a mozilla or IE
-      var evtType = "keypress";
-    }else{
-      var evtType = "keydown";
+
+    // allow event to be prevented
+    e.originalEvent = { preventDefault: function() { this.defaultPrevented = true }};
+    e.originalEvent.defaultPrevented = false;
+
+    configEvent(e);
+
+    // trigger event on both instances of jQuery that plugins use
+    helper.padChrome$($editor.get(0)).trigger(e);
+    if (!e.originalEvent.defaultPrevented) {
+      $editor.trigger(e);
     }
-    var e = inner$.Event(evtType);
-    e.ctrlKey = true;
-    e.shiftKey = isRedo;
-    e.which = "z".charCodeAt(0);
-    e.keyCode = 90;
-    inner$("#innerdocbody").trigger(e);
+  },
+  doNothing: function() {},
+  buildUndoRedo: function(isRedo) {
+    this.pressKey(this.UNDO_REDO, function(e) {
+      e.ctrlKey = true;
+      e.shiftKey = isRedo;
+      e.which = "z".charCodeAt(0);
+    });
   },
   undo: function() {
     ep_script_elements_test_helper.utils.buildUndoRedo(false);

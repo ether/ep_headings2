@@ -13,10 +13,10 @@ var mergeLines     = require('./mergeLines');
 var undoPagination = require('./undoPagination');
 var fixSmallZooms  = require('./fixSmallZooms');
 var dropdown       = require('./dropdown');
+var doNotAllowEnterAndKeysOnMultilineSelection = require('./doNotAllowEnterAndKeysOnMultilineSelection');
 
 // 'undo' & 'redo' are triggered by toolbar buttons; other events are triggered by key shortcuts
 var UNDO_REDO_EVENTS = ['handleKeyEvent', 'undo', 'redo']
-var ENTER = 13;
 
 var cssFiles = ['ep_script_elements/static/css/editor.css'];
 
@@ -61,11 +61,10 @@ var emitEventWhenAddHeadingForLinesChanged = function(context) {
   });
 }
 
-// Bind the event handler to the toolbar buttons
 exports.postAceInit = function(hook, context) {
-  // prevent keys insert text and enter
   var ace = context.ace;
-  preventCharacterKeysAndEnterOnSelectionMultiLine(context);
+
+  doNotAllowEnterAndKeysOnMultilineSelection.init(ace);
   fixSmallZooms.init();
   dropdown.init(ace);
 };
@@ -106,37 +105,6 @@ exports.aceKeyEvent = function(hook, context) {
   }
 
   return eventProcessed;
-}
-
-var preventCharacterKeysAndEnterOnSelectionMultiLine = function(context){
-  var $innerDocument = utils.getPadInner().find("#innerdocbody");
-
-  context.ace.callWithAce(function(ace){
-    var rep = ace.ace_getRep();
-
-    // keypress is fired when a key is pressed down and that key normally produces a character value
-    $innerDocument.on("keypress", function(e){
-      if(utils.isMultipleLinesSelected(rep) && isCaretStartPositionInAScriptElement(rep)){
-        e.preventDefault();
-      }
-    });
-
-    // avoid ENTER
-    $innerDocument.on("keydown", function(e){
-      var enterIsPressed = e.keyCode === ENTER;
-      if(utils.isMultipleLinesSelected(rep) && enterIsPressed && isCaretStartPositionInAScriptElement(rep)){
-        e.preventDefault();
-        return false;
-      }
-    });
-  });
-}
-
-var isCaretStartPositionInAScriptElement = function(rep){
-  var firstLineOfSelection = rep.selStart[0];
-  var lineIsScriptElement = utils.lineIsScriptElement(firstLineOfSelection);
-
-  return lineIsScriptElement;
 }
 
 // Our script element attribute will result in a script_element:heading... :transition class
