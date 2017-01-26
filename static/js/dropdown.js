@@ -157,7 +157,7 @@ var updateDropdownToCaretLine = function(context) {
     var rep              = context.rep;
     var attributeManager = context.documentAttributeManager;
 
-    var multipleLinesSelected  = utils.isMultipleLinesSelected(rep);
+    var multipleLinesSelected  = utils.isMultipleLineSelected();
     var sameElementOnSelection = isSameElementOnSelection(rep, attributeManager);
 
     var lineNumber  = rep.selStart[0];

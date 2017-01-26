@@ -18,13 +18,16 @@ describe('ep_script_elements - prevent ENTER and chars to be processed when sele
   // TODO add more tests. This is VERY incomplete!
 
   context('when first selected line is a SE', function() {
-    before(function(done) {
+    var originalSelectedText;
+
+    before(function() {
       var $lines = helper.padInner$('div');
       var $firstGeneral = $lines.first();
       var $lastGeneral = $lines.last();
       helper.selectLines($firstGeneral, $lastGeneral);
 
-      helperFunctions.waitForEtherpadToSyncRep(done);
+      // get selection text for future tests
+      originalSelectedText = helperFunctions.getSelectedText();
     });
 
     context('and user presses ENTER', function() {
@@ -36,6 +39,13 @@ describe('ep_script_elements - prevent ENTER and chars to be processed when sele
         helperFunctions.checkIfItHasTheOriginalText();
         done();
       });
+
+      it('does not change selected text', function(done) {
+        var actualSelectedText = helperFunctions.getSelectedText();
+        expect(actualSelectedText).to.be(originalSelectedText);
+
+        done();
+      });
     });
 
     context('and user types a char', function() {
@@ -45,6 +55,13 @@ describe('ep_script_elements - prevent ENTER and chars to be processed when sele
 
       it('does not change anything on the pad', function(done) {
         helperFunctions.checkIfItHasTheOriginalText();
+        done();
+      });
+
+      it('does not change selected text', function(done) {
+        var actualSelectedText = helperFunctions.getSelectedText();
+        expect(actualSelectedText).to.be(originalSelectedText);
+
         done();
       });
     });
@@ -86,7 +103,7 @@ ep_script_elements_test_helper.doNotAllowEnterAndKeys = {
     expect($lines.length).to.be(9);
   },
 
-  waitForEtherpadToSyncRep: function(done) {
-    setTimeout(done, 1100);
-  }
+  getSelectedText: function() {
+    return helper.padInner$.document.getSelection().toString();
+  },
 }

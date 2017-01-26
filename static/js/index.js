@@ -6,14 +6,14 @@ var scriptElementTransitionUtils = require("ep_script_element_transitions/static
 var tags     = require('ep_script_elements/static/js/shared').tags;
 var sceneTag = require('ep_script_elements/static/js/shared').sceneTag;
 
-var utils          = require('./utils');
-var SM_AND_HEADING = _.union(utils.SCENE_MARK_SELECTOR, ['heading']);
-var shortcuts      = require('./shortcuts');
-var mergeLines     = require('./mergeLines');
-var undoPagination = require('./undoPagination');
-var fixSmallZooms  = require('./fixSmallZooms');
-var dropdown       = require('./dropdown');
-var doNotAllowEnterAndKeysOnMultilineSelection = require('./doNotAllowEnterAndKeysOnMultilineSelection');
+var utils                    = require('./utils');
+var SM_AND_HEADING           = _.union(utils.SCENE_MARK_SELECTOR, ['heading']);
+var shortcuts                = require('./shortcuts');
+var mergeLines               = require('./mergeLines');
+var undoPagination           = require('./undoPagination');
+var fixSmallZooms            = require('./fixSmallZooms');
+var dropdown                 = require('./dropdown');
+var preventMultilineDeletion = require('./doNotAllowEnterAndKeysOnMultilineSelection');
 
 // 'undo' & 'redo' are triggered by toolbar buttons; other events are triggered by key shortcuts
 var UNDO_REDO_EVENTS = ['handleKeyEvent', 'undo', 'redo']
@@ -64,7 +64,7 @@ var emitEventWhenAddHeadingForLinesChanged = function(context) {
 exports.postAceInit = function(hook, context) {
   var ace = context.ace;
 
-  doNotAllowEnterAndKeysOnMultilineSelection.init(ace);
+  preventMultilineDeletion.init();
   fixSmallZooms.init();
   dropdown.init(ace);
 };

@@ -262,7 +262,7 @@ ep_script_elements_test_helper.utils = {
   redo: function() {
     ep_script_elements_test_helper.utils.buildUndoRedo(true);
   },
-  validateLineTextAndType: function(lineNumber, expectedText, expectType) {
+  validateLineTextAndType: function(lineNumber, expectedText, expectedType) {
     var $line = this.getLine(lineNumber);
     var actualText = this.cleanText($line.text());
 
@@ -270,8 +270,8 @@ ep_script_elements_test_helper.utils = {
 
     // use fail() to return a clearer failure message
     var actualType = this.getLineType(lineNumber);
-    if (actualType !== expectType) {
-      var failureMessage = "Expected line '" + actualText + "' to be " + expectType + ', found ' + actualType + ' instead';
+    if (actualType !== expectedType) {
+      var failureMessage = "Expected line '" + actualText + "' to be " + expectedType + ', found ' + actualType + ' instead';
       expect().fail(function() { return failureMessage });
     }
   },

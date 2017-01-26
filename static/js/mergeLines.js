@@ -35,7 +35,7 @@ exports.findHandlerFor = function(context) {
         return handleDelete(context);
       }
 
-    }else if(isMultiLineSelected(rep)){
+    }else if(utils.isMultipleLineSelected()){
       return processTextSelected(context);
     }
   }
@@ -267,10 +267,6 @@ var checkIfLinesIsTheSameScriptElement = function(firstLine, lastLine){
   var lastLineType = utils.typeOf($lastLine);
 
   return lineIsScriptElement && (firstLineType === lastLineType);
-}
-
-var isMultiLineSelected = function(rep){
-  return rep.selStart[0] !== rep.selEnd[0];
 }
 
 var isLastLineCompletelySelected = function(context){
