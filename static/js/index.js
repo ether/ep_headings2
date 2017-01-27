@@ -26,19 +26,10 @@ exports.aceRegisterBlockElements = function() {
 }
 
 exports.aceEditEvent = function(hook, context) {
-  var editorInfo = context.editorInfo;
-  var rep        = context.rep;
   var callstack  = context.callstack;
   var eventType  = callstack.editEvent.eventType;
 
-  // TODO improve the logic of if/else
-  var wasLineChangedByShortcut = lineWasChangedByShortcut(eventType);
-  if (wasLineChangedByShortcut) {
-    dropdown.updateDropdownToCaretLine(context);
-
-    // when user presses cmd + 1 we have to create synopsis to the heading created
-    emitEventWhenAddHeadingForLinesChanged(context);
-  } else if (eventMightBeAnUndo(callstack)) {
+  if (lineWasChangedByShortcut(eventType) || eventMightBeAnUndo(callstack)) {
     dropdown.updateDropdownToCaretLine(context);
   }
 }
@@ -50,15 +41,6 @@ var lineWasChangedByShortcut = function(eventType) {
 var eventMightBeAnUndo = function(callstack) {
   var isAnUndoRedoCandidate = _(UNDO_REDO_EVENTS).contains(callstack.editEvent.eventType);
   return callstack.repChanged && isAnUndoRedoCandidate;
-}
-
-var emitEventWhenAddHeadingForLinesChanged = function(context) {
-  var attributeManager = context.documentAttributeManager;
-  var linesChanged = context.callstack.editEvent.data.lineNumbers;
-  _.each(linesChanged, function(line){
-    var scriptElementOfLine = utils.getLineType(line, attributeManager);
-    utils.emitEventWhenAddHeading(scriptElementOfLine, line);
-  });
 }
 
 exports.postAceInit = function(hook, context) {

@@ -95,7 +95,6 @@ function addAttributeIfElementIsNotSM(lineNumber, attributeManager, value) {
   if(isLineScriptElement){
     attributeManager.removeAttributeOnLine(lineNumber, 'script_element');
     attributeManager.setAttributeOnLine(lineNumber, 'script_element', value);
-    utils.emitEventWhenAddHeading(value, lineNumber);
   }
 }
 
