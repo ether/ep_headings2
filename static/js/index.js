@@ -3,21 +3,22 @@ var _ = require('ep_etherpad-lite/static/js/underscore');
 
 var scriptElementTransitionUtils = require("ep_script_element_transitions/static/js/utils");
 
-var tags              = require('ep_script_elements/static/js/shared').tags;
-var sceneTag          = require('ep_script_elements/static/js/shared').sceneTag;
-var utils             = require('./utils');
-var SM_AND_HEADING    = _.union(utils.SCENE_MARK_SELECTOR, ['heading']);
-var shortcuts         = require('./shortcuts');
-var mergeLines        = require('./mergeLines');
-var undoPagination    = require('./undoPagination');
-var fixSmallZooms     = require('./fixSmallZooms');
-var dropdown          = require('./dropdown');
-var updateHeadingType = require('./updateHeadingType');
+var tags     = require('ep_script_elements/static/js/shared').tags;
+var sceneTag = require('ep_script_elements/static/js/shared').sceneTag;
 
-var UNDO_REDO_EVENT   = 'undoRedoEvent';
+var utils                    = require('./utils');
+var SM_AND_HEADING           = _.union(utils.SCENE_MARK_SELECTOR, ['heading']);
+var shortcuts                = require('./shortcuts');
+var mergeLines               = require('./mergeLines');
+var undoPagination           = require('./undoPagination');
+var fixSmallZooms            = require('./fixSmallZooms');
+var dropdown                 = require('./dropdown');
+var preventMultilineDeletion = require('./doNotAllowEnterAndKeysOnMultilineSelection');
 
-var ENTER          = 13;
-var cssFiles       = ['ep_script_elements/static/css/editor.css'];
+// 'undo' & 'redo' are triggered by toolbar buttons; other events are triggered by key shortcuts
+var UNDO_REDO_EVENTS = ['handleKeyEvent', 'undo', 'redo']
+
+var cssFiles = ['ep_script_elements/static/css/editor.css'];
 
 // All our tags are block elements, so we just return them.
 exports.aceRegisterBlockElements = function() {
@@ -25,19 +26,11 @@ exports.aceRegisterBlockElements = function() {
 }
 
 exports.aceEditEvent = function(hook, context) {
-  var editorInfo = context.editorInfo;
-  var rep = context.rep;
-  var eventType = context.callstack.editEvent.eventType;
-  var wasLineChangedByShortcut = lineWasChangedByShortcut(eventType);
+  var callstack  = context.callstack;
+  var eventType  = callstack.editEvent.eventType;
 
-  if (wasLineChangedByShortcut || eventIsUndoOrRedo(eventType)) {
+  if (lineWasChangedByShortcut(eventType) || eventMightBeAnUndo(callstack)) {
     dropdown.updateDropdownToCaretLine(context);
-    updateHeadingType.updateHeadingsTypeWhenUndoOrRedo(editorInfo, rep);
-  }
-
-  if (wasLineChangedByShortcut) {
-    // when user presses cmd + 1 we have to create synopsis to the heading created
-    emitEventWhenAddHeadingForLinesChanged(context);
   }
 }
 
@@ -45,27 +38,17 @@ var lineWasChangedByShortcut = function(eventType) {
   return eventType === scriptElementTransitionUtils.CHANGE_ELEMENT_BY_SHORTCUT_EVENT;
 }
 
-var eventIsUndoOrRedo = function(eventType){
-  return eventType === UNDO_REDO_EVENT;
+var eventMightBeAnUndo = function(callstack) {
+  var isAnUndoRedoCandidate = _(UNDO_REDO_EVENTS).contains(callstack.editEvent.eventType);
+  return callstack.repChanged && isAnUndoRedoCandidate;
 }
 
-var emitEventWhenAddHeadingForLinesChanged = function(context) {
-  var attributeManager = context.documentAttributeManager;
-  var linesChanged = context.callstack.editEvent.data.lineNumbers;
-  _.each(linesChanged, function(line){
-    var scriptElementOfLine = attributeManager.getAttributeOnLine(line, 'script_element');
-    utils.emitEventWhenAddHeading(scriptElementOfLine, line);
-  });
-}
-
-// Bind the event handler to the toolbar buttons
 exports.postAceInit = function(hook, context) {
-  // prevent keys insert text and enter
   var ace = context.ace;
-  preventCharacterKeysAndEnterOnSelectionMultiLine(context);
+
+  preventMultilineDeletion.init();
   fixSmallZooms.init();
   dropdown.init(ace);
-  updateHeadingType.init(ace);
 };
 
 // On caret position change show the current script element
@@ -101,59 +84,14 @@ exports.aceKeyEvent = function(hook, context) {
       evt.preventDefault();
       eventProcessed = true;
     }
-  }else if (keyEventIsUndoOrRedo(evt)) {
-    callstack.startNewEvent(UNDO_REDO_EVENT);
   }
 
   return eventProcessed;
 }
 
-// cmd + z, cmd + shift + z
-var keyEventIsUndoOrRedo = function(evt){
-  var type               = evt.type;
-  var isTypeForCmdKey    = ((browser.msie || browser.safari || browser.chrome) ? (type == "keydown") : (type == "keypress"));
-  var cmdWasPressed = (isTypeForCmdKey && (evt.metaKey || evt.ctrlKey));
-  var KeyZ = evt.keyCode === 90;
-
-  return  cmdWasPressed && KeyZ;
-}
-
-var preventCharacterKeysAndEnterOnSelectionMultiLine = function(context){
-  var $innerDocument = utils.getPadInner().find("#innerdocbody");
-
-  context.ace.callWithAce(function(ace){
-    var rep = ace.ace_getRep();
-
-    // keypress is fired when a key is pressed down and that key normally produces a character value
-    $innerDocument.on("keypress", function(e){
-      if(utils.isMultipleLinesSelected(rep) && isCaretStartPositionInAScriptElement(rep)){
-        e.preventDefault();
-      }
-    });
-
-    // avoid ENTER
-    $innerDocument.on("keydown", function(e){
-      var enterIsPressed = e.keyCode === ENTER;
-      if(utils.isMultipleLinesSelected(rep) && enterIsPressed && isCaretStartPositionInAScriptElement(rep)){
-        e.preventDefault();
-        return false;
-      }
-    });
-  });
-}
-
-var isCaretStartPositionInAScriptElement = function(rep){
-  var firstLineOfSelection = rep.selStart[0];
-  var lineIsScriptElement = utils.lineIsScriptElement(firstLineOfSelection);
-
-  return lineIsScriptElement;
-}
-
 // Our script element attribute will result in a script_element:heading... :transition class
 exports.aceAttribsToClasses = function(hook, context) {
-  if (context.key === 'headingType'){
-    return [ 'headingType:' + context.value];
-  } else if (context.key === 'script_element') {
+  if (context.key === 'script_element') {
     return [ 'script_element:' + context.value ];
   } else if (context.key === undoPagination.UNDO_FIX_ATTRIB) {
     return [ undoPagination.UNDO_FIX_ATTRIB ];
@@ -172,10 +110,10 @@ exports.aceDomLineProcessLineAttributes = function(name, context) {
 };
 
 exports.acePostWriteDomLineHTML = function(hook, context) {
-  var $node = $(context.node);
-  var extraFlag = findExtraFlagForLine($node);
+  var $line = $(context.node);
+  var extraFlag = findExtraFlagForLine($line);
   if (extraFlag) {
-    $node.addClass(extraFlag);
+    $line.addClass(extraFlag);
   }
 }
 
@@ -196,16 +134,14 @@ var findExtraFlagForLine = function($node) {
 // Here we convert the class script_element:heading into a tag
 var processScriptElementAttribute = function(cls) {
   var scriptElementType = /(?:^| )script_element:([A-Za-z0-9]*)/.exec(cls);
-  var headintTypeAttrib = /(?:^| )headingType:([A-Za-z0-9]*)/.exec(cls);
   var tagIndex;
 
   if (scriptElementType) tagIndex = _.indexOf(tags, scriptElementType[1]);
 
   if (tagIndex !== undefined && tagIndex >= 0) {
     var tag = tags[tagIndex];
-    var headingClass = getExtraHeadingClasses(tag, headintTypeAttrib);
     var modifier = {
-      preHtml: '<' + tag + headingClass + '>',
+      preHtml: '<' + tag +'>',
       postHtml: '</' + tag + '>',
       processedMarker: true
     };
@@ -214,15 +150,6 @@ var processScriptElementAttribute = function(cls) {
 
   return [];
 }
-
-var getExtraHeadingClasses = function(tag, headintTypeAttrib) {
-  var headingExtraClass = '';
-  if(tag === 'heading' && headintTypeAttrib){
-    headingExtraClass =  ' class="' + headintTypeAttrib[1] + '"';
-  }
-  return headingExtraClass;
-}
-
 
 var processUndoFixAttribute = function(cls) {
   if (cls.includes(undoPagination.UNDO_FIX_ATTRIB)) {
@@ -246,7 +173,6 @@ exports.aceInitialized = function(hook, context) {
   editorInfo.ace_removeSceneTagFromSelection = _(removeSceneTagFromSelection).bind(context);
   editorInfo.ace_doInsertScriptElement = _(dropdown.doInsertScriptElement).bind(context);
   editorInfo.ace_updateDropdownWithValueChosen = _(dropdown.updateDropdownWithValueChosen).bind(context);
-  editorInfo.ace_updateHeadingType = _(updateHeadingType.updateHeadingType).bind(context);
 }
 
 exports.aceEditorCSS = function() {

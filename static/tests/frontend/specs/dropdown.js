@@ -397,14 +397,14 @@ ep_script_elements_test_helper.dropdown = {
   },
   changeLineToElement: function(line, element, cb) {
     var utils = ep_script_elements_test_helper.utils;
-    var $line = helper.padInner$("div").slice(line, line + 1);
+    var $line = helper.padInner$('div').eq(line);
     $line.sendkeys("{selectall}");
 
     setTimeout(function() {
       utils.changeToElement(element);
 
       helper.waitFor(function(){
-        var $line = helper.padInner$("div").slice(line, line + 1);
+        var $line = helper.padInner$('div').eq(line);
         return $line.find(element).length === 1;
       }).done(cb);
     }, 1000);

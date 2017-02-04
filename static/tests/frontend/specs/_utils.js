@@ -210,30 +210,51 @@ ep_script_elements_test_helper.utils = {
     }).done(cb);
   },
 
-  pressKey: function(CODE) {
+  ENTER: 13,
+  UNDO_REDO: 90,
+  pressEnter: function() {
+    this.pressKey(this.ENTER);
+  },
+  // try to type char 'a'
+  typeChar: function() {
+    var charA = 91;
+    this.pressKey(charA, function(e) {
+      e.which = "a".charCodeAt(0);
+      e.type = 'keypress';
+    });
+  },
+  pressKey: function(CODE, configEvent) {
+    configEvent = configEvent || this.doNothing;
+
     var inner$ = helper.padInner$;
+    var $editor = inner$('#innerdocbody');
     if(inner$(window)[0].bowser.firefox || inner$(window)[0].bowser.modernIE){ // if it's a mozilla or IE
-      var evtType = "keypress";
+      var evtType = 'keypress';
     }else{
-      var evtType = "keydown";
+      var evtType = 'keydown';
     }
     var e = inner$.Event(evtType);
     e.keyCode = CODE;
-    inner$("#innerdocbody").trigger(e);
-  },
-  buildUndoRedo: function(isRedo) {
-    var inner$ = helper.padInner$;
-    if(inner$(window)[0].bowser.firefox || inner$(window)[0].bowser.modernIE){ // if it's a mozilla or IE
-      var evtType = "keypress";
-    }else{
-      var evtType = "keydown";
+
+    // allow event to be prevented
+    e.originalEvent = { preventDefault: function() { this.defaultPrevented = true }};
+    e.originalEvent.defaultPrevented = false;
+
+    configEvent(e);
+
+    // trigger event on both instances of jQuery that plugins use
+    helper.padChrome$($editor.get(0)).trigger(e);
+    if (!e.originalEvent.defaultPrevented) {
+      $editor.trigger(e);
     }
-    var e = inner$.Event(evtType);
-    e.ctrlKey = true;
-    e.shiftKey = isRedo;
-    e.which = "z".charCodeAt(0);
-    e.keyCode = 90;
-    inner$("#innerdocbody").trigger(e);
+  },
+  doNothing: function() {},
+  buildUndoRedo: function(isRedo) {
+    this.pressKey(this.UNDO_REDO, function(e) {
+      e.ctrlKey = true;
+      e.shiftKey = isRedo;
+      e.which = "z".charCodeAt(0);
+    });
   },
   undo: function() {
     ep_script_elements_test_helper.utils.buildUndoRedo(false);
@@ -241,7 +262,7 @@ ep_script_elements_test_helper.utils = {
   redo: function() {
     ep_script_elements_test_helper.utils.buildUndoRedo(true);
   },
-  validateLineTextAndType: function(lineNumber, expectedText, expectType) {
+  validateLineTextAndType: function(lineNumber, expectedText, expectedType) {
     var $line = this.getLine(lineNumber);
     var actualText = this.cleanText($line.text());
 
@@ -249,8 +270,8 @@ ep_script_elements_test_helper.utils = {
 
     // use fail() to return a clearer failure message
     var actualType = this.getLineType(lineNumber);
-    if (actualType !== expectType) {
-      var failureMessage = "Expected line '" + actualText + "' to be " + expectType + ', found ' + actualType + ' instead';
+    if (actualType !== expectedType) {
+      var failureMessage = "Expected line '" + actualText + "' to be " + expectedType + ', found ' + actualType + ' instead';
       expect().fail(function() { return failureMessage });
     }
   },
@@ -270,7 +291,7 @@ ep_script_elements_test_helper.utils = {
   getLineNumberOfElement: function(element, position){
     var inner$ = helper.padInner$;
     var $allDivs = inner$('div');
-    var $element = inner$(element).slice(position, position + 1);
+    var $element = inner$(element).eq(position);
     var $elementDiv = $element.closest('div').get(0);
     return _.indexOf($allDivs, $elementDiv);
   },

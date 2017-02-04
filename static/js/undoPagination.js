@@ -1,6 +1,8 @@
 var nonSplit = require('ep_script_page_view/static/js/paginationNonSplit');
 var split    = require('ep_script_page_view/static/js/paginationSplit');
 
+var utils = require('./utils');
+
 exports.UNDO_FIX_ATTRIB = "lineMightBeAffectedByUndo";
 exports.UNDO_FIX_TAG = "line_with_undo_fix";
 
@@ -45,5 +47,5 @@ var markLineAsFixed = function(targetLine, attributeManager) {
 }
 
 var lineIsGeneral = function(targetLine, attributeManager) {
-  return attributeManager.getAttributeOnLine(targetLine, 'script_element');
+  return utils.getLineType(targetLine, attributeManager);
 }

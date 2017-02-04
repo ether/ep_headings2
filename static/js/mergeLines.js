@@ -35,7 +35,7 @@ exports.findHandlerFor = function(context) {
         return handleDelete(context);
       }
 
-    }else if(isMultiLineSelected(rep)){
+    }else if(utils.isMultipleLineSelected()){
       return processTextSelected(context);
     }
   }
@@ -254,23 +254,19 @@ var isFirstLineSelectedAHeadingCompletelySelected = function(attributeManager, r
 }
 
 var lineIsHeading = function (lineNumber) {
-  var $line = utils.getPadInner().find("div").slice(lineNumber, lineNumber + 1);
+  var $line = utils.getPadInner().find("div").eq(lineNumber);
   var typeOfLine = utils.typeOf($line);
   return typeOfLine === "heading";
 }
 
 var checkIfLinesIsTheSameScriptElement = function(firstLine, lastLine){
   var lineIsScriptElement = utils.lineIsScriptElement(firstLine);
-  var $firstLine = utils.getPadInner().find("div").slice(firstLine, firstLine + 1);
-  var $lastLine = utils.getPadInner().find("div").slice(lastLine, lastLine + 1);
+  var $firstLine = utils.getPadInner().find("div").eq(firstLine);
+  var $lastLine = utils.getPadInner().find("div").eq(lastLine);
   var firstLineType = utils.typeOf($firstLine);
   var lastLineType = utils.typeOf($lastLine);
 
   return lineIsScriptElement && (firstLineType === lastLineType);
-}
-
-var isMultiLineSelected = function(rep){
-  return rep.selStart[0] !== rep.selEnd[0];
 }
 
 var isLastLineCompletelySelected = function(context){
@@ -340,7 +336,7 @@ var thisLineTypeIsDifferentFromPreviousLine = function(line) {
 
 var getLineFromLineNumber = function(lineNumber){
   var $lines = utils.getPadInner().find("div");
-  var $line = $lines.slice(lineNumber, lineNumber + 1);
+  var $line = $lines.eq(lineNumber);
   return $line;
 }
 
@@ -417,7 +413,7 @@ var replaceContentOfTargetLineByNextLine = function(targetLine, editorInfo, rep,
 
   // set line type
   var lineBelowTarget = targetLine + 1;
-  var attributeOfLineToBeKept = attributeManager.getAttributeOnLine(lineBelowTarget, 'script_element');
+  var attributeOfLineToBeKept = utils.getLineType(lineBelowTarget, attributeManager);
   changeLineAttribute(targetLine, attributeOfLineToBeKept, attributeManager);
 
   // replace content

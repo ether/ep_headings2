@@ -33,14 +33,34 @@ exports.SCENE_MARK_TYPE = {
   6 : 'withHeading',
 }
 
-var lineIsScriptElement = function(lineNumber){
-  var $lines = exports.getPadInner().find("div");
-  var $line = $lines.slice(lineNumber, lineNumber + 1);
-  var typeOfLine = typeOf($line);
+exports.selectionStartsOnAScriptElement = function() {
+  var selectionLines = getLinesOnSelectionEdges();
+  return domLineIsAScriptElement($(selectionLines.start));
+}
 
+exports.lineIsScriptElement = function(lineNumber) {
+  var $lines = exports.getPadInner().find("div");
+  var $line = $lines.eq(lineNumber);
+  return domLineIsAScriptElement($line);
+}
+var domLineIsAScriptElement = function($line) {
+  var typeOfLine = typeOf($line);
   return _.contains(SE_TAGS_AND_GENERAL, typeOfLine);
 }
-exports.lineIsScriptElement = lineIsScriptElement;
+exports.domLineIsAScriptElement = domLineIsAScriptElement;
+
+var getLineType = function(targetLine, attributeManager) {
+  return attributeManager.getAttributeOnLine(targetLine, 'script_element');
+}
+exports.getLineType = getLineType;
+
+exports.lineIsHeading = function(targetLine, attributeManager) {
+  return getLineType(targetLine, attributeManager) === 'heading';
+}
+
+exports.domLineIsAHeading = function($line) {
+  return typeOf($line) === 'heading';
+}
 
 var typeOf = function($line) {
  var $innerElement = $line.find(LINE_ELEMENTS_SELECTOR);
@@ -50,24 +70,40 @@ var typeOf = function($line) {
 }
 exports.typeOf = typeOf;
 
-var isMultipleLinesSelected = function(rep) {
-  var firstLineSelected = rep.selStart[0];
-  var lastLineSelected = rep.selEnd[0];
-  return (firstLineSelected !== lastLineSelected);
+exports.isMultipleLineSelected = function() {
+  var selectionLines = getLinesOnSelectionEdges();
+  return selectionLines.start !== selectionLines.end;
 }
-exports.isMultipleLinesSelected = isMultipleLinesSelected;
 
-var getLineNumberFromDOMLine = function ($line, rep) {
+var getLinesOnSelectionEdges = function() {
+  var selection = exports.getPadInner().get(0).getSelection();
+
+  var selectionAnchor = selection.anchorNode;
+  var selectionFocus = selection.focusNode;
+
+  var anchorLine = getLineNodeFromDOMInnerNode(selectionAnchor);
+  var focusLine = getLineNodeFromDOMInnerNode(selectionFocus);
+
+  return {
+    start: anchorLine,
+    end: focusLine
+  };
+}
+
+var getLineNodeFromDOMInnerNode = function(originalNode) {
+  var node = originalNode;
+
+  // go up on DOM tree until reach iframe body (which is the direct parent of all lines on editor)
+  while (node && node.parentNode && !(node.parentNode.tagName && node.parentNode.tagName.toLowerCase() === 'body')) {
+    node = node.parentNode;
+  }
+
+  return node;
+}
+
+exports.getLineNumberFromDOMLine = function ($line, rep) {
   var lineId     = $line.attr("id");
   var lineNumber = rep.lines.indexOfKey(lineId);
 
   return lineNumber;
-}
-exports.getLineNumberFromDOMLine = getLineNumberFromDOMLine;
-
-exports.emitEventWhenAddHeading = function(element, lineNumber) {
-  if (element === "heading") {
-    var $innerDocument = exports.getPadInner().find('#innerdocbody');
-    $innerDocument.trigger(exports.HEADING_ADD_EVENT, lineNumber);
-  }
 }
