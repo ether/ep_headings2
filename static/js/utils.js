@@ -24,13 +24,15 @@ exports.getPadInner = function() {
 }
 
 exports.SCENE_MARK_TYPE = {
-  0 : 'withAct',
-  1 : 'withAct',
-  2 : 'withSeq',
-  3 : 'withSeq',
-  4 : 'withSceneSynopsis',
-  5 : 'withSceneSynopsis',
-  6 : 'withHeading',
+  0 : 'withEpi',
+  1 : 'withEpi',
+  2 : 'withAct',
+  3 : 'withAct',
+  4 : 'withSeq',
+  5 : 'withSeq',
+  6 : 'withSceneSynopsis',
+  7 : 'withSceneSynopsis',
+  8 : 'withHeading',
 }
 
 exports.selectionStartsOnAScriptElement = function() {
