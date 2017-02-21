@@ -228,12 +228,13 @@ describe("ep_script_elements - dropdown", function(){
 
   context("when caret is in a scene mark", function(){
     before(function(cb) {
-      var actLines = [0]; // creates act and sequence in the 1st heading
+      var epLines = [0];
+      var actLines = []; // creates act and sequence in the 1st heading
       var seqLines = [];
       var numOfHeadings = 1;
-      var headingLine = 6;
+      var headingLine = 8;
       utils.cleanPad(function(){
-        SMUtils.writeScenesWithSceneMarks(actLines, seqLines, numOfHeadings, function(){
+        SMUtils.writeScenesWithSceneMarks(epLines, actLines, seqLines, numOfHeadings, function(){
           SMUtils.clickOnSceneMarkButtonOfLine(headingLine);
           cb();
         });
@@ -241,7 +242,7 @@ describe("ep_script_elements - dropdown", function(){
       this.timeout(10000);
     });
 
-    var sceneMarks = ['act_name', 'act_summary', 'sequence_name', 'sequence_summary', 'scene_name', 'scene_summary'];
+    var sceneMarks = ['episode_name', 'episode_summary','act_name', 'act_summary', 'sequence_name', 'sequence_summary', 'scene_name', 'scene_summary'];
     sceneMarks.forEach(function(sceneMark){
 
       context("and sceneMark is " + sceneMark , function(){

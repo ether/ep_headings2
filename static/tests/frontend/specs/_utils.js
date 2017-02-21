@@ -277,9 +277,9 @@ ep_script_elements_test_helper.utils = {
   },
 
   SCRIPT_ELEMENT_TYPE_SELECTOR: 'heading, action, character, dialogue, parenthetical, shot, transition',
-  SCENE_MARK_TYPE_SELECTOR: 'act_name, act_summary, sequence_name, sequence_summary, scene_name, scene_summary',
   getLineType: function(lineNumber) {
-    var sceneElementsAndSceneMarks = this.SCRIPT_ELEMENT_TYPE_SELECTOR + ',' + this.SCENE_MARK_TYPE_SELECTOR;
+    var SMUtils = ep_script_scene_marks_test_helper.utils;
+    var sceneElementsAndSceneMarks = this.SCRIPT_ELEMENT_TYPE_SELECTOR + ',' + SMUtils.getAllSceneMarksTags();
     var $line = this.getLine(lineNumber);
     var $type = $line.find(sceneElementsAndSceneMarks).first();
 
