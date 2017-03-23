@@ -1,52 +1,59 @@
 var ep_script_elements_test_helper = ep_script_elements_test_helper || {};
 ep_script_elements_test_helper.utils = {
+  _lineWithTag: function(tagName, text) {
+    if (text === '') {
+      return '<' + tagName + '><br/></' + tagName + '>';
+    } else {
+      return '<' + tagName + '>' + text + '</' + tagName + '><br/>';
+    }
+  },
   act: function(text) {
     return this.actName(text) + this.actSummary(text);
   },
   actName: function(text) {
-    return "<act_name>" + text + "</act_name><br/>";
+    return this._lineWithTag('act_name', text);
   },
   actSummary: function(text){
-    return "<act_summary>" + text + "</act_summary><br/>"
+    return this._lineWithTag('act_summary', text);
   },
   sequence: function (text) {
     return this.sequenceName(text) + this.sequenceSummary(text);
   },
   sequenceName: function(text) {
-    return "<sequence_name>" + text + "</sequence_name><br/>";
+    return this._lineWithTag('sequence_name', text);
   },
   sequenceSummary: function(text){
-    return "<sequence_summary>" + text + "</sequence_summary><br/>";
+    return this._lineWithTag('sequence_summary', text);
   },
   synopsis: function(text) {
     return this.sceneName(text) + this.sceneSummary(text);
   },
   sceneName: function(text) {
-    return "<scene_name>" + text + "</scene_name><br/>";
+    return this._lineWithTag('scene_name', text);
   },
   sceneSummary: function(text) {
-    return "<scene_summary>" + text + "</scene_summary><br/>";
+    return this._lineWithTag('scene_summary', text);
   },
   heading: function(text) {
-    return "<heading>" + text + "</heading><br/>";
+    return this._lineWithTag('heading', text);
   },
   action: function(text) {
-    return "<action>" + text + "</action><br/>";
+    return this._lineWithTag('action', text);
   },
   parenthetical: function(text) {
-    return "<parenthetical>" + text + "</parenthetical><br/>";
+    return this._lineWithTag('parenthetical', text);
   },
   character: function(text) {
-    return "<character>" + text + "</character><br/>";
+    return this._lineWithTag('character', text);
   },
   dialogue: function(text) {
-    return "<dialogue>" + text + "</dialogue><br/>";
+    return this._lineWithTag('dialogue', text);
   },
   shot: function(text) {
-    return "<shot>" + text + "</shot><br/>";
+    return this._lineWithTag('shot', text);
   },
   transition: function(text) {
-    return "<transition>" + text + "</transition><br/>";
+    return this._lineWithTag('transition', text);
   },
   general: function(text) {
     return text + "<br/>";
