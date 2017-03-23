@@ -11,49 +11,62 @@ ep_script_elements_test_helper.utils = {
     return this.actName(text) + this.actSummary(text);
   },
   actName: function(text) {
-    return this._lineWithTag('act_name', text);
+    var self = ep_script_elements_test_helper.utils;
+    return self._lineWithTag('act_name', text);
   },
   actSummary: function(text){
-    return this._lineWithTag('act_summary', text);
+    var self = ep_script_elements_test_helper.utils;
+    return self._lineWithTag('act_summary', text);
   },
   sequence: function (text) {
     return this.sequenceName(text) + this.sequenceSummary(text);
   },
   sequenceName: function(text) {
-    return this._lineWithTag('sequence_name', text);
+    var self = ep_script_elements_test_helper.utils;
+    return self._lineWithTag('sequence_name', text);
   },
   sequenceSummary: function(text){
-    return this._lineWithTag('sequence_summary', text);
+    var self = ep_script_elements_test_helper.utils;
+    return self._lineWithTag('sequence_summary', text);
   },
   synopsis: function(text) {
     return this.sceneName(text) + this.sceneSummary(text);
   },
   sceneName: function(text) {
-    return this._lineWithTag('scene_name', text);
+    var self = ep_script_elements_test_helper.utils;
+    return self._lineWithTag('scene_name', text);
   },
   sceneSummary: function(text) {
-    return this._lineWithTag('scene_summary', text);
+    var self = ep_script_elements_test_helper.utils;
+    return self._lineWithTag('scene_summary', text);
   },
   heading: function(text) {
-    return this._lineWithTag('heading', text);
+    var self = ep_script_elements_test_helper.utils;
+    return self._lineWithTag('heading', text);
   },
   action: function(text) {
-    return this._lineWithTag('action', text);
+    var self = ep_script_elements_test_helper.utils;
+    return self._lineWithTag('action', text);
   },
   parenthetical: function(text) {
-    return this._lineWithTag('parenthetical', text);
+    var self = ep_script_elements_test_helper.utils;
+    return self._lineWithTag('parenthetical', text);
   },
   character: function(text) {
-    return this._lineWithTag('character', text);
+    var self = ep_script_elements_test_helper.utils;
+    return self._lineWithTag('character', text);
   },
   dialogue: function(text) {
-    return this._lineWithTag('dialogue', text);
+    var self = ep_script_elements_test_helper.utils;
+    return self._lineWithTag('dialogue', text);
   },
   shot: function(text) {
-    return this._lineWithTag('shot', text);
+    var self = ep_script_elements_test_helper.utils;
+    return self._lineWithTag('shot', text);
   },
   transition: function(text) {
-    return this._lineWithTag('transition', text);
+    var self = ep_script_elements_test_helper.utils;
+    return self._lineWithTag('transition', text);
   },
   general: function(text) {
     return text + "<br/>";
