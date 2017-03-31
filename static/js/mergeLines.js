@@ -18,13 +18,13 @@ exports.findHandlerFor = function(context) {
 
   // when user presses a mergeKey we can have three scenarios: no selection at all,
   // selection in only one line(this case is handled by default), selection in more than one line
-  if(isMergeKey && isCaretStartPositionInAScriptElement(rep)){
+  if(isMergeKey && utils.selectionStartsOnAScriptElement()){
     // if there is no selection at all
     if (!textSelected(editorInfo)) {
       // HACK: we need to get current position after calling synchronizeEditorWithUserSelection(), otherwise
       // some tests might fail
-      var currentLine   = rep.selStart[0];
-      var caretPosition = getCaretPosition(currentLine, rep, editorInfo, attributeManager);
+      var currentLineNumber = utils.getLineNumberOfCaretLine(rep);
+      var caretPosition = getCaretPosition(currentLineNumber, rep, editorInfo, attributeManager);
 
       var atFirstLineOfPad = currentLineIsFirstLineOfPad(rep);
       var atLastLineOfPad  = currentLineIsLastLineOfPad(rep);
@@ -48,7 +48,7 @@ var handleBackspace = function(context) {
   var attributeManager = context.documentAttributeManager;
   var rep              = context.rep;
 
-  var currentLine  = rep.selStart[0];
+  var currentLine  = utils.getLineNumberOfCaretLine(rep);
   var previousLine = getPreviousLineWithScriptElement(currentLine, attributeManager);
 
   var currentLineHasDifferentTypeOfPreviousLine = thisLineTypeIsDifferentFromPreviousLine(currentLine);
@@ -433,11 +433,4 @@ var placeCaretOnLine = function(editorInfo, linePosition){
     editorInfo.ace_performSelectionChange(linePosition, linePosition, true);
     editorInfo.ace_updateBrowserSelectionFromRep();
   })
-}
-
-var isCaretStartPositionInAScriptElement = function(rep){
-  var firstLineOfSelection = rep.selStart[0];
-  var lineIsScriptElement = utils.lineIsScriptElement(firstLineOfSelection);
-
-  return lineIsScriptElement;
 }

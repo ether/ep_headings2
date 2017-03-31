@@ -77,6 +77,13 @@ exports.isMultipleLineSelected = function() {
   return selectionLines.start !== selectionLines.end;
 }
 
+exports.getFirstLineOfSelection = function() {
+  var selection = getLinesOnSelectionEdges();
+  var $firstLineSelected = $(selection.start);
+
+  return $firstLineSelected;
+}
+
 var getLinesOnSelectionEdges = function() {
   var selection = exports.getPadInner().get(0).getSelection();
 
@@ -108,4 +115,11 @@ exports.getLineNumberFromDOMLine = function ($line, rep) {
   var lineNumber = rep.lines.indexOfKey(lineId);
 
   return lineNumber;
+}
+
+exports.getLineNumberOfCaretLine = function(rep) {
+  var $firstLine = exports.getFirstLineOfSelection();
+  var firstLineNumber = exports.getLineNumberFromDOMLine($firstLine, rep);
+
+  return firstLineNumber;
 }
