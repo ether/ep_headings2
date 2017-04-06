@@ -23,7 +23,7 @@ exports.findHandlerFor = function(context) {
     if (!textSelected(editorInfo)) {
       // HACK: we need to get current position after calling synchronizeEditorWithUserSelection(), otherwise
       // some tests might fail
-      var currentLineNumber = utils.getLineNumberOfCaretLine(rep);
+      var currentLineNumber = rep.selStart[0];
       var caretPosition = getCaretPosition(currentLineNumber, rep, editorInfo, attributeManager);
 
       var atFirstLineOfPad = currentLineIsFirstLineOfPad(rep);
