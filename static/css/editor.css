@@ -15,8 +15,8 @@ heading:before {
   float: left;
   text-align: right;
   display: block;
-  width: 40px;
-  margin-left: -67px; /* - (27 + width) */
+  width: 25px;
+  margin-left: -52px; /* - (27 + width) */
 
   /* scene numbering: */
   counter-increment: scene;
