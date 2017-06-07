@@ -36,8 +36,8 @@ exports.SCENE_MARK_TYPE = {
 }
 
 exports.selectionStartsOnAScriptElement = function() {
-  var selectionLines = getLinesOnSelectionEdges();
-  return domLineIsAScriptElement($(selectionLines.start));
+  var $selectionStart = exports.getFirstLineOfSelection();
+  return domLineIsAScriptElement($selectionStart);
 }
 
 exports.lineIsScriptElement = function(lineNumber) {
@@ -79,28 +79,49 @@ exports.isMultipleLineSelected = function() {
 
 exports.getFirstLineOfSelection = function() {
   var selection = getLinesOnSelectionEdges();
-  var $firstLineSelected = $(selection.start);
+  var $firstLineSelected = selection.backward ? $(selection.end) : $(selection.start);
 
   return $firstLineSelected;
 }
 
 var getLinesOnSelectionEdges = function() {
   var selection = exports.getPadInner().get(0).getSelection();
-
+  // it depends on the direction of the selection
   var selectionAnchor = selection.anchorNode;
   var selectionFocus = selection.focusNode;
 
-  var anchorLine = getLineNodeFromDOMInnerNode(selectionAnchor);
-  var focusLine = getLineNodeFromDOMInnerNode(selectionFocus);
+  var anchorOffset = selection.anchorOffset;
+  var focusOffset = selection.focusOffset;
+
+
+  var anchorLine = getLineNodeFromDOMInnerNode(selectionAnchor, anchorOffset);
+  var focusLine = getLineNodeFromDOMInnerNode(selectionFocus, focusOffset);
+
+  // When selection is backwards oriented and wraps different nodes,
+  // compareDocumentPosition returns 2
+  var selectionDirection = anchorLine.compareDocumentPosition(focusLine);
+  var backwardSelection = selectionDirection === 2;
 
   return {
     start: anchorLine,
-    end: focusLine
+    end: focusLine,
+    backward: backwardSelection
   };
 }
 
-var getLineNodeFromDOMInnerNode = function(originalNode) {
+var getLineNodeFromDOMInnerNode = function(originalNode, offsetOnBody) {
   var node = originalNode;
+
+  // bug fix: https://trello.com/c/CmLALxwD/955 and
+  // https://trello.com/c/lQaBTlUw/1000
+  // Sometimes the browser starts selection on iframe body, in the browser
+  // the selection is showed correctly, though. When this happens, we have
+  // to set manually in which node the selection begins
+  if (node && node.tagName && node.tagName.toLowerCase() === 'body') {
+    // when the selection returns the body as the start node, the offset
+    // returns which line the selection begins
+    node = exports.getPadInner().find('div').get(offsetOnBody);
+  }
 
   // go up on DOM tree until reach iframe body (which is the direct parent of all lines on editor)
   while (node && node.parentNode && !(node.parentNode.tagName && node.parentNode.tagName.toLowerCase() === 'body')) {
