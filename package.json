@@ -1,10 +1,10 @@
 {
-  "description": "Adds heading support to Etherpad Lite.  Includes improved suppot for export, i18n etc.",
-  "name": "ep_headings2",
-  "version": "0.0.9",
+  "description": "Adds support to scriptwriting elements for Etherpad Lite. Based on ep_headings2 project from John McLear (https://github.com/johnmclear/ep_headings2).",
+  "name": "ep_script_elements",
+  "version": "0.0.1",
   "author": {
-    "name": "John McLear",
-    "email": "john@mclear.co.uk"
+    "name": "Luiza Pagliari",
+    "email": "lpagliari@gmail.com"
   },
   "contributors": [
     {
@@ -19,16 +19,21 @@
       "name": "Gedion Woldeselassie",
       "email": "gwy321@gmail.com",
       "url": "https://github.com/gedion"
+    },
+    {
+      "name": "Luiza Pagliari",
+      "email": "lpagliari@gmail.com"
     }
   ],
-  "dependencies": {},
+  "dependencies": {
+    },
   "engines": {
     "node": "*"
   },
-  "homepage": "https://github.com/johnmclear/ep_headings2",
+  "homepage": "https://github.com/storytouch/ep_script_elements",
   "devDependencies": {},
   "repository": {
     "type": "git",
-    "url": "git://github.com/johnmclear/ep_headings2.git"
+    "url": "git://github.com/storytouch/ep_script_elements.git"
   }
 }

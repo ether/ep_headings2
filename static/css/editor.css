@@ -1,7 +1,106 @@
-h1{font-size: 2.0em;line-height: 120%;}
-h2{font-size: 1.5em;line-height: 120%;}
-h3{font-size: 1.17em;line-height: 120%;}
-h4{line-height: 120%;}
-h5{font-size: 0.83em;line-height: 120%;}
-h6{font-size: 0.75em;line-height: 120%;}
-code{font-family: monospace;}
+/* BUGFIX: we cannot have multiple counter-resets on the code. So this command was moved to
+           src/static/custom/pad.css with the other counter-resets, so we ensure all counters
+           are correctly created and reset.
+body{
+  counter-reset: scene;
+}
+*/
+
+/* WARNING there are other styles for script elements dynamically set on fixSmallZooms.js */
+heading{
+  display:block;
+  text-transform: uppercase;
+}
+heading:before {
+  float: left;
+  text-align: right;
+  display: block;
+  width: 25px;
+  margin-left: -52px; /* - (27 + width) */
+
+  /* scene numbering: */
+  counter-increment: scene;
+  content: counter(scene) " ";
+  /*make the number below the act/seq icon*/
+  position: relative;
+  z-index: 0;
+}
+
+action{
+  display:block;
+}
+
+character{
+  display:block;
+  text-transform: uppercase;
+}
+
+/* avoid displaying empty parenthetical split in two lines */
+parenthetical br{
+  content: "";
+}
+parenthetical{
+  display:block;
+}
+parenthetical:before {
+  content: '(';
+  margin-left: -6px;
+}
+parenthetical:after {
+  content: ')';
+  margin-right: -6px;
+}
+
+dialogue{
+  display:block;
+}
+
+transition{
+  display:block;
+  text-align: right;
+  text-transform: uppercase;
+}
+
+shot{
+  display:block;
+  text-transform: uppercase;
+}
+
+/*hack to force display the element without losing the default font when it is pasted with ctrl+shift+v */
+heading, action, character, parenthetical, dialogue, transition, shot{
+  font-family: monospace;
+}
+
+/* Removes top margin for first element on script: */
+#innerdocbody > div:first-of-type > act_name,
+/* handle 'div:first-of-type > heading' on fixSmallZooms.js */
+#innerdocbody > div:first-of-type > action,
+#innerdocbody > div:first-of-type > character,
+#innerdocbody > div:first-of-type > transition,
+#innerdocbody > div:first-of-type > shot {
+  margin-top: 0px;
+}
+
+/* If available width is not even enough to have the regular 61
+   chars/line, we make the margins proportional to available width: */
+@media (max-width : 463px) { /* based on value form ep_script_page_view */
+  character{
+    margin-left: 35%;
+    margin-right: 4%;
+  }
+
+  parenthetical{
+    margin-left: 26%;
+    margin-right: 35%;
+  }
+
+  dialogue{
+    margin-left: 17%;
+    margin-right: 26%;
+  }
+
+  transition{
+    margin-left: 64%;
+    margin-right: 9%;
+  }
+}
