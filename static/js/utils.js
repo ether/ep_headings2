@@ -118,9 +118,7 @@ var getLineNodeFromDOMInnerNode = function(originalNode, offsetOnBody) {
   // the selection is showed correctly, though. When this happens, we have
   // to set manually in which node the selection begins
   if (node && node.tagName && node.tagName.toLowerCase() === 'body') {
-    // when the selection returns the body as the start node, the offset
-    // returns which line the selection begins
-    node = exports.getPadInner().find('div').get(offsetOnBody);
+    node = getLineSelectedUsingOffset(node, offsetOnBody);
   }
 
   // go up on DOM tree until reach iframe body (which is the direct parent of all lines on editor)
@@ -129,6 +127,19 @@ var getLineNodeFromDOMInnerNode = function(originalNode, offsetOnBody) {
   }
 
   return node;
+}
+
+// when the selection returns the body as the start node, the offset returns
+// which line the selection begins. The only exception of this rule is
+// when user deletes a selection that goes until the last line of the pad.
+// In this case, the line selected is 'offset - 1'
+var getLineSelectedUsingOffset = function (node, offset) {
+  var $lines = exports.getPadInner().find('div');
+  if (offset > $lines.length - 1) {
+    offset = offset - 1;
+  }
+
+  return $lines.get(offset);
 }
 
 exports.getLineNumberFromDOMLine = function ($line, rep) {
