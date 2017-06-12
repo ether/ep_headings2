@@ -1,6 +1,6 @@
 var _                        = require('ep_etherpad-lite/static/js/underscore');
 var SCRIPT_ELEMENTS_SELECTOR = require('./shared').tags;
-exports.SCENE_MARK_SELECTOR  = require("ep_script_scene_marks/static/js/utils").sceneMarkTags;
+exports.SCENE_MARK_SELECTOR  = require("ep_script_scene_marks/static/js/constants").SCENE_MARK_TAGS;
 
 var LINE_ELEMENTS_SELECTOR   = _.union(SCRIPT_ELEMENTS_SELECTOR, exports.SCENE_MARK_SELECTOR).join(", ");
 var SE_TAGS_AND_GENERAL      = _.union(SCRIPT_ELEMENTS_SELECTOR, ["general"]);
