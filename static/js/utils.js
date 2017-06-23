@@ -92,15 +92,17 @@ var getLinesOnSelectionEdges = function() {
 
   var anchorOffset = selection.anchorOffset;
   var focusOffset = selection.focusOffset;
-
+  var backwardSelection;
 
   var anchorLine = getLineNodeFromDOMInnerNode(selectionAnchor, anchorOffset);
   var focusLine = getLineNodeFromDOMInnerNode(selectionFocus, focusOffset);
 
   // When selection is backwards oriented and wraps different nodes,
   // compareDocumentPosition returns 2
-  var selectionDirection = anchorLine.compareDocumentPosition(focusLine);
-  var backwardSelection = selectionDirection === 2;
+  if (anchorLine) {
+    var selectionDirection = anchorLine.compareDocumentPosition(focusLine);
+    backwardSelection = selectionDirection === 2;
+  }
 
   return {
     start: anchorLine,
