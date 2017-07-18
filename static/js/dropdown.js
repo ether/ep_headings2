@@ -1,8 +1,9 @@
 var _ = require('ep_etherpad-lite/static/js/underscore');
-var FIRST_LINE        = 0;
-var tags              = require('ep_script_elements/static/js/shared').tags;
-var utils             = require('./utils');
-var undoPagination    = require('./undoPagination');
+var FIRST_LINE     = 0;
+var tags           = require('ep_script_elements/static/js/shared').tags;
+var utils          = require('./utils');
+var undoPagination = require('./undoPagination');
+var api            = require('./api');
 
 exports.init = function(ace){
   updateElementTypeOnChangeOnDropdown(ace);
@@ -149,6 +150,20 @@ exports.updateDropdownWithValueChosen = updateDropdownWithValueChosen;
 
 var setFocusOnEditor = function(){
   utils.getPadInner().find("#innerdocbody").focus();
+}
+
+exports.sendMessageCaretElementChanged = function (context) {
+  var rep              = context.rep;
+  var attributeManager = context.documentAttributeManager;
+  var multipleLinesSelected  = utils.isMultipleLineSelected();
+  var sameElementOnSelection = isSameElementOnSelection(rep, attributeManager);
+  var elementOfCurrentLine;
+  var currentLine = rep.selStart[0];
+  var isLineScriptElement = utils.lineIsScriptElement(currentLine);
+  if (sameElementOnSelection && isLineScriptElement) {
+    elementOfCurrentLine = utils.getLineType(currentLine, attributeManager) || 'general';
+  }
+  api.triggerCaretElementChanged(elementOfCurrentLine);
 }
 
 var updateDropdownToCaretLine = function(context) {

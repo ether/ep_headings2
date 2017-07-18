@@ -3,18 +3,21 @@
 
 // A4
 var GENERALS_PER_PAGE = 58;
+var CHANGE_CARET_ELEMENT_MESSAGE_TYPE = 'dropdown_caret_element_changed';
 
 describe("ep_script_elements - dropdown", function(){
-  var utils, SMUtils, helperFunctions, padId;
+  var utils, SMUtils, helperFunctions, padId, apiUtils;
   before(function(cb){
     utils = ep_script_elements_test_helper.utils;
+    apiUtils = ep_script_elements_test_helper.apiUtils;
     helperFunctions = ep_script_elements_test_helper.dropdown;
     SMUtils = ep_script_scene_marks_test_helper.utils;
     padId = helper.newPad(function(){
+      apiUtils.startListeningToApiEvents();
       helper.waitFor(function(){
         var pluginIsNotLoaded = (undefined === helper.padChrome$.window.clientVars.plugins.plugins.ep_script_scene_marks);
         return !pluginIsNotLoaded;
-      }).done(cb)
+      }).done(cb);
     });
     this.timeout(60000);
   });
@@ -79,70 +82,41 @@ describe("ep_script_elements - dropdown", function(){
 
   context("when it reloads a pad", function(){
     context("and first element is a scene mark", function(){
-      var eventTriggered = false;
       before(function (done) {
         helperFunctions.createPadWithSM(function(){
-          // to test if the dropdown has changed we have to validate the text of the dropdown
-          // and if the event which makes the this value changed was triggered
-          var chrome$ = helper.padChrome$;
-          chrome$('#script_element-selection').on('selectElementChange', function() {
-            eventTriggered = true;
-          });
-          done();
+          apiUtils.waitForDataToBeSent(CHANGE_CARET_ELEMENT_MESSAGE_TYPE, done);
         });
+        this.timeout(6000);
       });
 
       after(function (done) {
         utils.cleanPad(done);
       });
 
-      it('changes the value on the dropdown', function(done) {
-        this.timeout(10000);
-        setTimeout(function() {
-          // reload the pad
-          helper.newPad(function(){
-            // wait for the event which changes the dropdown value to be triggered
-            helper.waitFor(function(){
-              return eventTriggered;
-            }).done(function(){
-              helperFunctions.waitDropdownChangeToElement("Heading", done);
-            });
-          }, padId);
-        }, 2000);
+      it('sends "undefined" as the elementType', function(done) {
+        var elementSentToApi = apiUtils.getLastCaretElementChange();
+        expect(elementSentToApi).to.be(undefined);
+        done();
       });
     });
 
     context("and first element is a script element", function(){
-      var eventTriggered = false;
       before(function (done) {
         helperFunctions.createPadWithSE(function(){
-          // to test if the dropdown has changed we have to validate the text of the dropdown
-          // and if the event which makes the this value changed was triggered
-          var chrome$ = helper.padChrome$;
-          chrome$('#script_element-selection').on('selectElementChange', function() {
-            eventTriggered = true;
-          });
-          done();
+          apiUtils.waitForDataToBeSent(CHANGE_CARET_ELEMENT_MESSAGE_TYPE, done);
         });
+        this.timeout(6000);
       });
 
       after(function (done) {
         utils.cleanPad(done);
       });
 
-      it('changes the value on the dropdown to the first script element', function(done) {
-        this.timeout(10000);
-        setTimeout(function() {
-          // reload the pad
-          helper.newPad(function(){
-            // wait for the event which changes the dropdown value to be triggered
-            helper.waitFor(function(){
-              return eventTriggered;
-            }).done(function(){
-              helperFunctions.waitDropdownChangeToElement("Action", done);
-            });
-          }, padId);
-        }, 2000);
+      it('sends as the elementType the first element of the script', function(done) {
+        helper.waitFor(function() {
+          var elementSentToApi = apiUtils.getLastCaretElementChange();
+          return elementSentToApi === 'action';
+        }, 4000).done(done);
       });
     });
   });
@@ -161,69 +135,26 @@ describe("ep_script_elements - dropdown", function(){
       helper.waitFor(function(){
         var $secondTextElement = inner$("div").first().next();
         return $secondTextElement.text() === "Second Line!";
-      }, 2000).done(cb);
+      }, 2000).done(function(){
+        apiUtils.waitForDataToBeSent(CHANGE_CARET_ELEMENT_MESSAGE_TYPE, cb);
+      });
     });
 
-    it("sets select value according to the line caret is", function(done) {
+    it('sends the element type according to the line caret is', function(done) {
       // this is a longer test, might need more time to finish
       this.timeout(10000);
-
-      var chrome$ = helper.padChrome$;
-      var inner$ = helper.padInner$;
 
       // places caret on dialogue
-      var $heading = inner$("div").first();
-      $heading.sendkeys("{selectall}");
-
-      // validate select shows "Dialogue"
-      helper.waitFor(function() {
-        var selectedValue = chrome$('#script_element-selection option:selected').text();
-        return selectedValue === "Dialogue";
-      }, 2000).done(function() {
-        // places caret on action
-        var $action = inner$("div").first().next();
-        $action.sendkeys("{selectall}");
-
-        // validate select shows "Action"
-        helper.waitFor(function() {
-          var selectedValue = chrome$('#script_element-selection option:selected').text();
-          return selectedValue === "Action";
-        }, 2000).done(done);
-      });
-    });
-
-    it("triggers event 'selectElementChange' when select value is changed", function(done) {
-      // this is a longer test, might need more time to finish
-      this.timeout(10000);
-
-      var chrome$ = helper.padChrome$;
       var inner$ = helper.padInner$;
+      var $dialogue = inner$("div").first();
+      $dialogue.sendkeys("{selectall}");
 
-      // places caret on Dialogue to force select value to not be "Action"
-      var $heading = inner$("div").first();
-      $heading.sendkeys("{selectall}");
-
-      helper.waitFor(function() {
-        var selectedValue = chrome$('#script_element-selection option:selected').text();
-        return selectedValue === "Dialogue";
-      }, 2000).done(function() {
-        // listens to 'selectElementChange' event
-        var eventTriggered = false;
-        chrome$('#script_element-selection').on('selectElementChange', function() {
-          eventTriggered = true;
-        });
-
-        // places caret on action so event can be triggered
+      apiUtils.waitForApiToSend('dialogue', function() {
         var $action = inner$("div").first().next();
         $action.sendkeys("{selectall}");
-
-        // validate event was triggered
-        helper.waitFor(function() {
-          return eventTriggered;
-        }, 3000).done(done);
+        apiUtils.waitForApiToSend('action', done);
       });
     });
-
   });
 
   context("when caret is in a scene mark", function(){
@@ -236,7 +167,7 @@ describe("ep_script_elements - dropdown", function(){
       utils.cleanPad(function(){
         SMUtils.writeScenesWithSceneMarks(epLines, actLines, seqLines, numOfHeadings, function(){
           SMUtils.clickOnSceneMarkButtonOfLine(headingLine);
-          cb();
+          apiUtils.waitForDataToBeSent(CHANGE_CARET_ELEMENT_MESSAGE_TYPE, cb);
         });
       });
       this.timeout(10000);
@@ -247,31 +178,19 @@ describe("ep_script_elements - dropdown", function(){
 
       context("and sceneMark is " + sceneMark , function(){
 
-        it("displays 'style' on the dropdown", function(done){
+        it('sends "undefined" as the elementType', function(done){
 
           var inner$ = helper.padInner$;
-
           // places caret on action
           var $action = inner$("div").last();
           $action.sendkeys("{selectall}");
           this.timeout(10000);
-          // validate select shows "Action"
-          helper.waitFor(function() {
-            var chrome$ = helper.padChrome$;
-            var selectedValue = chrome$('#script_element-selection option:selected').text();
-            return selectedValue === "Action";
-          }, 2000).done(function() {
+          apiUtils.waitForApiToSend('action', function() {
             var inner$ = helper.padInner$;
             var $targetElement = inner$(sceneMark).parent();
             $targetElement.sendkeys("{selectall}");
-
-            helper.waitFor(function() {
-              var chrome$ = helper.padChrome$;
-              var selectedValue = chrome$('#script_element-selection option:selected').text();
-              return selectedValue === "Style";
-            }, 2000).done(done);
+            apiUtils.waitForApiToSend(undefined, done);
           });
-
         });
 
       });

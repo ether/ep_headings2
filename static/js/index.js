@@ -57,6 +57,7 @@ exports.aceSelectionChanged = function(hook, context, cb) {
 
   // If it's an initial setup event then do nothing
   if(cs.type == "setBaseText" || cs.type == "setup" || cs.type == "importText") return false;
+  dropdown.sendMessageCaretElementChanged(context);
   dropdown.updateDropdownToCaretLine(context);
 }
 
