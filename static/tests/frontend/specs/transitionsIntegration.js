@@ -1,13 +1,16 @@
 describe("ep_script_elements - integration with ep_script_element_transitions", function() {
-  var utils;
+  var utils, apiUtils;
 
   before(function(done) {
     utils = ep_script_elements_test_helper.utils;
-
+    apiUtils = ep_script_elements_test_helper.apiUtils;
     helper.newPad(function() {
       utils.cleanPad(function() {
         // choose initial line type, to test UNDO later
-        utils.changeToElement(utils.ACTION, done);
+        utils.changeToElement(utils.ACTION, function(){
+          apiUtils.startListeningToApiEvents();
+          done();
+        });
       });
     });
 
@@ -15,20 +18,14 @@ describe("ep_script_elements - integration with ep_script_element_transitions", 
   });
 
   context('when user changes action into another type by using shortcut', function() {
-    var testDropdownValueIs = function(type, done) {
-      helper.waitFor(function(){
-        return helper.padChrome$('#script_element-selection').val() === utils.valOf(type);
-      }, 2000).done(done);
-    }
-
     before(function(done) {
       var typeShortcutToChangeToCharacter = ep_script_element_transitions_test_helper.commandNumber.buildShortcut(3);
       typeShortcutToChangeToCharacter();
       done();
     });
 
-    it('updates dropdown value to reflect new line type', function(done) {
-      testDropdownValueIs(utils.CHARACTER, done);
+    it('sends the elementType to the API', function(done) {
+      apiUtils.waitForApiToSend(utils.CHARACTER, done);
     });
 
     context('and user triggers UNDO', function() {
@@ -37,8 +34,8 @@ describe("ep_script_elements - integration with ep_script_element_transitions", 
         setTimeout(utils.undo, 1000);
       });
 
-      it('updates dropdown value to reflect original line type', function(done) {
-        testDropdownValueIs(utils.ACTION, done);
+      it('sends the current caret element as elementType to the API', function(done) {
+        apiUtils.waitForApiToSend(utils.ACTION, done);
       });
     });
   });

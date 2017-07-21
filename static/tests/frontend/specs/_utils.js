@@ -108,21 +108,16 @@ ep_script_elements_test_helper.utils = {
   valOf: function(tag) {
     return this.TARGET_ELEMENT[tag].val;
   },
-  changeToElement: function(tag, callback, lineNum){
+  changeToElement: function(element, cb, lineNum){
     lineNum = lineNum || 0;
-    var chrome$ = helper.padChrome$;
-    var inner$ = helper.padInner$;
-    var targetElement = ep_script_elements_test_helper.utils.TARGET_ELEMENT[tag];
-
-    chrome$('#script_element-selection').val(targetElement.val);
-    chrome$('#script_element-selection').change();
-
-    helper.waitFor(function() {
-      var $textElement = ep_script_elements_test_helper.utils.getLine(lineNum);
-      return tag === 'general' || $textElement.find(tag).length > 0;
-    }
-    // this helper.waitFor needs a little more time to finish, so we give it 2s
-    , 2000).done(callback);
+    var apiUtils = ep_script_elements_test_helper.apiUtils;
+    var $line = helper.padInner$('div').eq(lineNum);
+    helper.selectLines($line, $line);
+    apiUtils.simulateTriggerOfDropdownChanged(element);
+    helper.waitFor(function(){
+      var $line = helper.padInner$('div').eq(lineNum);
+      return $line.find(element).length === 1;
+    }).done(cb);
   },
   changeToElementAndCheckNewLinePosition: function(tag, callback, lineTarget, newLinePosition){
     lineTarget = lineTarget || 0;
@@ -314,5 +309,9 @@ ep_script_elements_test_helper.utils = {
     var $element = inner$(element).eq(position);
     var $elementDiv = $element.closest('div').get(0);
     return _.indexOf($allDivs, $elementDiv);
+  },
+  changeElementType: function(element) {
+    var seApiUtils = ep_script_elements_test_helper.apiUtils;
+    seApiUtils.simulateTriggerOfDropdownChanged(element);
   },
 };

@@ -6,14 +6,17 @@ var scriptElementTransitionUtils = require("ep_script_element_transitions/static
 var tags     = require('ep_script_elements/static/js/shared').tags;
 var sceneTag = require('ep_script_elements/static/js/shared').sceneTag;
 
-var utils                    = require('./utils');
-var SM_AND_HEADING           = _.union(utils.SCENE_MARK_SELECTOR, ['heading']);
-var shortcuts                = require('./shortcuts');
-var mergeLines               = require('./mergeLines');
-var undoPagination           = require('./undoPagination');
-var fixSmallZooms            = require('./fixSmallZooms');
-var dropdown                 = require('./dropdown');
-var preventMultilineDeletion = require('./doNotAllowEnterAndKeysOnMultilineSelection');
+var utils                         = require('./utils');
+var SM_AND_HEADING                = _.union(utils.SCENE_MARK_SELECTOR, ['heading']);
+var shortcuts                     = require('./shortcuts');
+var mergeLines                    = require('./mergeLines');
+var undoPagination                = require('./undoPagination');
+var fixSmallZooms                 = require('./fixSmallZooms');
+var caretElementChange            = require('./caretElementChange');
+var preventMultilineDeletion      = require('./doNotAllowEnterAndKeysOnMultilineSelection');
+var api                           = require('./api');
+var changeElementOnDropdownChange = require('./changeElementOnDropdownChange');
+var placeCaretOnFirstSEOnLoad     = require('./placeCaretOnFirstSEOnLoad');
 
 // 'undo' & 'redo' are triggered by toolbar buttons; other events are triggered by key shortcuts
 var UNDO_REDO_EVENTS = ['handleKeyEvent', 'undo', 'redo']
@@ -30,7 +33,7 @@ exports.aceEditEvent = function(hook, context) {
   var eventType  = callstack.editEvent.eventType;
 
   if (lineWasChangedByShortcut(eventType) || eventMightBeAnUndo(callstack)) {
-    dropdown.updateDropdownToCaretLine(context);
+    caretElementChange.sendMessageCaretElementChanged(context);
   }
 }
 
@@ -48,7 +51,8 @@ exports.postAceInit = function(hook, context) {
 
   preventMultilineDeletion.init();
   fixSmallZooms.init();
-  dropdown.init(ace);
+  api.init(ace);
+  placeCaretOnFirstSEOnLoad.init(ace);
 };
 
 // On caret position change show the current script element
@@ -57,8 +61,7 @@ exports.aceSelectionChanged = function(hook, context, cb) {
 
   // If it's an initial setup event then do nothing
   if(cs.type == "setBaseText" || cs.type == "setup" || cs.type == "importText") return false;
-  dropdown.sendMessageCaretElementChanged(context);
-  dropdown.updateDropdownToCaretLine(context);
+  caretElementChange.sendMessageCaretElementChanged(context);
 }
 
 exports.aceKeyEvent = function(hook, context) {
@@ -172,8 +175,7 @@ exports.aceInitialized = function(hook, context) {
   var editorInfo = context.editorInfo;
 
   editorInfo.ace_removeSceneTagFromSelection = _(removeSceneTagFromSelection).bind(context);
-  editorInfo.ace_doInsertScriptElement = _(dropdown.doInsertScriptElement).bind(context);
-  editorInfo.ace_updateDropdownWithValueChosen = _(dropdown.updateDropdownWithValueChosen).bind(context);
+  editorInfo.ace_doInsertScriptElement = _(changeElementOnDropdownChange.doInsertScriptElement).bind(context);
 }
 
 exports.aceEditorCSS = function() {

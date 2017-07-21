@@ -2,6 +2,7 @@ var ep_script_elements_test_helper = ep_script_elements_test_helper || {};
 ep_script_elements_test_helper.apiUtils = {
   /**** general helper methods to handle API calls ****/
   CHANGE_CARET_ELEMENT_MESSAGE_TYPE: 'dropdown_caret_element_changed',
+  DROPDOWN_ELEMENT_CHANGED: 'dropdown_element_changed',
   lastDataSent: {},
 
   startListeningToApiEvents: function() {
@@ -37,4 +38,20 @@ ep_script_elements_test_helper.apiUtils = {
     }, 4000).done(done);
   },
 
+  // **** DROPDOWN_ELEMENT_CHANGED ****/
+  /*
+    message: {
+      type: 'dropdown_element_changed',
+      element: 'action'
+     }
+  */
+  simulateTriggerOfDropdownChanged: function(element) {
+    var message = {
+      type: this.DROPDOWN_ELEMENT_CHANGED,
+      element: element,
+    };
+
+    var inboundApiEventsTarget = helper.padChrome$.window;
+    inboundApiEventsTarget.postMessage(message, '*');
+  },
 }

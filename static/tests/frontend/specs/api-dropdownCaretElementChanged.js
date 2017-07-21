@@ -5,7 +5,7 @@
 var GENERALS_PER_PAGE = 58;
 var CHANGE_CARET_ELEMENT_MESSAGE_TYPE = 'dropdown_caret_element_changed';
 
-describe("ep_script_elements - dropdown", function(){
+describe("ep_script_elements - API - dropdown caret element changed", function(){
   var utils, SMUtils, helperFunctions, padId, apiUtils;
   before(function(cb){
     utils = ep_script_elements_test_helper.utils;
@@ -22,23 +22,24 @@ describe("ep_script_elements - dropdown", function(){
     this.timeout(60000);
   });
 
-  it("changes option select when script element is changed", function(done) {
+  it("changes the line type when API receives a message that line type has changed", function(done) {
+    this.timeout(6000);
     var inner$ = helper.padInner$;
 
     var $firstTextElement = inner$("div").first();
     $firstTextElement.sendkeys('First Line!');
 
-    // sets first line to heading
-    utils.changeToElement(utils.ACTION);
+    // sets first line to action
+    apiUtils.simulateTriggerOfDropdownChanged(utils.ACTION);
 
     helper.waitFor(function(){
       // wait for element to be processed and changed
       $firstTextElement = inner$("div").first(); // need to get it again because line is changed by Content Collector
       return $firstTextElement.find("action").length === 1;
-    }).done(done);
+    }, 4000).done(done);
   });
 
-  context('when it changes element to a general', function(){
+  context('when API receives a message that line type has changed to general', function(){
     before(function (done) {
       var inner$ = helper.padInner$;
       utils.cleanPad(function(){
@@ -46,7 +47,7 @@ describe("ep_script_elements - dropdown", function(){
         $firstTextElement.sendkeys('First Line!');
 
         // sets first line to heading
-        utils.changeToElement(utils.HEADING);
+        apiUtils.simulateTriggerOfDropdownChanged(utils.HEADING);
 
         helper.waitFor(function(){
           // wait for element to be processed and changed
@@ -55,7 +56,7 @@ describe("ep_script_elements - dropdown", function(){
           return $lineChanged.find("heading").length === 1;
         }).done(function(){
           // sets first line to general
-          utils.changeToElement(utils.GENERAL);
+          apiUtils.simulateTriggerOfDropdownChanged(utils.GENERAL);
           done();
         });
       });
@@ -76,47 +77,6 @@ describe("ep_script_elements - dropdown", function(){
         var $firstTextElement = inner$("div").first();
         expect($firstTextElement.text()).to.be("First Line!");
         done();
-      });
-    });
-  });
-
-  context("when it reloads a pad", function(){
-    context("and first element is a scene mark", function(){
-      before(function (done) {
-        helperFunctions.createPadWithSM(function(){
-          apiUtils.waitForDataToBeSent(CHANGE_CARET_ELEMENT_MESSAGE_TYPE, done);
-        });
-        this.timeout(6000);
-      });
-
-      after(function (done) {
-        utils.cleanPad(done);
-      });
-
-      it('sends "undefined" as the elementType', function(done) {
-        var elementSentToApi = apiUtils.getLastCaretElementChange();
-        expect(elementSentToApi).to.be(undefined);
-        done();
-      });
-    });
-
-    context("and first element is a script element", function(){
-      before(function (done) {
-        helperFunctions.createPadWithSE(function(){
-          apiUtils.waitForDataToBeSent(CHANGE_CARET_ELEMENT_MESSAGE_TYPE, done);
-        });
-        this.timeout(6000);
-      });
-
-      after(function (done) {
-        utils.cleanPad(done);
-      });
-
-      it('sends as the elementType the first element of the script', function(done) {
-        helper.waitFor(function() {
-          var elementSentToApi = apiUtils.getLastCaretElementChange();
-          return elementSentToApi === 'action';
-        }, 4000).done(done);
       });
     });
   });
@@ -221,16 +181,20 @@ describe("ep_script_elements - dropdown", function(){
       })
       this.timeout(6000);
     });
-    context("and user changes the element on dropdown", function(){
+    context("and API receives a message that caret element has changed", function(){
       it("does not add SE attribute on SM", function(done){
-        utils.changeToElement(utils.ACTION);
+        apiUtils.simulateTriggerOfDropdownChanged(utils.ACTION);
+        helper.waitFor(function() {
+          var inner$ = helper.padInner$;
+          return inner$.find('action').length;
+        }).done(function(){
+          // the general changes to an action
+          utils.validateLineTextAndType(0, "general", "action");
 
-        // the general changes to an action
-        utils.validateLineTextAndType(0, "general", "action");
-
-        // SM should not include SM tag inside
-        helperFunctions.checkIfHasTagOnLines(1, 4, "action");
-        done();
+          // SM should not include SM tag inside
+          helperFunctions.checkIfHasTagOnLines(1, 4, "action");
+          done();
+        })
       });
 
     });
@@ -253,11 +217,10 @@ describe("ep_script_elements - dropdown", function(){
 
     it("returns to the original element", function(done){
       helper.waitFor(function() {
-        var selectedValue = helper.padChrome$('#script_element-selection option:selected').text();
-        return selectedValue === "Character";
+        return helper.padInner$.find('character').length;
       }, 2000).done(done);
     })
-  })
+  });
 });
 
 var ep_script_elements_test_helper = ep_script_elements_test_helper || {};
@@ -277,36 +240,6 @@ ep_script_elements_test_helper.dropdown = {
     var script = general + act + sequence + synopsis + heading;
     utils.createScriptWith(script, lastLineText, done);
   },
-  createPadWithSM: function(done) {
-    var utils = ep_script_elements_test_helper.utils;
-
-    var sceneText = "scene";
-    var act = utils.act(sceneText);
-    var sequence = utils.sequence(sceneText);
-    var synopsis = utils.synopsis(sceneText);
-    var lastLineText = "heading";
-    var heading = utils.heading(lastLineText);
-
-    var script = act + sequence + synopsis + heading;
-    utils.createScriptWith(script, lastLineText, done);
-  },
-  createPadWithSE: function(done) {
-    var utils = ep_script_elements_test_helper.utils;
-
-    var lastLineText = "general";
-    var action = utils.action("action");
-    var general = utils.general(lastLineText);
-
-    var script = action + general;
-    utils.createScriptWith(script, lastLineText, done);
-  },
-  waitDropdownChangeToElement: function(element, cb) {
-    helper.waitFor(function() {
-      var chrome$ = helper.padChrome$;
-      var selectedValue = chrome$('#script_element-selection option:selected').text();
-      return selectedValue === element;
-    }, 2000).done(cb);
-  },
   createElement: function(element, cb) {
     var line = "<"+ element + ">Line!</"+ element + "><br/>";
     var inner$ = helper.padInner$;
@@ -317,11 +250,12 @@ ep_script_elements_test_helper.dropdown = {
   },
   changeLineToElement: function(line, element, cb) {
     var utils = ep_script_elements_test_helper.utils;
+    var apiUtils = ep_script_elements_test_helper.apiUtils;
     var $line = helper.padInner$('div').eq(line);
     $line.sendkeys("{selectall}");
 
     setTimeout(function() {
-      utils.changeToElement(element);
+      apiUtils.simulateTriggerOfDropdownChanged(element);
 
       helper.waitFor(function(){
         var $line = helper.padInner$('div').eq(line);
