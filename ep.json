@@ -19,7 +19,6 @@
         "collectContentPre": "ep_script_elements/static/js/shared",
         "collectContentPost": "ep_script_elements/static/js/shared",
         "getLineHTMLForExport": "ep_script_elements/index",
-        "eejsBlock_editbarMenuLeft": "ep_script_elements/index",
         "stylesForExport" : "ep_script_elements/index"
       }
     },

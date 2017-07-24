@@ -5,11 +5,6 @@ var Security = require('ep_etherpad-lite/static/js/security');
 
 var sceneMarkUtils  = require("ep_script_scene_marks/utils");
 
-exports.eejsBlock_editbarMenuLeft = function (hook_name, args, cb) {
-  args.content = args.content + eejs.require("ep_script_elements/templates/editbarButtons.ejs");
-  return cb();
-}
-
 // Define the styles so they are consistant between client and server
 var style = eejs.require("ep_script_elements/static/css/editor.css")
 
