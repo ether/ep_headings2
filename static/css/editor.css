@@ -16,7 +16,7 @@ heading:before {
   text-align: right;
   display: block;
   width: 25px;
-  margin-left: -52px; /* - (27 + width) */
+  margin-left: -75px; /*alligned with scene mark vertical bottom border*/
 
   /* scene numbering: */
   counter-increment: scene;
