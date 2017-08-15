@@ -13,10 +13,10 @@ heading{
 }
 heading:before {
   float: left;
-  text-align: right;
+  text-align: left;
   display: block;
-  width: 25px;
-  margin-left: -75px; /*alligned with scene mark vertical bottom border*/
+  width: 40px;
+  margin-left: -64px; /*aligned with scene mark vertical bottom border*/
 
   /* scene numbering: */
   counter-increment: scene;
