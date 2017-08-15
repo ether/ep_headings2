@@ -3,6 +3,7 @@ ep_script_elements_test_helper.apiUtils = {
   /**** general helper methods to handle API calls ****/
   CHANGE_CARET_ELEMENT_MESSAGE_TYPE: 'dropdown_caret_element_changed',
   DROPDOWN_ELEMENT_CHANGED: 'dropdown_element_changed',
+  FORMATTING_BUTTON_PRESSED: 'formatting_button_pressed',
   lastDataSent: {},
 
   startListeningToApiEvents: function() {
@@ -49,6 +50,16 @@ ep_script_elements_test_helper.apiUtils = {
     var message = {
       type: this.DROPDOWN_ELEMENT_CHANGED,
       element: element,
+    };
+
+    var inboundApiEventsTarget = helper.padChrome$.window;
+    inboundApiEventsTarget.postMessage(message, '*');
+  },
+
+  simulateTriggerOfFormattingButtonChanged: function(buttonName) {
+    var message = {
+      type: this.FORMATTING_BUTTON_PRESSED,
+      buttonName: buttonName,
     };
 
     var inboundApiEventsTarget = helper.padChrome$.window;
