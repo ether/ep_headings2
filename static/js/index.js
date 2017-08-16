@@ -1,96 +1,163 @@
-var _, $, jQuery;
-
 var $ = require('ep_etherpad-lite/static/js/rjquery').$;
 var _ = require('ep_etherpad-lite/static/js/underscore');
-var headingClass = 'heading';
-var cssFiles = ['ep_headings2/static/css/editor.css'];
+
+var scriptElementTransitionUtils = require("ep_script_element_transitions/static/js/utils");
+
+var tags     = require('ep_script_elements/static/js/shared').tags;
+var sceneTag = require('ep_script_elements/static/js/shared').sceneTag;
+
+var utils                         = require('./utils');
+var SM_AND_HEADING                = _.union(utils.SCENE_MARK_SELECTOR, ['heading']);
+var shortcuts                     = require('./shortcuts');
+var mergeLines                    = require('./mergeLines');
+var undoPagination                = require('./undoPagination');
+var fixSmallZooms                 = require('./fixSmallZooms');
+var caretElementChange            = require('./caretElementChange');
+var preventMultilineDeletion      = require('./doNotAllowEnterAndKeysOnMultilineSelection');
+var api                           = require('./api');
+var changeElementOnDropdownChange = require('./changeElementOnDropdownChange');
+var placeCaretOnFirstSEOnLoad     = require('./placeCaretOnFirstSEOnLoad');
+
+// 'undo' & 'redo' are triggered by toolbar buttons; other events are triggered by key shortcuts
+var UNDO_REDO_EVENTS = ['handleKeyEvent', 'undo', 'redo']
+
+var cssFiles = ['ep_script_elements/static/css/editor.css'];
 
 // All our tags are block elements, so we just return them.
-var tags = ['h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'code'];
-exports.aceRegisterBlockElements = function(){
-  return tags;
+exports.aceRegisterBlockElements = function() {
+  return _.flatten([undoPagination.UNDO_FIX_TAG, tags]);
 }
 
-// Bind the event handler to the toolbar buttons
-exports.postAceInit = function(hook, context){
-  var hs = $('#heading-selection');
-  hs.on('change', function(){
-    var value = $(this).val();
-    var intValue = parseInt(value,10);
-    if(!_.isNaN(intValue)){
-      context.ace.callWithAce(function(ace){
-        ace.ace_doInsertHeading(intValue);
-      },'insertheading' , true);
-      hs.val("dummy");
-    }
-  })
+exports.aceEditEvent = function(hook, context) {
+  var callstack  = context.callstack;
+  var eventType  = callstack.editEvent.eventType;
+
+  if (lineWasChangedByShortcut(eventType) || eventMightBeAnUndo(callstack)) {
+    caretElementChange.sendMessageCaretElementChanged(context);
+  }
+}
+
+var lineWasChangedByShortcut = function(eventType) {
+  return eventType === scriptElementTransitionUtils.CHANGE_ELEMENT_BY_SHORTCUT_EVENT;
+}
+
+var eventMightBeAnUndo = function(callstack) {
+  var isAnUndoRedoCandidate = _(UNDO_REDO_EVENTS).contains(callstack.editEvent.eventType);
+  return callstack.repChanged && isAnUndoRedoCandidate;
+}
+
+exports.postAceInit = function(hook, context) {
+  var ace = context.ace;
+
+  preventMultilineDeletion.init();
+  fixSmallZooms.init();
+  api.init(ace);
+  placeCaretOnFirstSEOnLoad.init(ace);
 };
 
-// On caret position change show the current heading
-exports.aceEditEvent = function(hook, call, cb){
+// On caret position change show the current script element
+exports.aceSelectionChanged = function(hook, context, cb) {
+  var cs = context.callstack;
 
-  // If it's not a click or a key event and the text hasn't changed then do nothing
-  var cs = call.callstack;
-  if(!(cs.type == "handleClick") && !(cs.type == "handleKeyEvent") && !(cs.docTextChanged)){
-    return false;
-  }
-  // If it's an initial setup event then do nothing..
-  if(cs.type == "setBaseText" || cs.type == "setup") return false;
-
-  // It looks like we should check to see if this section has this attribute
-  setTimeout(function(){ // avoid race condition..
-    var attributeManager = call.documentAttributeManager;
-    var rep = call.rep;
-    var firstLine, lastLine;
-    var activeAttributes = {};
-    $("#heading-selection").val(-2);
-  
-    firstLine = rep.selStart[0];
-    lastLine = Math.max(firstLine, rep.selEnd[0] - ((rep.selEnd[1] === 0) ? 1 : 0));
-    var totalNumberOfLines = 0;
-
-    _(_.range(firstLine, lastLine + 1)).each(function(line){
-      totalNumberOfLines++;
-      var attr = attributeManager.getAttributeOnLine(line, "heading");
-      if(!activeAttributes[attr]){
-        activeAttributes[attr] = {};
-        activeAttributes[attr].count = 1;
-      }else{
-        activeAttributes[attr].count++;
-      }
-    });
-    
-    $.each(activeAttributes, function(k, attr){
-      if(attr.count === totalNumberOfLines){
-        // show as active class
-        var ind = tags.indexOf(k);
-        $("#heading-selection").val(ind);
-      }
-    });
-
-  },250);
-
+  // If it's an initial setup event then do nothing
+  if(cs.type == "setBaseText" || cs.type == "setup" || cs.type == "importText") return false;
+  caretElementChange.sendMessageCaretElementChanged(context);
 }
 
-// Our heading attribute will result in a heaading:h1... :h6 class
-exports.aceAttribsToClasses = function(hook, context){
-  if(context.key == 'heading'){
-    return ['heading:' + context.value ];
+exports.aceKeyEvent = function(hook, context) {
+  var eventProcessed = false;
+  var evt = context.evt;
+  var callstack =  context.callstack;
+
+  var handleShortcut = shortcuts.findHandlerFor(evt);
+  var handleMerge    = mergeLines.findHandlerFor(context);
+
+  // Cmd+[ or Cmd+]
+  if (handleShortcut) {
+    evt.preventDefault();
+    handleShortcut(context);
+    eventProcessed = true;
+  }
+  // BACKSPACE or DELETE
+  else if (handleMerge) {
+    // call function that handles merge
+    var mergeShouldBeBlocked = handleMerge;
+
+    // cannot merge lines, so do not process keys
+    if (mergeShouldBeBlocked) {
+      evt.preventDefault();
+      eventProcessed = true;
+    }
+  }
+
+  return eventProcessed;
+}
+
+// Our script element attribute will result in a script_element:heading... :transition class
+exports.aceAttribsToClasses = function(hook, context) {
+  if (context.key === 'script_element') {
+    return [ 'script_element:' + context.value ];
+  } else if (context.key === undoPagination.UNDO_FIX_ATTRIB) {
+    return [ undoPagination.UNDO_FIX_ATTRIB ];
   }
 }
 
-// Here we convert the class heading:h1 into a tag
-exports.aceDomLineProcessLineAttributes = function(name, context){
+exports.aceDomLineProcessLineAttributes = function(name, context) {
   var cls = context.cls;
-  var domline = context.domline;
-  var headingType = /(?:^| )heading:([A-Za-z0-9]*)/.exec(cls);
+
+  var lineModifier = processScriptElementAttribute(cls);
+  if (lineModifier.length === 0) {
+    lineModifier = processUndoFixAttribute(cls);
+  }
+
+  return lineModifier;
+};
+
+exports.acePostWriteDomLineHTML = function(hook, context) {
+  var $line = $(context.node);
+  var extraFlag = findExtraFlagForLine($line);
+  if (extraFlag) {
+    $line.addClass(extraFlag);
+  }
+}
+
+var findExtraFlagForLine = function($node) {
+  var sceneMarkTagIndex = -1;
+
+  _.each(SM_AND_HEADING, function(tag) {
+    var nodeHasTag = $node.find(tag).length;
+    if (nodeHasTag) {
+      sceneMarkTagIndex = _.indexOf(SM_AND_HEADING, tag);
+      return; // found flagIndex, can stop each()
+    }
+  });
+
+  return utils.SCENE_MARK_TYPE[sceneMarkTagIndex];
+}
+
+// Here we convert the class script_element:heading into a tag
+var processScriptElementAttribute = function(cls) {
+  var scriptElementType = /(?:^| )script_element:([A-Za-z0-9]*)/.exec(cls);
   var tagIndex;
-  
-  if (headingType) tagIndex = _.indexOf(tags, headingType[1]);
-  
-  if (tagIndex !== undefined && tagIndex >= 0){
-    
+
+  if (scriptElementType) tagIndex = _.indexOf(tags, scriptElementType[1]);
+
+  if (tagIndex !== undefined && tagIndex >= 0) {
     var tag = tags[tagIndex];
+    var modifier = {
+      preHtml: '<' + tag +'>',
+      postHtml: '</' + tag + '>',
+      processedMarker: true
+    };
+    return [modifier];
+  }
+
+  return [];
+}
+
+var processUndoFixAttribute = function(cls) {
+  if (cls.includes(undoPagination.UNDO_FIX_ATTRIB)) {
+    var tag = undoPagination.UNDO_FIX_TAG;
     var modifier = {
       preHtml: '<' + tag + '>',
       postHtml: '</' + tag + '>',
@@ -98,41 +165,38 @@ exports.aceDomLineProcessLineAttributes = function(name, context){
     };
     return [modifier];
   }
+
   return [];
-};
-
-// Find out which lines are selected and assign them the heading attribute.
-// Passing a level >= 0 will set a heading on the selected lines, level < 0 
-// will remove it
-function doInsertHeading(level){
-  var rep = this.rep,
-    documentAttributeManager = this.documentAttributeManager;
-  if (!(rep.selStart && rep.selEnd) || (level >= 0 && tags[level] === undefined))
-  {
-    return;
-  }
-  
-  var firstLine, lastLine;
-  
-  firstLine = rep.selStart[0];
-  lastLine = Math.max(firstLine, rep.selEnd[0] - ((rep.selEnd[1] === 0) ? 1 : 0));
-  _(_.range(firstLine, lastLine + 1)).each(function(i){
-    if(level >= 0){
-      documentAttributeManager.setAttributeOnLine(i, 'heading', tags[level]);
-    }else{
-      documentAttributeManager.removeAttributeOnLine(i, 'heading');
-    }
-  });
 }
 
-
-// Once ace is initialized, we set ace_doInsertHeading and bind it to the context
-exports.aceInitialized = function(hook, context){
+// Once ace is initialized, we set ace_doInsertScriptElement and bind it to the context
+// and we set ace_removeSceneTagFromSelection and bind it to the context
+exports.aceInitialized = function(hook, context) {
   var editorInfo = context.editorInfo;
-  editorInfo.ace_doInsertHeading = _(doInsertHeading).bind(context);
+
+  editorInfo.ace_removeSceneTagFromSelection = _(removeSceneTagFromSelection).bind(context);
+  editorInfo.ace_doInsertScriptElement = _(changeElementOnDropdownChange.doInsertScriptElement).bind(context);
 }
 
-exports.aceEditorCSS = function(){
+exports.aceEditorCSS = function() {
   return cssFiles;
 };
 
+// Find out which lines are selected and remove scenetag from them
+function removeSceneTagFromSelection() {
+  var rep = this.rep;
+  var documentAttributeManager = this.documentAttributeManager;
+  if (!(rep.selStart && rep.selEnd)) {
+    return;
+  }
+
+  var firstLine = rep.selStart[0];
+  var lastLine = Math.max(firstLine, rep.selEnd[0] - ((rep.selEnd[1] === 0) ? 1 : 0));
+
+  _(_.range(firstLine, lastLine + 1)).each(function(line) { // for each line on selected range
+    _.each(sceneTag, function(attribute) { // for each scene mark attribute
+      documentAttributeManager.removeAttributeOnLine(line, attribute);
+    });
+  });
+
+}
