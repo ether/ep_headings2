@@ -23,9 +23,13 @@ exports.stylesForExport = function(hook, padId, cb){
 
 // line, apool,attribLine,text
 exports.getLineHTMLForExport = function (hook, context) {
+  if(context.lineContent[0] == '\*') {
+    context.lineContent = context.lineContent.substring(1);
+    return true;
+  }
   var header = _analyzeLine(context.attribLine, context.apool);
   if (header) {
-    context.lineContent = "<" + header + ">" + context.lineContent.substring(1) + "</" + header + ">";
+    context.lineContent = "<" + header + ">" + context.lineContent + "</" + header + ">";
     return true;
   }
 }
