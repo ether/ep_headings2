@@ -25,6 +25,7 @@ exports.stylesForExport = function(hook, padId, cb){
 exports.getLineHTMLForExport = function (hook, context) {
   var header = _analyzeLine(context.attribLine, context.apool);
   if (header) {
+    context.lineContent = "<" + header + ">" + Security.escapeHTML(context.text.substring(1)) + "</" + header + ">";
     return "<" + header + ">" + Security.escapeHTML(context.text.substring(1)) + "</" + header + ">";
   }
 }
