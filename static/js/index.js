@@ -43,8 +43,8 @@ exports.aceEditEvent = function(hook, call, cb){
     var rep = call.rep;
     var firstLine, lastLine;
     var activeAttributes = {};
-    $("#heading-selection").val(-2);
-  
+    $("#heading-selection").val("dummy").niceSelect('update');
+
     firstLine = rep.selStart[0];
     lastLine = Math.max(firstLine, rep.selEnd[0] - ((rep.selEnd[1] === 0) ? 1 : 0));
     var totalNumberOfLines = 0;
@@ -59,12 +59,12 @@ exports.aceEditEvent = function(hook, call, cb){
         activeAttributes[attr].count++;
       }
     });
-    
+
     $.each(activeAttributes, function(k, attr){
       if(attr.count === totalNumberOfLines){
         // show as active class
         var ind = tags.indexOf(k);
-        $("#heading-selection").val(ind);
+        $("#heading-selection").val(ind).niceSelect('update');
       }
     });
 
@@ -85,11 +85,11 @@ exports.aceDomLineProcessLineAttributes = function(name, context){
   var domline = context.domline;
   var headingType = /(?:^| )heading:([A-Za-z0-9]*)/.exec(cls);
   var tagIndex;
-  
+
   if (headingType) tagIndex = _.indexOf(tags, headingType[1]);
-  
+
   if (tagIndex !== undefined && tagIndex >= 0){
-    
+
     var tag = tags[tagIndex];
     var modifier = {
       preHtml: '<' + tag + '>',
@@ -102,7 +102,7 @@ exports.aceDomLineProcessLineAttributes = function(name, context){
 };
 
 // Find out which lines are selected and assign them the heading attribute.
-// Passing a level >= 0 will set a heading on the selected lines, level < 0 
+// Passing a level >= 0 will set a heading on the selected lines, level < 0
 // will remove it
 function doInsertHeading(level){
   var rep = this.rep,
@@ -111,9 +111,9 @@ function doInsertHeading(level){
   {
     return;
   }
-  
+
   var firstLine, lastLine;
-  
+
   firstLine = rep.selStart[0];
   lastLine = Math.max(firstLine, rep.selEnd[0] - ((rep.selEnd[1] === 0) ? 1 : 0));
   _(_.range(firstLine, lastLine + 1)).each(function(i){
