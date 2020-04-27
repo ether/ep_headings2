@@ -8,10 +8,10 @@ exports.eejsBlock_editbarMenuLeft = function (hook_name, args, cb) {
 }
 
 // Define the styles so they are consistant between client and server
-var style = "h1{font-size: 2.5em; line-height: 120%;} \
-             h2{font-size: 1.8em; line-height: 120%;} \
-             h3{font-size: 1.5em; line-height: 120%;} \
-             h4{font-size: 1.2em; line-height: 120%;} \
+var style = "h1{font-size: 2.5em;} \
+             h2{font-size: 1.8em;} \
+             h3{font-size: 1.5em;} \
+             h4{font-size: 1.2em;} \
              code{font-family: monospace;}";
 
 // Include CSS for HTML export
