@@ -1,5 +1,5 @@
-h1{font-size: 2.0em;line-height: 120%;}
-h2{font-size: 1.5em;line-height: 120%;}
-h3{font-size: 1.17em;line-height: 120%;}
-h4{line-height: 120%;}
-code{font-family: monospace;}
+#innerdocbody h1{font-size: 2.0em;line-height: 120%;}
+#innerdocbody h2{font-size: 1.5em;line-height: 120%;}
+#innerdocbody h3{font-size: 1.17em;line-height: 120%;}
+#innerdocbody h4{line-height: 120%;}
+#innerdocbody code{font-family: monospace;}
