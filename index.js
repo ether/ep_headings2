@@ -12,7 +12,7 @@ var style = "h1{font-size: 2.5em;} \
              h2{font-size: 1.8em;} \
              h3{font-size: 1.5em;} \
              h4{font-size: 1.2em;} \
-             code{font-family: monospace;}";
+             code{font-family: RobotoMono;}";
 
 // Include CSS for HTML export
 exports.stylesForExport = function(hook, padId, cb){
