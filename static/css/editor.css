@@ -3,3 +3,9 @@
 #innerdocbody h3{font-size: 1.5em;}
 #innerdocbody h4{font-size: 1.2em;}
 #innerdocbody code{font-family: RobotoMono;}
+#innerdocbody h1,
+#innerdocbody h2,
+#innerdocbody h3,
+#innerdocbody h4 {
+  display: inline-block;
+}
