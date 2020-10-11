@@ -20,7 +20,7 @@ exports.stylesForExport = function(hook, padId, cb){
 };
 
 // line, apool,attribLine,text
-exports.getLineHTMLForExport = function (hook, context) {
+exports.getLineHTMLForExport = async (hookName, context) => {
   var header = _analyzeLine(context.attribLine, context.apool);
   if (header) {
     context.lineContent = "<" + header + ">" + Security.escapeHTML(context.text.substring(1)) + "</" + header + ">";
