@@ -1,9 +1,12 @@
 {
-  "ep_headings.style" : "Titres",
-  "ep_headings.normal" : "Normal",
-  "ep_headings.h1" : "Titre 1",
-  "ep_headings.h2" : "Titre 2",
-  "ep_headings.h3" : "Titre 3",
-  "ep_headings.h4" : "Titre 4",
-  "ep_headings.code" : "Code"
+	"@metadata": {
+		"authors": []
+	},
+	"ep_headings.style": "Titres",
+	"ep_headings.normal": "Normal",
+	"ep_headings.h1": "Titre 1",
+	"ep_headings.h2": "Titre 2",
+	"ep_headings.h3": "Titre 3",
+	"ep_headings.h4": "Titre 4",
+	"ep_headings.code": "Code"
 }
