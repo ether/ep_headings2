@@ -9,3 +9,5 @@ An Etherpad Plugin to Apply h1 etc. headings to a pad.
 
 # License
 Apache 2
+
+Maintained by the Etherpad foundation <3
