@@ -30,5 +30,9 @@
   "repository": {
     "type": "git",
     "url": "git://github.com/johnmclear/ep_headings2.git"
+  },
+  "funding": {
+    "type": "individual",
+    "url": "http://etherpad.org/"
   }
 }
