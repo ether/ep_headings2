@@ -34,5 +34,12 @@
   "funding": {
     "type": "individual",
     "url": "http://etherpad.org/"
+  },
+  "esLintConfig": {
+    "root": true,
+    "extends": "etherpad/plugin"
+  },
+  "scripts": {
+    "lint": "eslint ."
   }
 }
