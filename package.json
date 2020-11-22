@@ -41,11 +41,12 @@
     "type": "individual",
     "url": "http://etherpad.org/"
   },
-  "scripts": {
-    "lint": "eslint ."
-  },
   "eslintConfig": {
     "root": true,
     "extends": "etherpad/plugin"
+  },
+  "scripts": {
+    "lint": "eslint .",
+    "lint:fix": "eslint --fix ."
   }
 }
