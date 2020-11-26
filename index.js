@@ -23,8 +23,7 @@ exports.stylesForExport = function (hook, padId, cb) {
 exports.getLineHTMLForExport = async (hookName, context) => {
   const header = _analyzeLine(context.attribLine, context.apool);
   if (header) {
-    context.lineContent = `<${header}>${Security.escapeHTML(context.text.substring(1))}</${header}>`;
-    return `<${header}>${Security.escapeHTML(context.text.substring(1))}</${header}>`;
+    context.lineContent = `<${header}>${context.lineContent.substring(1)}</${header}>`;
   }
 };
 
