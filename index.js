@@ -1,8 +1,9 @@
+'use strict';
+
 const eejs = require('ep_etherpad-lite/node/eejs/');
 const Changeset = require('ep_etherpad-lite/static/js/Changeset');
-const Security = require('ep_etherpad-lite/static/js/security');
 
-exports.eejsBlock_editbarMenuLeft = function (hook_name, args, cb) {
+exports.eejsBlock_editbarMenuLeft = (hookName, args, cb) => {
   args.content += eejs.require('ep_headings2/templates/editbarButtons.ejs');
   return cb();
 };
@@ -15,19 +16,12 @@ const style = 'h1{font-size: 2.5em;} \
              code{font-family: RobotoMono;}';
 
 // Include CSS for HTML export
-exports.stylesForExport = function (hook, padId, cb) {
+exports.stylesForExport = (hook, padId, cb) => {
   cb(style);
 };
 
-// line, apool,attribLine,text
-exports.getLineHTMLForExport = async (hookName, context) => {
-  const header = _analyzeLine(context.attribLine, context.apool);
-  if (header) {
-    context.lineContent = `<${header}>${context.lineContent.substring(1)}</${header}>`;
-  }
-};
 
-function _analyzeLine(alineAttrs, apool) {
+const _analyzeLine = (alineAttrs, apool) => {
   let header = null;
   if (alineAttrs) {
     const opIter = Changeset.opIterator(alineAttrs);
@@ -37,4 +31,12 @@ function _analyzeLine(alineAttrs, apool) {
     }
   }
   return header;
-}
+};
+
+// line, apool,attribLine,text
+exports.getLineHTMLForExport = async (hookName, context) => {
+  const header = _analyzeLine(context.attribLine, context.apool);
+  if (header) {
+    context.lineContent = `<${header}>${context.lineContent.substring(1)}</${header}>`;
+  }
+};

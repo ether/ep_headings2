@@ -1,6 +1,7 @@
-var _ = require('ep_etherpad-lite/static/js/underscore');
+'use strict';
 
-var tags = ['h1', 'h2', 'h3', 'h4', 'code'];
+const _ = require('ep_etherpad-lite/static/js/underscore');
+const tags = ['h1', 'h2', 'h3', 'h4', 'code'];
 
 exports.collectContentPre = (hookName, context, cb) => {
   const tname = context.tname;

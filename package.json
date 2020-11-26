@@ -22,7 +22,7 @@
     }
   ],
   "engines": {
-    "node": "*"
+    "node": ">=10.13.0"
   },
   "homepage": "https://github.com/johnmclear/ep_headings2",
   "devDependencies": {

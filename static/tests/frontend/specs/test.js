@@ -1,3 +1,5 @@
+'use strict';
+
 describe('Set Heading and ensure its removed properly', function () {
   // create a new pad before each test run
   beforeEach(function (cb) {
@@ -16,7 +18,6 @@ describe('Set Heading and ensure its removed properly', function () {
     const inner$ = helper.padInner$;
 
     const $firstTextElement = inner$('div').first();
-    const $editorContainer = chrome$('#editorcontainer');
 
     const $editorContents = inner$('div');
     $editorContents.sendkeys('{selectall}');
@@ -27,8 +28,6 @@ describe('Set Heading and ensure its removed properly', function () {
     chrome$('#heading-selection').change();
 
     $firstTextElement.sendkeys('{enter}');
-
-    const $h1Element = inner$('div').first();
 
     helper.waitFor(() => chrome$('#heading-selection').val() == 0).done(() => {
       const $firstTextElement = inner$('div').first();
