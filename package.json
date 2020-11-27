@@ -41,6 +41,9 @@
     "eslint-plugin-prefer-arrow": "^1.2.2",
     "eslint-plugin-promise": "^4.2.1"
   },
+  "peerDependencies": {
+    "ep_etherpad-lite": "*"
+  },
   "repository": {
     "type": "git",
     "url": "https://github.com/ether/ep_headings2.git"
