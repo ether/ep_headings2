@@ -29,13 +29,13 @@ describe('Set Heading and ensure its removed properly', function () {
 
     $firstTextElement.sendkeys('{enter}');
 
-    helper.waitFor(() => chrome$('#heading-selection').val() == 0).done(() => {
+    helper.waitFor(() => chrome$('#heading-selection').val() === 0).done(() => {
       const $firstTextElement = inner$('div').first();
       $firstTextElement.sendkeys('{selectall}');
       const $secondElement = inner$('div').first().next();
       $secondElement.sendkeys('Second Line');
       $secondElement.sendkeys('{selectall}');
-      helper.waitFor(() => chrome$('#heading-selection').val() == -1).done(() => {
+      helper.waitFor(() => chrome$('#heading-selection').val() === -1).done(() => {
         expect($secondElement.find('h1').length).to.be(0);
         expect($secondElement.text()).to.be('Second Line');
         done();

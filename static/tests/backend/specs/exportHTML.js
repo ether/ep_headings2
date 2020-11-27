@@ -19,10 +19,8 @@ describe('export headings to HTML', function () {
   });
 
   context('when pad text has one Heading', function () {
-    before(function () {
-      html = function () {
-        return buildHTML('<h1>Hello world</h1>');
-      };
+    before(async function () {
+      html = () => buildHTML('<h1>Hello world</h1>');
     });
 
     it('returns ok', function (done) {
@@ -42,10 +40,8 @@ describe('export headings to HTML', function () {
   });
 
   context('when pad text has multiple Headings on multiple lines', function () {
-    before(function () {
-      html = function () {
-        return buildHTML('<h1>Hello world</h1><br/><h2>Foo</h2>');
-      };
+    before(async function () {
+      html = () => buildHTML('<h1>Hello world</h1><br/><h2>Foo</h2>');
     });
 
     it('returns ok', function (done) {
@@ -68,7 +64,7 @@ describe('export headings to HTML', function () {
 
 
 // Creates a pad and returns the pad id. Calls the callback when finished.
-var createPad = function (padID, callback) {
+const createPad = (padID, callback) => {
   api.get(`/api/${apiVersion}/createPad?apikey=${apiKey}&padID=${padID}`)
       .end((err, res) => {
         if (err || (res.body.code !== 0)) callback(new Error('Unable to create new Pad'));
@@ -77,7 +73,7 @@ var createPad = function (padID, callback) {
       });
 };
 
-var setHTML = function (padID, html, callback) {
+const setHTML = (padID, html, callback) => {
   api.get(`/api/${apiVersion}/setHTML?apikey=${apiKey}&padID=${padID}&html=${html}`)
       .end((err, res) => {
         if (err || (res.body.code !== 0)) callback(new Error('Unable to set pad HTML'));
@@ -86,11 +82,7 @@ var setHTML = function (padID, html, callback) {
       });
 };
 
-var getHTMLEndPointFor = function (padID, callback) {
-  return `/api/${apiVersion}/getHTML?apikey=${apiKey}&padID=${padID}`;
-};
+const getHTMLEndPointFor =
+    (padID, callback) => `/api/${apiVersion}/getHTML?apikey=${apiKey}&padID=${padID}`;
 
-
-var buildHTML = function (body) {
-  return `<html><body>${body}</body></html>`;
-};
+const buildHTML = (body) => `<html><body>${body}</body></html>`;
