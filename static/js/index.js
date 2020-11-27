@@ -96,7 +96,7 @@ exports.aceDomLineProcessLineAttributes = (name, context) => {
 // Find out which lines are selected and assign them the heading attribute.
 // Passing a level >= 0 will set a heading on the selected lines, level < 0
 // will remove it
-function doInsertHeading(level){
+function doInsertHeading(level) {
   const rep = this.rep;
   const documentAttributeManager = this.documentAttributeManager;
   if (!(rep.selStart && rep.selEnd) || (level >= 0 && tags[level] === undefined)) {
@@ -112,7 +112,7 @@ function doInsertHeading(level){
       documentAttributeManager.removeAttributeOnLine(i, 'heading');
     }
   });
-};
+}
 
 
 // Once ace is initialized, we set ace_doInsertHeading and bind it to the context
