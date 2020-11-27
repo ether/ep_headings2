@@ -23,7 +23,7 @@ exports.postAceInit = (hookName, context) => {
 };
 
 // On caret position change show the current heading
-exports.aceEditEvent = (hookName, call, cb) => {
+exports.aceEditEvent = (hookName, call) => {
   // If it's not a click or a key event and the text hasn't changed then do nothing
   const cs = call.callstack;
   if (!(cs.type === 'handleClick') && !(cs.type === 'handleKeyEvent') && !(cs.docTextChanged)) {
