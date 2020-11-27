@@ -1,10 +1,9 @@
 'use strict';
 
+const randomString = require('ep_etherpad-lite/static/js/pad_utils').randomString;
 const utils = require('../utils.js');
-apiKey = utils.apiKey,
-api = utils.api,
-apiVersion = utils.apiVersion,
-randomString = require('ep_etherpad-lite/static/js/pad_utils').randomString;
+
+const {api, apiKey, apiVersion} = utils;
 
 describe('export headings to HTML', function () {
   let padID;

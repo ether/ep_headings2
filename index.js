@@ -8,18 +8,14 @@ exports.eejsBlock_editbarMenuLeft = (hookName, args, cb) => {
   return cb();
 };
 
-// Define the styles so they are consistant between client and server
-const style = 'h1{font-size: 2.5em;} \
-             h2{font-size: 1.8em;} \
-             h3{font-size: 1.5em;} \
-             h4{font-size: 1.2em;} \
-             code{font-family: RobotoMono;}';
-
 // Include CSS for HTML export
-exports.stylesForExport = (hookName, padId, cb) => {
-  cb(style);
-};
-
+exports.stylesForExport = () => (
+  // These should be consistent with client CSS.
+  'h1{font-size: 2.5em;}\n' +
+  'h2{font-size: 1.8em;}\n' +
+  'h3{font-size: 1.5em;}\n' +
+  'h4{font-size: 1.2em;}\n' +
+  'code{font-family: RobotoMono;}\n');
 
 const _analyzeLine = (alineAttrs, apool) => {
   let header = null;

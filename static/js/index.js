@@ -93,32 +93,24 @@ exports.aceDomLineProcessLineAttributes = (hookName, context) => {
   return [];
 };
 
-// Find out which lines are selected and assign them the heading attribute.
-// Passing a level >= 0 will set a heading on the selected lines, level < 0
-// will remove it
-function doInsertHeading(level) {
-  const rep = this.rep;
-  const documentAttributeManager = this.documentAttributeManager;
-  if (!(rep.selStart && rep.selEnd) || (level >= 0 && tags[level] === undefined)) {
-    return;
-  }
-
-  const firstLine = rep.selStart[0];
-  const lastLine = Math.max(firstLine, rep.selEnd[0] - ((rep.selEnd[1] === 0) ? 1 : 0));
-  _(_.range(firstLine, lastLine + 1)).each((i) => {
-    if (level >= 0) {
-      documentAttributeManager.setAttributeOnLine(i, 'heading', tags[level]);
-    } else {
-      documentAttributeManager.removeAttributeOnLine(i, 'heading');
-    }
-  });
-}
-
-
 // Once ace is initialized, we set ace_doInsertHeading and bind it to the context
 exports.aceInitialized = (hookName, context) => {
   const editorInfo = context.editorInfo;
-  editorInfo.ace_doInsertHeading = _(doInsertHeading).bind(context);
+  // Passing a level >= 0 will set a heading on the selected lines, level < 0 will remove it.
+  editorInfo.ace_doInsertHeading = (level) => {
+    const {documentAttributeManager, rep} = context;
+    if (!(rep.selStart && rep.selEnd)) return;
+    if (level >= 0 && tags[level] === undefined) return;
+    const firstLine = rep.selStart[0];
+    const lastLine = Math.max(firstLine, rep.selEnd[0] - ((rep.selEnd[1] === 0) ? 1 : 0));
+    _(_.range(firstLine, lastLine + 1)).each((i) => {
+      if (level >= 0) {
+        documentAttributeManager.setAttributeOnLine(i, 'heading', tags[level]);
+      } else {
+        documentAttributeManager.removeAttributeOnLine(i, 'heading');
+      }
+    });
+  };
 };
 
 exports.aceEditorCSS = () => cssFiles;
