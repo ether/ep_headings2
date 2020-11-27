@@ -1,18 +1,30 @@
-# What is this?
-An Etherpad Plugin to Apply h1 etc. headings to a pad.
+# ep\_headings2: Section headings for Etherpad
 
-# Screenshot
-![Screenshot](https://user-images.githubusercontent.com/220864/100367258-dd3c2280-2ff9-11eb-983c-f58051d8c79b.PNG)
+An Etherpad Plugin to apply h1 etc. headings to a pad.
 
-# Features
+![Screenshot](screenshot.png)
+
+## Features
+
 - [x] Test coverage
 - [x] Linted
 - [x] i18n (translations)
 - [x] Import/export support
 - [x] Copy/paste support
 - [x] Shows active Heading
+- [x] Maintained by the Etherpad Foundation
 
-# License
-Apache 2
+## Copyright and License
 
-Maintained by the Etherpad foundation <3
+Copyright the ep\_headings2 authors and contributors.
+
+Licensed under the [Apache License, Version 2.0](LICENSE) (the "License"); you
+may not use this file except in compliance with the License. You may obtain a
+copy of the License at
+
+http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software distributed
+under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR
+CONDITIONS OF ANY KIND, either express or implied. See the License for the
+specific language governing permissions and limitations under the License.
