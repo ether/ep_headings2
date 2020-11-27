@@ -16,7 +16,7 @@ const style = 'h1{font-size: 2.5em;} \
              code{font-family: RobotoMono;}';
 
 // Include CSS for HTML export
-exports.stylesForExport = (hook, padId, cb) => {
+exports.stylesForExport = (hookName, padId, cb) => {
   cb(style);
 };
 

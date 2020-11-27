@@ -8,7 +8,7 @@ const tags = ['h1', 'h2', 'h3', 'h4', 'code'];
 exports.aceRegisterBlockElements = () => tags;
 
 // Bind the event handler to the toolbar buttons
-exports.postAceInit = (hook, context) => {
+exports.postAceInit = (hookName, context) => {
   const hs = $('#heading-selection');
   hs.on('change', function () {
     const value = $(this).val();
@@ -23,7 +23,7 @@ exports.postAceInit = (hook, context) => {
 };
 
 // On caret position change show the current heading
-exports.aceEditEvent = (hook, call, cb) => {
+exports.aceEditEvent = (hookName, call, cb) => {
   // If it's not a click or a key event and the text hasn't changed then do nothing
   const cs = call.callstack;
   if (!(cs.type === 'handleClick') && !(cs.type === 'handleKeyEvent') && !(cs.docTextChanged)) {
@@ -65,14 +65,14 @@ exports.aceEditEvent = (hook, call, cb) => {
 };
 
 // Our heading attribute will result in a heaading:h1... :h6 class
-exports.aceAttribsToClasses = (hook, context) => {
+exports.aceAttribsToClasses = (hookName, context) => {
   if (context.key === 'heading') {
     return [`heading:${context.value}`];
   }
 };
 
 // Here we convert the class heading:h1 into a tag
-exports.aceDomLineProcessLineAttributes = (name, context) => {
+exports.aceDomLineProcessLineAttributes = (hookName, context) => {
   const cls = context.cls;
   const headingType = /(?:^| )heading:([A-Za-z0-9]*)/.exec(cls);
   if (headingType) {
@@ -116,7 +116,7 @@ function doInsertHeading(level) {
 
 
 // Once ace is initialized, we set ace_doInsertHeading and bind it to the context
-exports.aceInitialized = (hook, context) => {
+exports.aceInitialized = (hookName, context) => {
   const editorInfo = context.editorInfo;
   editorInfo.ace_doInsertHeading = _(doInsertHeading).bind(context);
 };
