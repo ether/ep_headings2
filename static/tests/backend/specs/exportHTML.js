@@ -5,6 +5,28 @@ const utils = require('../utils.js');
 
 const {api, apiKey, apiVersion} = utils;
 
+// Creates a pad and returns the pad id. Calls the callback when finished.
+const createPad = (padID, callback) => {
+  api.get(`/api/${apiVersion}/createPad?apikey=${apiKey}&padID=${padID}`)
+      .end((err, res) => {
+        if (err || (res.body.code !== 0)) callback(new Error('Unable to create new Pad'));
+        callback(padID);
+      });
+};
+
+const setHTML = (padID, html, callback) => {
+  api.get(`/api/${apiVersion}/setHTML?apikey=${apiKey}&padID=${padID}&html=${html}`)
+      .end((err, res) => {
+        if (err || (res.body.code !== 0)) callback(new Error('Unable to set pad HTML'));
+        callback(null, padID);
+      });
+};
+
+const getHTMLEndPointFor =
+    (padID, callback) => `/api/${apiVersion}/getHTML?apikey=${apiKey}&padID=${padID}`;
+
+const buildHTML = (body) => `<html><body>${body}</body></html>`;
+
 describe('export headings to HTML', function () {
   let padID;
   let html;
@@ -61,28 +83,3 @@ describe('export headings to HTML', function () {
     });
   });
 });
-
-
-// Creates a pad and returns the pad id. Calls the callback when finished.
-const createPad = (padID, callback) => {
-  api.get(`/api/${apiVersion}/createPad?apikey=${apiKey}&padID=${padID}`)
-      .end((err, res) => {
-        if (err || (res.body.code !== 0)) callback(new Error('Unable to create new Pad'));
-
-        callback(padID);
-      });
-};
-
-const setHTML = (padID, html, callback) => {
-  api.get(`/api/${apiVersion}/setHTML?apikey=${apiKey}&padID=${padID}&html=${html}`)
-      .end((err, res) => {
-        if (err || (res.body.code !== 0)) callback(new Error('Unable to set pad HTML'));
-
-        callback(null, padID);
-      });
-};
-
-const getHTMLEndPointFor =
-    (padID, callback) => `/api/${apiVersion}/getHTML?apikey=${apiKey}&padID=${padID}`;
-
-const buildHTML = (body) => `<html><body>${body}</body></html>`;
