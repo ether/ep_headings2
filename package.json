@@ -42,7 +42,7 @@
     "eslint-plugin-promise": "^4.2.1"
   },
   "peerDependencies": {
-    "ep_etherpad-lite": "*"
+    "ep_etherpad-lite": ">=1.8.6"
   },
   "repository": {
     "type": "git",
