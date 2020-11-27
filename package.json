@@ -24,7 +24,10 @@
   "engines": {
     "node": ">=10.13.0"
   },
-  "homepage": "https://github.com/johnmclear/ep_headings2",
+  "homepage": "https://github.com/ether/ep_headings2#readme",
+  "bugs": {
+    "url": "https://github.com/ether/ep_headings2/issues"
+  },
   "devDependencies": {
     "eslint": "^7.14.0",
     "eslint-config-etherpad": "^1.0.8",
@@ -35,11 +38,11 @@
   },
   "repository": {
     "type": "git",
-    "url": "git://github.com/johnmclear/ep_headings2.git"
+    "url": "https://github.com/ether/ep_headings2.git"
   },
   "funding": {
     "type": "individual",
-    "url": "http://etherpad.org/"
+    "url": "https://etherpad.org/"
   },
   "eslintConfig": {
     "root": true,
