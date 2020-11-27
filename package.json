@@ -21,6 +21,11 @@
       "url": "https://github.com/gedion"
     }
   ],
+  "keywords": [
+    "ep",
+    "etherpad",
+    "plugin"
+  ],
   "engines": {
     "node": ">=10.13.0"
   },
