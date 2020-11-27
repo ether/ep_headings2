@@ -1,10 +1,5 @@
-const supertest = require('ep_etherpad-lite/node_modules/supertest');
-const fs = require('fs');
-const path = require('path');
-const request = require('ep_etherpad-lite/node_modules/request');
 const utils = require('../utils.js');
 apiKey = utils.apiKey,
-codeToBe0 = utils.codeToBe0,
 api = utils.api,
 apiVersion = utils.apiVersion,
 randomString = require('ep_etherpad-lite/static/js/pad_utils').randomString;
