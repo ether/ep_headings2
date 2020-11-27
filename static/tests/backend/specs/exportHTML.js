@@ -1,3 +1,5 @@
+'use strict';
+
 const utils = require('../utils.js');
 apiKey = utils.apiKey,
 api = utils.api,
