@@ -27,7 +27,7 @@ const getHTMLEndPointFor =
 
 const buildHTML = (body) => `<html><body>${body}</body></html>`;
 
-describe('export headings to HTML', function () {
+describe('ep_headings2 - export headings to HTML', function () {
   let padID;
   let html;
 
