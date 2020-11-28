@@ -12,7 +12,7 @@ describe('ep_headings2 - Set Heading and ensure its removed properly', function 
   // Set Line 1 heading and check it's set
   // Set Line 2 to null heading value and check it's set
 
-  it('Option select is changed when heading is changed', function (done) {
+  it('Option select is changed when heading is changed', async function () {
     this.timeout(60000);
     const chrome$ = helper.padChrome$;
     const inner$ = helper.padInner$;
@@ -29,17 +29,13 @@ describe('ep_headings2 - Set Heading and ensure its removed properly', function 
 
     $firstTextElement.sendkeys('{enter}');
 
-    helper.waitFor(() => chrome$('#heading-selection').val() === 0).done(() => {
-      const $firstTextElement = inner$('div').first();
-      $firstTextElement.sendkeys('{selectall}');
-      const $secondElement = inner$('div').first().next();
-      $secondElement.sendkeys('Second Line');
-      $secondElement.sendkeys('{selectall}');
-      helper.waitFor(() => chrome$('#heading-selection').val() === -1).done(() => {
-        expect($secondElement.find('h1').length).to.be(0);
-        expect($secondElement.text()).to.be('Second Line');
-        done();
-      });
-    });
+    await helper.waitForPromise(() => chrome$('#heading-selection').val() === 0);
+    inner$('div').first().sendkeys('{selectall}');
+    const $secondElement = inner$('div').first().next();
+    $secondElement.sendkeys('Second Line');
+    $secondElement.sendkeys('{selectall}');
+    await helper.waitForPromise(() => chrome$('#heading-selection').val() === -1);
+    expect($secondElement.find('h1').length).to.be(0);
+    expect($secondElement.text()).to.be('Second Line');
   });
 });
