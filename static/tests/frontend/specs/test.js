@@ -29,12 +29,12 @@ describe('ep_headings2 - Set Heading and ensure its removed properly', function 
 
     $firstTextElement.sendkeys('{enter}');
 
-    await helper.waitForPromise(() => chrome$('#heading-selection').val() === 0);
+    await helper.waitForPromise(() => chrome$('#heading-selection').val() === '0');
     inner$('div').first().sendkeys('{selectall}');
     const $secondElement = inner$('div').first().next();
     $secondElement.sendkeys('Second Line');
     $secondElement.sendkeys('{selectall}');
-    await helper.waitForPromise(() => chrome$('#heading-selection').val() === -1);
+    await helper.waitForPromise(() => chrome$('#heading-selection').val() === '-1');
     expect($secondElement.find('h1').length).to.be(0);
     expect($secondElement.text()).to.be('Second Line');
   });
