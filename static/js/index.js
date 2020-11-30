@@ -1,138 +1,116 @@
-var _, $, jQuery;
+'use strict';
 
-var $ = require('ep_etherpad-lite/static/js/rjquery').$;
-var _ = require('ep_etherpad-lite/static/js/underscore');
-var headingClass = 'heading';
-var cssFiles = ['ep_headings2/static/css/editor.css'];
+const _ = require('ep_etherpad-lite/static/js/underscore');
+const cssFiles = ['ep_headings2/static/css/editor.css'];
 
 // All our tags are block elements, so we just return them.
-var tags = ['h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'code'];
-exports.aceRegisterBlockElements = function(){
-  return tags;
-}
+const tags = ['h1', 'h2', 'h3', 'h4', 'code'];
+exports.aceRegisterBlockElements = () => tags;
 
 // Bind the event handler to the toolbar buttons
-exports.postAceInit = function(hook, context){
-  var hs = $('#heading-selection');
-  hs.on('change', function(){
-    var value = $(this).val();
-    var intValue = parseInt(value,10);
-    if(!_.isNaN(intValue)){
-      context.ace.callWithAce(function(ace){
+exports.postAceInit = (hookName, context) => {
+  const hs = $('#heading-selection');
+  hs.on('change', function () {
+    const value = $(this).val();
+    const intValue = parseInt(value, 10);
+    if (!_.isNaN(intValue)) {
+      context.ace.callWithAce((ace) => {
         ace.ace_doInsertHeading(intValue);
-      },'insertheading' , true);
-      hs.val("dummy");
+      }, 'insertheading', true);
+      hs.val('dummy');
     }
-  })
+  });
 };
 
 // On caret position change show the current heading
-exports.aceEditEvent = function(hook, call, cb){
-
+exports.aceEditEvent = (hookName, call) => {
   // If it's not a click or a key event and the text hasn't changed then do nothing
-  var cs = call.callstack;
-  if(!(cs.type == "handleClick") && !(cs.type == "handleKeyEvent") && !(cs.docTextChanged)){
+  const cs = call.callstack;
+  if (!(cs.type === 'handleClick') && !(cs.type === 'handleKeyEvent') && !(cs.docTextChanged)) {
     return false;
   }
   // If it's an initial setup event then do nothing..
-  if(cs.type == "setBaseText" || cs.type == "setup") return false;
+  if (cs.type === 'setBaseText' || cs.type === 'setup') return false;
 
   // It looks like we should check to see if this section has this attribute
-  setTimeout(function(){ // avoid race condition..
-    var attributeManager = call.documentAttributeManager;
-    var rep = call.rep;
-    var firstLine, lastLine;
-    var activeAttributes = {};
-    $("#heading-selection").val(-2);
-  
-    firstLine = rep.selStart[0];
-    lastLine = Math.max(firstLine, rep.selEnd[0] - ((rep.selEnd[1] === 0) ? 1 : 0));
-    var totalNumberOfLines = 0;
+  setTimeout(() => { // avoid race condition..
+    const attributeManager = call.documentAttributeManager;
+    const rep = call.rep;
+    const activeAttributes = {};
+    $('#heading-selection').val('dummy').niceSelect('update');
 
-    _(_.range(firstLine, lastLine + 1)).each(function(line){
+    const firstLine = rep.selStart[0];
+    const lastLine = Math.max(firstLine, rep.selEnd[0] - ((rep.selEnd[1] === 0) ? 1 : 0));
+    let totalNumberOfLines = 0;
+
+    _(_.range(firstLine, lastLine + 1)).each((line) => {
       totalNumberOfLines++;
-      var attr = attributeManager.getAttributeOnLine(line, "heading");
-      if(!activeAttributes[attr]){
+      const attr = attributeManager.getAttributeOnLine(line, 'heading');
+      if (!activeAttributes[attr]) {
         activeAttributes[attr] = {};
         activeAttributes[attr].count = 1;
-      }else{
+      } else {
         activeAttributes[attr].count++;
       }
     });
-    
-    $.each(activeAttributes, function(k, attr){
-      if(attr.count === totalNumberOfLines){
+
+    $.each(activeAttributes, (k, attr) => {
+      if (attr.count === totalNumberOfLines) {
         // show as active class
-        var ind = tags.indexOf(k);
-        $("#heading-selection").val(ind);
+        const ind = tags.indexOf(k);
+        $('#heading-selection').val(ind).niceSelect('update');
       }
     });
-
-  },250);
-
-}
+  }, 250);
+};
 
 // Our heading attribute will result in a heaading:h1... :h6 class
-exports.aceAttribsToClasses = function(hook, context){
-  if(context.key == 'heading'){
-    return ['heading:' + context.value ];
+exports.aceAttribsToClasses = (hookName, context) => {
+  if (context.key === 'heading') {
+    return [`heading:${context.value}`];
   }
-}
+};
 
 // Here we convert the class heading:h1 into a tag
-exports.aceDomLineProcessLineAttributes = function(name, context){
-  var cls = context.cls;
-  var domline = context.domline;
-  var headingType = /(?:^| )heading:([A-Za-z0-9]*)/.exec(cls);
-  var tagIndex;
-  
-  if (headingType) tagIndex = _.indexOf(tags, headingType[1]);
-  
-  if (tagIndex !== undefined && tagIndex >= 0){
-    
-    var tag = tags[tagIndex];
-    var modifier = {
-      preHtml: '<' + tag + '>',
-      postHtml: '</' + tag + '>',
-      processedMarker: true
-    };
-    return [modifier];
+exports.aceDomLineProcessLineAttributes = (hookName, context) => {
+  const cls = context.cls;
+  const headingType = /(?:^| )heading:([A-Za-z0-9]*)/.exec(cls);
+  if (headingType) {
+    let tag = headingType[1];
+
+    // backward compatibility, we used propose h5 and h6, but not anymore
+    if (tag === 'h5' || tag === 'h6') tag = 'h4';
+
+    if (_.indexOf(tags, tag) >= 0) {
+      const modifier = {
+        preHtml: `<${tag}>`,
+        postHtml: `</${tag}>`,
+        processedMarker: true,
+      };
+      return [modifier];
+    }
   }
   return [];
 };
 
-// Find out which lines are selected and assign them the heading attribute.
-// Passing a level >= 0 will set a heading on the selected lines, level < 0 
-// will remove it
-function doInsertHeading(level){
-  var rep = this.rep,
-    documentAttributeManager = this.documentAttributeManager;
-  if (!(rep.selStart && rep.selEnd) || (level >= 0 && tags[level] === undefined))
-  {
-    return;
-  }
-  
-  var firstLine, lastLine;
-  
-  firstLine = rep.selStart[0];
-  lastLine = Math.max(firstLine, rep.selEnd[0] - ((rep.selEnd[1] === 0) ? 1 : 0));
-  _(_.range(firstLine, lastLine + 1)).each(function(i){
-    if(level >= 0){
-      documentAttributeManager.setAttributeOnLine(i, 'heading', tags[level]);
-    }else{
-      documentAttributeManager.removeAttributeOnLine(i, 'heading');
-    }
-  });
-}
-
-
 // Once ace is initialized, we set ace_doInsertHeading and bind it to the context
-exports.aceInitialized = function(hook, context){
-  var editorInfo = context.editorInfo;
-  editorInfo.ace_doInsertHeading = _(doInsertHeading).bind(context);
-}
-
-exports.aceEditorCSS = function(){
-  return cssFiles;
+exports.aceInitialized = (hookName, context) => {
+  const editorInfo = context.editorInfo;
+  // Passing a level >= 0 will set a heading on the selected lines, level < 0 will remove it.
+  editorInfo.ace_doInsertHeading = (level) => {
+    const {documentAttributeManager, rep} = context;
+    if (!(rep.selStart && rep.selEnd)) return;
+    if (level >= 0 && tags[level] === undefined) return;
+    const firstLine = rep.selStart[0];
+    const lastLine = Math.max(firstLine, rep.selEnd[0] - ((rep.selEnd[1] === 0) ? 1 : 0));
+    _(_.range(firstLine, lastLine + 1)).each((i) => {
+      if (level >= 0) {
+        documentAttributeManager.setAttributeOnLine(i, 'heading', tags[level]);
+      } else {
+        documentAttributeManager.removeAttributeOnLine(i, 'heading');
+      }
+    });
+  };
 };
 
+exports.aceEditorCSS = () => cssFiles;

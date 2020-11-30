@@ -1,7 +1,11 @@
 {
   "description": "Adds heading support to Etherpad Lite.  Includes improved suppot for export, i18n etc.",
   "name": "ep_headings2",
+<<<<<<< HEAD
   "version": "0.0.10",
+=======
+  "version": "0.2.6",
+>>>>>>> 22e07578aed3f2a8355a0d91367b6bea4c4f32c9
   "author": {
     "name": "John McLear",
     "email": "john@mclear.co.uk"
@@ -21,14 +25,43 @@
       "url": "https://github.com/gedion"
     }
   ],
-  "dependencies": {},
+  "keywords": [
+    "ep",
+    "etherpad",
+    "plugin"
+  ],
   "engines": {
-    "node": "*"
+    "node": ">=10.13.0"
   },
-  "homepage": "https://github.com/johnmclear/ep_headings2",
-  "devDependencies": {},
+  "homepage": "https://github.com/ether/ep_headings2#readme",
+  "bugs": {
+    "url": "https://github.com/ether/ep_headings2/issues"
+  },
+  "devDependencies": {
+    "eslint": "^7.14.0",
+    "eslint-config-etherpad": "^1.0.13",
+    "eslint-plugin-mocha": "^8.0.0",
+    "eslint-plugin-node": "^11.1.0",
+    "eslint-plugin-prefer-arrow": "^1.2.2",
+    "eslint-plugin-promise": "^4.2.1"
+  },
+  "peerDependencies": {
+    "ep_etherpad-lite": ">=1.8.6"
+  },
   "repository": {
     "type": "git",
-    "url": "git://github.com/johnmclear/ep_headings2.git"
+    "url": "https://github.com/ether/ep_headings2.git"
+  },
+  "funding": {
+    "type": "individual",
+    "url": "https://etherpad.org/"
+  },
+  "eslintConfig": {
+    "root": true,
+    "extends": "etherpad/plugin"
+  },
+  "scripts": {
+    "lint": "eslint .",
+    "lint:fix": "eslint --fix ."
   }
 }
