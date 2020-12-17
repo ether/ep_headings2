@@ -82,4 +82,38 @@ describe('ep_headings2 - export headings to HTML', function () {
           .end(done);
     });
   });
+
+  context('when pad text has multiple Headings and align tags', function () {
+    before(async function () {
+      html = () => buildHTML('<h1><left>Hello world</left></h1><br/><h2><center>Foo</center></h2>');
+    });
+
+    it('returns ok', function (done) {
+      api.get(getHTMLEndPointFor(padID))
+          .expect('Content-Type', /json/)
+          .expect(200, done);
+    });
+
+    it('returns HTML with Multiple Headings HTML tags', function (done) {
+      try {
+        require.resolve('ep_align'); // eslint-disable-line
+        api.get(getHTMLEndPointFor(padID))
+            .expect((res) => {
+              const html = res.body.data.html;
+              if (html.indexOf('<h1 style="text-align:left">Hello world</h1>') === -1) {
+                throw new Error('No H1 tag detected');
+              }
+              if (html.indexOf('<h2 style="text-align:center">Foo</h2>') === -1) {
+                throw new Error('No H2 tag detected');
+              }
+            })
+            .end(done);
+      } catch (e) {
+        if (e.message.indexOf('Cannot find module') === -1) {
+          throw new Error(e.message);
+        }
+        done();
+      }
+    });
+  });
 });
