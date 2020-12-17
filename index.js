@@ -33,6 +33,16 @@ const _analyzeLine = (alineAttrs, apool) => {
 exports.getLineHTMLForExport = async (hookName, context) => {
   const header = _analyzeLine(context.attribLine, context.apool);
   if (header) {
-    context.lineContent = `<${header}>${context.lineContent.substring(1)}</${header}>`;
+    if (context.text.indexOf('*') === 0) {
+      context.lineContent = context.lineContent.replace('*', '');
+    }
+    const paragraph = context.lineContent.match(/<p([^>]+)?>/);
+    if (paragraph) {
+      context.lineContent = context.lineContent.replace('<p', `<${header} `);
+      context.lineContent = context.lineContent.replace('</p>', `</${header}>`);
+    } else {
+      context.lineContent = `<${header}>${context.lineContent}</${header}>`;
+    }
+    return context.lineContent;
   }
 };
