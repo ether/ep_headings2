@@ -1,8 +1,10 @@
 {
 	"@metadata": {
-		"authors": []
+		"authors": [
+			"Verdy p"
+		]
 	},
-	"ep_headings.style": "Titres",
+	"ep_headings.style": "Style",
 	"ep_headings.normal": "Normal",
 	"ep_headings.h1": "Titre 1",
 	"ep_headings.h2": "Titre 2",
