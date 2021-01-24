@@ -12,7 +12,7 @@ exports.postAceInit = (hookName, context) => {
   hs.on('change', function () {
     const value = $(this).val();
     const intValue = parseInt(value, 10);
-    if (!intValue.isNaN()) {
+    if (!isNaN(intValue)) {
       context.ace.callWithAce((ace) => {
         ace.ace_doInsertHeading(intValue);
       }, 'insertheading', true);
