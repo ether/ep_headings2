@@ -96,7 +96,8 @@ describe('ep_headings2 - export headings to HTML', function () {
 
     it('returns HTML with Multiple Headings HTML tags', function (done) {
       try {
-        require.resolve('ep_align'); // eslint-disable-line node/no-extraneous-require
+        // eslint-disable-next-line node/no-extraneous-require, node/no-missing-require
+        require.resolve('ep_align');
         api.get(getHTMLEndPointFor(padID))
             .expect((res) => {
               const html = res.body.data.html;
