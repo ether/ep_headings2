@@ -47,7 +47,7 @@ exports.aceEditEvent = (hookName, call) => {
     const lastLine = Math.max(firstLine, rep.selEnd[0] - ((rep.selEnd[1] === 0) ? 1 : 0));
     let totalNumberOfLines = 0;
 
-    range(firstLine, lastLine + 1).forEach((line) => {
+    range(firstLine, lastLine).forEach((line) => {
       totalNumberOfLines++;
       const attr = attributeManager.getAttributeOnLine(line, 'heading');
       if (!activeAttributes[attr]) {
