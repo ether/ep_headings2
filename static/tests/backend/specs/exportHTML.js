@@ -96,14 +96,15 @@ describe('ep_headings2 - export headings to HTML', function () {
 
     it('returns HTML with Multiple Headings HTML tags', function (done) {
       try {
-        require.resolve('ep_align'); // eslint-disable-line
+        require.resolve('ep_align'); // eslint-disable-line node/no-extraneous-require
         api.get(getHTMLEndPointFor(padID))
             .expect((res) => {
               const html = res.body.data.html;
-              if (html.indexOf('<h1 style="text-align:left">Hello world</h1>') === -1) {
+              console.warn('HTML', html);
+              if (html.indexOf('<h1 style=\'text-align:left\'>Hello world</h1>') === -1) {
                 throw new Error('No H1 tag detected');
               }
-              if (html.indexOf('<h2 style="text-align:center">Foo</h2>') === -1) {
+              if (html.indexOf('<h2 style=\'text-align:center\'>Foo</h2>') === -1) {
                 throw new Error('No H2 tag detected');
               }
             })
