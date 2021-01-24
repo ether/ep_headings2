@@ -1,13 +1,12 @@
 'use strict';
 
-const _ = require('ep_etherpad-lite/static/js/underscore');
 const tags = ['h1', 'h2', 'h3', 'h4', 'code'];
 
 exports.collectContentPre = (hookName, context, cb) => {
   const tname = context.tname;
   const state = context.state;
   const lineAttributes = state.lineAttributes;
-  const tagIndex = _.indexOf(tags, tname);
+  const tagIndex = tags.indexOf(tname);
   if (tname === 'div' || tname === 'p') {
     delete lineAttributes.heading;
   }
@@ -22,7 +21,7 @@ exports.collectContentPost = (hookName, context, cb) => {
   const tname = context.tname;
   const state = context.state;
   const lineAttributes = state.lineAttributes;
-  const tagIndex = _.indexOf(tags, tname);
+  const tagIndex = tags.indexOf(tname);
   if (tagIndex >= 0) {
     delete lineAttributes.heading;
   }

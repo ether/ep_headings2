@@ -1,6 +1,5 @@
 'use strict';
 
-const _ = require('ep_etherpad-lite/static/js/underscore');
 const cssFiles = ['ep_headings2/static/css/editor.css'];
 
 // All our tags are block elements, so we just return them.
@@ -13,7 +12,7 @@ exports.postAceInit = (hookName, context) => {
   hs.on('change', function () {
     const value = $(this).val();
     const intValue = parseInt(value, 10);
-    if (!_.isNaN(intValue)) {
+    if (!intValue.isNaN()) {
       context.ace.callWithAce((ace) => {
         ace.ace_doInsertHeading(intValue);
       }, 'insertheading', true);
@@ -21,6 +20,11 @@ exports.postAceInit = (hookName, context) => {
     }
   });
 };
+
+const range = (start, end) => Array.from(
+    Array(Math.abs(end - start) + 1),
+    (_, i) => start + i
+);
 
 // On caret position change show the current heading
 exports.aceEditEvent = (hookName, call) => {
@@ -43,7 +47,7 @@ exports.aceEditEvent = (hookName, call) => {
     const lastLine = Math.max(firstLine, rep.selEnd[0] - ((rep.selEnd[1] === 0) ? 1 : 0));
     let totalNumberOfLines = 0;
 
-    _(_.range(firstLine, lastLine + 1)).each((line) => {
+    range(firstLine, lastLine + 1).forEach((line) => {
       totalNumberOfLines++;
       const attr = attributeManager.getAttributeOnLine(line, 'heading');
       if (!activeAttributes[attr]) {
@@ -81,7 +85,7 @@ exports.aceDomLineProcessLineAttributes = (hookName, context) => {
     // backward compatibility, we used propose h5 and h6, but not anymore
     if (tag === 'h5' || tag === 'h6') tag = 'h4';
 
-    if (_.indexOf(tags, tag) >= 0) {
+    if (tags.indexOf(tag) >= 0) {
       const modifier = {
         preHtml: `<${tag}>`,
         postHtml: `</${tag}>`,
@@ -103,11 +107,12 @@ exports.aceInitialized = (hookName, context) => {
     if (level >= 0 && tags[level] === undefined) return;
     const firstLine = rep.selStart[0];
     const lastLine = Math.max(firstLine, rep.selEnd[0] - ((rep.selEnd[1] === 0) ? 1 : 0));
-    _(_.range(firstLine, lastLine + 1)).each((i) => {
+
+    range(firstLine, lastLine).forEach((line) => {
       if (level >= 0) {
-        documentAttributeManager.setAttributeOnLine(i, 'heading', tags[level]);
+        documentAttributeManager.setAttributeOnLine(line, 'heading', tags[level]);
       } else {
-        documentAttributeManager.removeAttributeOnLine(i, 'heading');
+        documentAttributeManager.removeAttributeOnLine(line, 'heading');
       }
     });
   };
