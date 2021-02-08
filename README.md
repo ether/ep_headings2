@@ -1,3 +1,4 @@
+![Publish Status](https://github.com/ether/ep_headings2/workflows/Node.js%20Package/badge.svg)![Publish Status](https://github.com/ether/ep_headings2/workflows/Node.js%20Package/badge.svg)
 # ep\_headings2: Section headings for Etherpad
 
 An Etherpad Plugin to apply h1 etc. headings to a pad.
