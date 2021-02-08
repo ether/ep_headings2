@@ -1,5 +1,4 @@
-![Publish Status](https://github.com/ether/ep_headings2/workflows/Node.js%20Package/badge.svg)![Publish Status](https://github.com/ether/ep_headings2/workflows/Node.js%20Package/badge.svg)
-# ep\_headings2: Section headings for Etherpad
+# Section headings for Etherpad
 
 An Etherpad Plugin to apply h1 etc. headings to a pad.
 
@@ -17,7 +16,7 @@ An Etherpad Plugin to apply h1 etc. headings to a pad.
 
 ## Copyright and License
 
-Copyright the ep\_headings2 authors and contributors.
+Copyright the ep_headings2 authors and contributors.
 
 Licensed under the [Apache License, Version 2.0](LICENSE) (the "License"); you
 may not use this file except in compliance with the License. You may obtain a
