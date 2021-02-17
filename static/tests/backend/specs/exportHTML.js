@@ -1,13 +1,15 @@
 'use strict';
 
+const common = require('ep_etherpad-lite/tests/backend/common');
 const randomString = require('ep_etherpad-lite/static/js/pad_utils').randomString;
-const utils = require('../utils.js');
 
-const {api, apiKey, apiVersion} = utils;
+let agent;
+const apiKey = common.apiKey;
+const apiVersion = 1;
 
 // Creates a pad and returns the pad id. Calls the callback when finished.
 const createPad = (padID, callback) => {
-  api.get(`/api/${apiVersion}/createPad?apikey=${apiKey}&padID=${padID}`)
+  agent.get(`/api/${apiVersion}/createPad?apikey=${apiKey}&padID=${padID}`)
       .end((err, res) => {
         if (err || (res.body.code !== 0)) callback(new Error('Unable to create new Pad'));
         callback(padID);
@@ -15,7 +17,7 @@ const createPad = (padID, callback) => {
 };
 
 const setHTML = (padID, html, callback) => {
-  api.get(`/api/${apiVersion}/setHTML?apikey=${apiKey}&padID=${padID}&html=${html}`)
+  agent.get(`/api/${apiVersion}/setHTML?apikey=${apiKey}&padID=${padID}&html=${html}`)
       .end((err, res) => {
         if (err || (res.body.code !== 0)) callback(new Error('Unable to set pad HTML'));
         callback(null, padID);
@@ -30,6 +32,8 @@ const buildHTML = (body) => `<html><body>${body}</body></html>`;
 describe('ep_headings2 - export headings to HTML', function () {
   let padID;
   let html;
+
+  before(async function () { agent = await common.init(); });
 
   // create a new pad before each test run
   beforeEach(function (done) {
@@ -46,13 +50,13 @@ describe('ep_headings2 - export headings to HTML', function () {
     });
 
     it('returns ok', function (done) {
-      api.get(getHTMLEndPointFor(padID))
+      agent.get(getHTMLEndPointFor(padID))
           .expect('Content-Type', /json/)
           .expect(200, done);
     });
 
     it('returns HTML with Headings HTML tags', function (done) {
-      api.get(getHTMLEndPointFor(padID))
+      agent.get(getHTMLEndPointFor(padID))
           .expect((res) => {
             const html = res.body.data.html;
             if (html.indexOf('<h1>Hello world</h1>') === -1) throw new Error('No H1 tag detected');
@@ -67,13 +71,13 @@ describe('ep_headings2 - export headings to HTML', function () {
     });
 
     it('returns ok', function (done) {
-      api.get(getHTMLEndPointFor(padID))
+      agent.get(getHTMLEndPointFor(padID))
           .expect('Content-Type', /json/)
           .expect(200, done);
     });
 
     it('returns HTML with Multiple Headings HTML tags', function (done) {
-      api.get(getHTMLEndPointFor(padID))
+      agent.get(getHTMLEndPointFor(padID))
           .expect((res) => {
             const html = res.body.data.html;
             if (html.indexOf('<h1>Hello world</h1>') === -1) throw new Error('No H1 tag detected');
@@ -89,7 +93,7 @@ describe('ep_headings2 - export headings to HTML', function () {
     });
 
     it('returns ok', function (done) {
-      api.get(getHTMLEndPointFor(padID))
+      agent.get(getHTMLEndPointFor(padID))
           .expect('Content-Type', /json/)
           .expect(200, done);
     });
@@ -98,7 +102,7 @@ describe('ep_headings2 - export headings to HTML', function () {
       try {
         // eslint-disable-next-line node/no-extraneous-require, node/no-missing-require
         require.resolve('ep_align');
-        api.get(getHTMLEndPointFor(padID))
+        agent.get(getHTMLEndPointFor(padID))
             .expect((res) => {
               const html = res.body.data.html;
               console.warn('HTML', html);
