@@ -100,7 +100,7 @@ describe('ep_headings2 - export headings to HTML', function () {
 
     it('returns HTML with Multiple Headings HTML tags', function (done) {
       try {
-        // eslint-disable-next-line node/no-extraneous-require, node/no-missing-require
+        // eslint-disable-next-line n/no-extraneous-require, n/no-missing-require
         require.resolve('ep_align');
         agent.get(getHTMLEndPointFor(padID))
             .expect((res) => {
