@@ -34,7 +34,7 @@
     "url": "https://github.com/ether/ep_headings2/issues"
   },
   "devDependencies": {
-    "eslint": "^8.52.0",
+    "eslint": "^8.55.0",
     "eslint-config-etherpad": "^3.0.22",
     "typescript": "^4.9.5"
   },
