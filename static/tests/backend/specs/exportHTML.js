@@ -51,21 +51,18 @@ describe('ep_headings2 - export headings to HTML', function () {
       html = () => buildHTML('<h1>Hello world</h1>');
     });
 
-    it('returns ok', async function (done) {
-      agent.get(getHTMLEndPointFor(padID))
+    it('returns ok', async function () {
+      await agent.get(getHTMLEndPointFor(padID))
         .set("Authorization", await generateJWTToken())
         .expect('Content-Type', /json/)
-        .expect(200, done);
+        .expect(200);
     });
 
-    it('returns HTML with Headings HTML tags', async function (done) {
-      agent.get(getHTMLEndPointFor(padID))
-        .set("Authorization", await generateJWTToken())
-        .expect((res) => {
-          const html = res.body.data.html;
-          if (html.indexOf('<h1>Hello world</h1>') === -1) throw new Error('No H1 tag detected');
-        })
-        .end(done);
+    it('returns HTML with Headings HTML tags', async function () {
+      const res = await agent.get(getHTMLEndPointFor(padID))
+        .set("Authorization", await generateJWTToken());
+      const html = res.body.data.html;
+      if (html.indexOf('<h1>Hello world</h1>') === -1) throw new Error('No H1 tag detected');
     });
   });
 
@@ -74,22 +71,19 @@ describe('ep_headings2 - export headings to HTML', function () {
       html = () => buildHTML('<h1>Hello world</h1><br/><h2>Foo</h2>');
     });
 
-    it('returns ok', async function (done) {
-      agent.get(getHTMLEndPointFor(padID))
+    it('returns ok', async function () {
+      await agent.get(getHTMLEndPointFor(padID))
         .set("Authorization", await generateJWTToken())
         .expect('Content-Type', /json/)
-        .expect(200, done);
+        .expect(200);
     });
 
-    it('returns HTML with Multiple Headings HTML tags', async function (done) {
-      agent.get(getHTMLEndPointFor(padID))
+    it('returns HTML with Multiple Headings HTML tags', async function () {
+      const res = await agent.get(getHTMLEndPointFor(padID))
         .set("Authorization", await generateJWTToken())
-        .expect((res) => {
-          const html = res.body.data.html;
-          if (html.indexOf('<h1>Hello world</h1>') === -1) throw new Error('No H1 tag detected');
-          if (html.indexOf('<h2>Foo</h2>') === -1) throw new Error('No H2 tag detected');
-        })
-        .end(done);
+      const html = res.body.data.html;
+      if (html.indexOf('<h1>Hello world</h1>') === -1) throw new Error('No H1 tag detected');
+      if (html.indexOf('<h2>Foo</h2>') === -1) throw new Error('No H2 tag detected');
     });
   });
 
@@ -98,35 +92,31 @@ describe('ep_headings2 - export headings to HTML', function () {
       html = () => buildHTML('<h1><left>Hello world</left></h1><br/><h2><center>Foo</center></h2>');
     });
 
-    it('returns ok', async function (done) {
-      agent.get(getHTMLEndPointFor(padID))
+    it('returns ok', async function () {
+      await agent.get(getHTMLEndPointFor(padID))
         .set("Authorization", await generateJWTToken())
         .expect('Content-Type', /json/)
-        .expect(200, done);
+        .expect(200);
     });
 
-    it('returns HTML with Multiple Headings HTML tags', async function (done) {
+    it('returns HTML with Multiple Headings HTML tags', async function () {
       try {
         // eslint-disable-next-line n/no-extraneous-require, n/no-missing-require
         require.resolve('ep_align');
-        agent.get(getHTMLEndPointFor(padID))
-          .set("Authorization", await generateJWTToken())
-          .expect((res) => {
-            const html = res.body.data.html;
-            console.warn('HTML', html);
-            if (html.indexOf('<h1 style=\'text-align:left\'>Hello world</h1>') === -1) {
-              throw new Error('No H1 tag detected');
-            }
-            if (html.indexOf('<h2 style=\'text-align:center\'>Foo</h2>') === -1) {
-              throw new Error('No H2 tag detected');
-            }
-          })
-          .end(done);
+        const res = await agent.get(getHTMLEndPointFor(padID))
+          .set("Authorization", await generateJWTToken());
+        const html = res.body.data.html;
+        console.warn('HTML', html);
+        if (html.search(/<h1 +style='text-align:left'>Hello world<\/h1>/) === -1) {
+          throw new Error('No H1 tag detected');
+        }
+        if (html.search(/<h2 +style='text-align:center'>Foo<\/h2>/) === -1) {
+          throw new Error('No H2 tag detected');
+        }
       } catch (e) {
         if (e.message.indexOf('Cannot find module') === -1) {
           throw new Error(e.message);
         }
-        done();
       }
     });
   });
