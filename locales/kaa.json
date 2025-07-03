@@ -1,0 +1,14 @@
+{
+	"@metadata": {
+		"authors": [
+			"Inabat Allanova"
+		]
+	},
+	"ep_headings.style": "Stil",
+	"ep_headings.normal": "Ortasha",
+	"ep_headings.h1": "Bólim 1",
+	"ep_headings.h2": "Bólim 2",
+	"ep_headings.h3": "Bólim 3",
+	"ep_headings.h4": "Bólim 4",
+	"ep_headings.code": "Kod"
+}
