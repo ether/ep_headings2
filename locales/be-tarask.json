@@ -1,0 +1,12 @@
+{
+	"@metadata": {
+		"authors": [
+			"Renessaince"
+		]
+	},
+	"ep_headings.h1": "Загаловак 1",
+	"ep_headings.h2": "Загаловак 2",
+	"ep_headings.h3": "Загаловак 3",
+	"ep_headings.h4": "Загаловак 4",
+	"ep_headings.code": "Код"
+}
