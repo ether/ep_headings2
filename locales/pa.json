@@ -1,0 +1,13 @@
+{
+	"@metadata": {
+		"authors": [
+			"Cabal"
+		]
+	},
+	"ep_headings.style": "ਸ਼ੈਲੀ",
+	"ep_headings.normal": "ਆਮ",
+	"ep_headings.h1": "ਸਿਰਨਾਵਾਂ 1",
+	"ep_headings.h2": "ਸਿਰਨਾਵਾਂ 2",
+	"ep_headings.h3": "ਸਿਰਨਾਵਾਂ 3",
+	"ep_headings.h4": "ਸਿਰਨਾਵਾਂ 4"
+}
