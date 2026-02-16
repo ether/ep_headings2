@@ -1,9 +1,15 @@
 {
 	"@metadata": {
 		"authors": [
+			"Peterleth",
 			"Saederup92"
 		]
 	},
 	"ep_headings.style": "Stil",
+	"ep_headings.normal": "Normal",
+	"ep_headings.h1": "Overskrift 1",
+	"ep_headings.h2": "Overskrift 2",
+	"ep_headings.h3": "Overskrift 3",
+	"ep_headings.h4": "Overskrift 4",
 	"ep_headings.code": "Kode"
 }

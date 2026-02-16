@@ -1,0 +1,12 @@
+{
+	"@metadata": {
+		"authors": [
+			"SZ475"
+		]
+	},
+	"ep_headings.h1": "Titlu 1",
+	"ep_headings.h2": "Titlu 2",
+	"ep_headings.h3": "Titlu 3",
+	"ep_headings.h4": "Titlu 4",
+	"ep_headings.code": "Cod"
+}
