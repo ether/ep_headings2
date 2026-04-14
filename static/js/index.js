@@ -1,11 +1,11 @@
 'use strict';
 
-const {createLineAttribute} = require('ep_plugin_helpers/attributes');
+const {lineAttribute} = require('ep_plugin_helpers/attributes');
 
 const cssFiles = ['ep_headings2/static/css/editor.css'];
 const tags = ['h1', 'h2', 'h3', 'h4', 'code'];
 
-const headings = createLineAttribute({
+const headings = lineAttribute({
   attr: 'heading',
   tags,
   normalize: (value) => (value === 'h5' || value === 'h6') ? 'h4' : value,

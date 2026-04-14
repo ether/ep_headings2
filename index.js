@@ -1,11 +1,11 @@
 'use strict';
 
-const {eejsBlock} = require('ep_plugin_helpers');
-const {createLineAttributeExport} = require('ep_plugin_helpers/attributes-server');
+const {template} = require('ep_plugin_helpers');
+const {lineAttributeExport} = require('ep_plugin_helpers/attributes-server');
 
 const tags = ['h1', 'h2', 'h3', 'h4', 'code'];
 
-const headingsExport = createLineAttributeExport({
+const headingsExport = lineAttributeExport({
   attr: 'heading',
   tags,
   normalize: (value) => (value === 'h5' || value === 'h6') ? 'h4' : value,
@@ -17,6 +17,6 @@ const headingsExport = createLineAttributeExport({
     'code{font-family: RobotoMono;}\n',
 });
 
-exports.eejsBlock_editbarMenuLeft = eejsBlock('ep_headings2/templates/editbarButtons.ejs');
+exports.eejsBlock_editbarMenuLeft = template('ep_headings2/templates/editbarButtons.ejs');
 exports.stylesForExport = headingsExport.stylesForExport;
 exports.getLineHTMLForExport = headingsExport.getLineHTMLForExport;
