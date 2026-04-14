@@ -27,6 +27,8 @@ exports.postAceInit = (hookName, context) => {
       }, 'insertheading', true);
       hs.val('dummy');
     }
+    // Return focus to the editor after heading selection (fixes #130)
+    context.ace.focus();
   });
 };
 
