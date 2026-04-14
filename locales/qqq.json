@@ -4,5 +4,11 @@
 			"BryanDavis"
 		]
 	},
-	"ep_headings.style": "{{Identical|Style}}"
+	"ep_headings.style": "Label for the heading style dropdown and its aria-label. {{Identical|Style}}",
+	"ep_headings.normal": "Option to remove heading formatting and return to normal text",
+	"ep_headings.h1": "Option for Heading level 1 (largest)",
+	"ep_headings.h2": "Option for Heading level 2",
+	"ep_headings.h3": "Option for Heading level 3",
+	"ep_headings.h4": "Option for Heading level 4 (smallest)",
+	"ep_headings.code": "Option for monospaced code formatting"
 }
