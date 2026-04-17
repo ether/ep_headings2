@@ -60,14 +60,16 @@ jobs:
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
           pnpm i --frozen-lockfile
-          # pnpm's `version patch` silently stopped creating the git tag on
-          # some pnpm pre-release channels that pnpm/action-setup@v6 ends
-          # up installing even when `version: 10.x` is requested
-          # (see pnpm/action-setup#225). Do the bump ourselves so the tag
-          # is always created.
-          pnpm version patch --no-git-tag-version --no-commit-hooks
-          NEW_TAG="v$(node -p "require('./package.json').version")"
-          git add package.json pnpm-lock.yaml
+          # Bump the patch component directly with Node. pnpm's own
+          # `version patch` behaviour is inconsistent across the pre-release
+          # channels that pnpm/action-setup@v6 sometimes installs even
+          # when `version: 10.x` is requested (see pnpm/action-setup#225) —
+          # some flags (--no-git-tag-version, --no-commit-hooks) were
+          # dropped, some variants skip the git commit or tag. Doing it in
+          # Node sidesteps all of that.
+          NEW_VERSION=$(node -e "const fs=require('fs');const p=require('./package.json');const v=p.version.split('.');v[2]=String(Number(v[2])+1);p.version=v.join('.');fs.writeFileSync('./package.json',JSON.stringify(p,null,2)+'\\n');console.log(p.version);")
+          NEW_TAG="v${NEW_VERSION}"
+          git add package.json
           git commit -m "${NEW_TAG}"
           git tag -a "${NEW_TAG}" -m "${NEW_TAG}"
           # CRITICAL: use --atomic so the branch update and the tag update
