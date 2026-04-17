@@ -15,6 +15,23 @@ An Etherpad Plugin to apply h1 etc. headings to a pad.
 - [x] Shows active Heading
 - [x] Maintained by the Etherpad Foundation
 
+## Installation
+
+Install from the Etherpad admin UI (**Admin → Manage Plugins**,
+search for `ep_headings2` and click *Install*), or from the Etherpad
+root directory:
+
+```sh
+pnpm run plugins install ep_headings2
+```
+
+> ⚠️ Don't run `npm i` / `npm install` yourself from the Etherpad
+> source tree — Etherpad tracks installed plugins through its own
+> plugin-manager, and hand-editing `package.json` can leave the
+> server unable to start.
+
+After installing, restart Etherpad.
+
 ## Copyright and License
 
 Copyright the ep_headings2 authors and contributors.
