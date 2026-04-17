@@ -3,7 +3,7 @@
 
 An Etherpad Plugin to apply h1 etc. headings to a pad.
 
-![Screenshot](screenshot.png)
+![Demo](demo.gif)
 
 ## Features
 
