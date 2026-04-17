@@ -60,11 +60,16 @@ jobs:
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
           pnpm i --frozen-lockfile
-          # `pnpm version patch` bumps package.json, makes a commit, and creates
-          # a `v<new-version>` tag. Capture the new tag name from package.json
-          # rather than parsing pnpm's output, which has historically varied.
-          pnpm version patch
+          # pnpm's `version patch` silently stopped creating the git tag on
+          # some pnpm pre-release channels that pnpm/action-setup@v6 ends
+          # up installing even when `version: 10.x` is requested
+          # (see pnpm/action-setup#225). Do the bump ourselves so the tag
+          # is always created.
+          pnpm version patch --no-git-tag-version --no-commit-hooks
           NEW_TAG="v$(node -p "require('./package.json').version")"
+          git add package.json pnpm-lock.yaml
+          git commit -m "${NEW_TAG}"
+          git tag -a "${NEW_TAG}" -m "${NEW_TAG}"
           # CRITICAL: use --atomic so the branch update and the tag update
           # succeed (or fail) as a single transaction on the server. The old
           # `git push --follow-tags` was non-atomic per ref: if a concurrent
