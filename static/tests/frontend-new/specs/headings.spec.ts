@@ -57,9 +57,13 @@ test.describe('ep_headings2 - Set Heading and ensure its removed properly', () =
 
     // Move to a fresh second line — the selector should reset to
     // "no heading" (-1) because the cursor is no longer on an H1.
+    // Use insertText instead of keyboard.type: Firefox under
+    // WITH_PLUGINS load racily drops chars from per-key events, which
+    // is the same fix etherpad core's writeToPad helper applied in
+    // #7625.
     await page.keyboard.press('End');
     await page.keyboard.press('Enter');
-    await page.keyboard.type('Second Line');
+    await page.keyboard.insertText('Second Line');
 
     // Wait for the selector to update to "-1" (Etherpad polls the
     // current line's heading attribute on caret moves).
