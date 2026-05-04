@@ -9,8 +9,8 @@ importers:
   .:
     dependencies:
       ep_plugin_helpers:
-        specifier: ^0.2.8
-        version: 0.2.8
+        specifier: ^0.2.9
+        version: 0.2.9
     devDependencies:
       eslint:
         specifier: ^8.57.1
@@ -398,8 +398,8 @@ packages:
     resolution: {integrity: sha512-Qohcme7V1inbAfvjItgw0EaxVX5q2rdVEZHRBrEQdRZTssLDGsL8Lwrznl8oQ/6kuTJONLaDcGjkNP247XEhcA==}
     engines: {node: '>=10.13.0'}
 
-  ep_plugin_helpers@0.2.8:
-    resolution: {integrity: sha512-Dfq2TZDzAjuefgQ2fjXHfcUFpNLTDMq27wwu3yPfEu9bYSUijf8zbFEnCOwaEAOQ4Vg3xaSPA63EOFSjhMcKnA==}
+  ep_plugin_helpers@0.2.9:
+    resolution: {integrity: sha512-PHJsiOWkzLiM9ja8ckD8sPlLVx3K1V0s8VRlUmEguPMP6P4kd4MPaLQlGvSZN1nURWgsN1b4+xZlp73gtmNjXQ==}
     engines: {node: '>=18.0.0'}
 
   es-abstract@1.24.2:
@@ -1675,7 +1675,7 @@ snapshots:
       graceful-fs: 4.2.11
       tapable: 2.3.2
 
-  ep_plugin_helpers@0.2.8: {}
+  ep_plugin_helpers@0.2.9: {}
 
   es-abstract@1.24.2:
     dependencies:
