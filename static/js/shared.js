@@ -8,3 +8,4 @@ const headings = lineAttribute({attr: 'heading', tags});
 
 exports.collectContentPre = headings.collectContentPre;
 exports.collectContentPost = headings.collectContentPost;
+exports.ccRegisterBlockElements = headings.ccRegisterBlockElements;
