@@ -121,4 +121,35 @@ describe('ep_headings2 - export headings to HTML', function () {
       }
     });
   });
+
+  context('when pad has adjacent <h1> and <h2> with no separator', function () {
+    // Regression for ether/etherpad#7568 round-trip. Without server-side
+    // ccRegisterBlockElements registered for the heading tags,
+    // contentcollector treats <h1>/<h2> as inline and adjacent ones
+    // merge into a single pad line.
+    before(async function () {
+      html = () => buildHTML('<h1>Alpha</h1><h2>Beta</h2>');
+    });
+
+    it('keeps each heading on its own line', function (done) {
+      const expected = /<h1>\s*Alpha\s*<\/h1>[\s\S]*<h2>\s*Beta\s*<\/h2>/;
+      generateJWTToken().then((token) => {
+        agent.get(getHTMLEndPointFor(padID))
+            .set('Authorization', token)
+            .end((err, res) => {
+              if (err) return done(err);
+              const out = res.body.data.html;
+              if (out.search(expected) === -1) {
+                return done(new Error(
+                    `Adjacent headings merged or missing in: ${out}`));
+              }
+              if (out.search(/AlphaBeta/) !== -1) {
+                return done(new Error(
+                    `Headings merged into one line: ${out}`));
+              }
+              done();
+            });
+      }).catch(done);
+    });
+  });
 });

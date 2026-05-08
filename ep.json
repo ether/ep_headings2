@@ -16,6 +16,7 @@
         "eejsBlock_editbarMenuLeft": "ep_headings2/index",
         "collectContentPre": "ep_headings2/static/js/shared",
         "collectContentPost": "ep_headings2/static/js/shared",
+        "ccRegisterBlockElements": "ep_headings2/static/js/shared",
         "getLineHTMLForExport": "ep_headings2/index",
         "stylesForExport" : "ep_headings2/index"
       }
