@@ -1,6 +1,7 @@
 'use strict';
 
 const {lineAttribute} = require('ep_plugin_helpers/attributes');
+const {toolbarSelect} = require('ep_plugin_helpers/toolbar-select');
 
 const cssFiles = ['ep_headings2/static/css/editor.css'];
 const tags = ['h1', 'h2', 'h3', 'h4', 'code'];
@@ -15,20 +16,16 @@ exports.aceRegisterBlockElements = headings.aceRegisterBlockElements;
 exports.aceAttribsToClasses = headings.aceAttribsToClasses;
 exports.aceDomLineProcessLineAttributes = headings.aceDomLineProcessLineAttributes;
 
-// Bind the event handler to the toolbar buttons
+// Bind the event handler to the toolbar buttons. The helper guarantees
+// focus is returned to the editor after every change — including
+// invalid picks — preserving the behavior of the original handler that
+// fixed #130.
 exports.postAceInit = (hookName, context) => {
-  const hs = $('#heading-selection');
-  hs.on('change', function () {
-    const value = $(this).val();
-    const intValue = parseInt(value, 10);
-    if (!isNaN(intValue)) {
-      context.ace.callWithAce((ace) => {
-        ace.ace_doInsertHeading(intValue);
-      }, 'insertheading', true);
-      hs.val('dummy');
-    }
-    // Return focus to the editor after heading selection (fixes #130)
-    context.ace.focus();
+  toolbarSelect({
+    selector: '#heading-selection',
+    context,
+    invoke: (ace, value) => ace.ace_doInsertHeading(value),
+    op: 'insertheading',
   });
 };
 
