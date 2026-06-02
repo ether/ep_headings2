@@ -2,7 +2,6 @@
 
 const {lineAttribute} = require('ep_plugin_helpers/attributes');
 
-const cssFiles = ['ep_headings2/static/css/editor.css'];
 const tags = ['h1', 'h2', 'h3', 'h4', 'code'];
 
 const headings = lineAttribute({
@@ -95,4 +94,4 @@ exports.aceInitialized = (hookName, context) => {
   };
 };
 
-exports.aceEditorCSS = () => cssFiles;
+exports.aceEditorCSS = () => ['/ep_headings2/editor.css'];
