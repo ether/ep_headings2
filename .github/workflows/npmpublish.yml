@@ -31,7 +31,7 @@ jobs:
         uses: actions/checkout@v7
         with:
           repository: ether/etherpad-lite
-      - uses: pnpm/action-setup@v6.0.9
+      - uses: pnpm/action-setup@v6.0.10
         name: Install pnpm
         with:
           run_install: false
@@ -72,7 +72,7 @@ jobs:
           pnpm i --frozen-lockfile
           # Bump the patch component directly with Node. pnpm's own
           # `version patch` behaviour is inconsistent across the pre-release
-          # channels that pnpm/action-setup@v6.0.9 sometimes installs even
+          # channels that pnpm/action-setup@v6.0.10 sometimes installs even
           # when `version: 10.x` is requested (see pnpm/action-setup#225) —
           # some flags (--no-git-tag-version, --no-commit-hooks) were
           # dropped, some variants skip the git commit or tag. Doing it in
