@@ -14,6 +14,8 @@
       },
       "hooks": {
         "eejsBlock_editbarMenuLeft": "ep_headings2/index",
+        "loadSettings": "ep_headings2/index",
+        "expressCreateServer": "ep_headings2/index",
         "collectContentPre": "ep_headings2/static/js/shared",
         "collectContentPost": "ep_headings2/static/js/shared",
         "ccRegisterBlockElements": "ep_headings2/static/js/shared",

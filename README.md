@@ -32,6 +32,24 @@ pnpm run plugins install ep_headings2
 
 After installing, restart Etherpad.
 
+## Configuration
+
+Font sizes can be customized in `settings.json` under the `ep_headings2` key:
+
+```json
+"ep_headings2": {
+  "fontSizes": {
+    "h1": "2.5em",
+    "h2": "1.8em",
+    "h3": "1.5em",
+    "h4": "1.2em"
+  }
+}
+```
+
+Any omitted heading level falls back to its default value.  The same font
+sizes are applied both in the editor and in exported documents.
+
 ## Copyright and License
 
 Copyright the ep_headings2 authors and contributors.
