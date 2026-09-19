@@ -18,5 +18,7 @@ const headingsExport = lineAttributeExport({
 });
 
 exports.eejsBlock_editbarMenuLeft = template('ep_headings2/templates/editbarButtons.ejs');
+// ep_file_menu_toolbar: paragraph formatting group of the Format menu.
+exports.eejsBlock_dd_format_block = template('ep_headings2/templates/fileMenu.ejs');
 exports.stylesForExport = headingsExport.stylesForExport;
 exports.getLineHTMLForExport = headingsExport.getLineHTMLForExport;

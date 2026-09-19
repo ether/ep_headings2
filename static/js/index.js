@@ -22,7 +22,9 @@ exports.aceDomLineProcessLineAttributes = headings.aceDomLineProcessLineAttribut
 // fixed #130.
 exports.postAceInit = (hookName, context) => {
   toolbarSelect({
-    selector: '#heading-selection',
+    // The editbar dropdown and, when ep_file_menu_toolbar is installed, the
+    // copy in the Format menu.
+    selector: '#heading-selection, select.heading-selection',
     context,
     invoke: (ace, value) => ace.ace_doInsertHeading(value),
     op: 'insertheading',
@@ -46,7 +48,8 @@ exports.aceEditEvent = (hookName, call) => {
     const attributeManager = call.documentAttributeManager;
     const rep = call.rep;
     const activeAttributes = {};
-    $('#heading-selection').val('dummy').niceSelect('update');
+    const headingSelect = $('#heading-selection, select.heading-selection');
+    headingSelect.val('dummy').niceSelect('update');
 
     const firstLine = rep.selStart[0];
     const lastLine = Math.max(firstLine, rep.selEnd[0] - ((rep.selEnd[1] === 0) ? 1 : 0));
@@ -66,7 +69,7 @@ exports.aceEditEvent = (hookName, call) => {
     $.each(activeAttributes, (k, attr) => {
       if (attr.count === totalNumberOfLines) {
         const ind = tags.indexOf(k);
-        $('#heading-selection').val(ind).niceSelect('update');
+        headingSelect.val(ind).niceSelect('update');
       }
     });
   }, 250);
