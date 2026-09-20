@@ -6,8 +6,7 @@ const path = require('path');
 const ejs = require('ep_etherpad-lite/node_modules/ejs');
 
 const root = path.resolve(__dirname, '..', '..', '..', '..');
-const render = (name) =>
-  ejs.render(fs.readFileSync(path.join(root, 'templates', name), 'utf8'), {});
+const render = (name) => ejs.render(fs.readFileSync(path.join(root, 'templates', name), 'utf8'), {});
 const locales = JSON.parse(fs.readFileSync(path.join(root, 'locales', 'en.json'), 'utf8'));
 const epJson = JSON.parse(fs.readFileSync(path.join(root, 'ep.json'), 'utf8'));
 
