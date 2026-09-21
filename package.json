@@ -27,7 +27,7 @@
     "plugin"
   ],
   "engines": {
-    "node": ">=18.0.0"
+    "node": ">=22.0.0"
   },
   "homepage": "https://github.com/ether/ep_headings2#readme",
   "bugs": {
@@ -38,8 +38,8 @@
   },
   "devDependencies": {
     "eslint": "^8.57.1",
-    "eslint-config-etherpad": "^4.0.5",
-    "typescript": "^7.0.2"
+    "eslint-config-etherpad": "^5.0.0",
+    "typescript": "~6.0.3"
   },
   "repository": {
     "type": "git",
