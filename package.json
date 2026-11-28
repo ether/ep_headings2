@@ -34,7 +34,7 @@
     "url": "https://github.com/ether/ep_headings2/issues"
   },
   "dependencies": {
-    "ep_plugin_helpers": "^0.6.10"
+    "ep_plugin_helpers": "^0.6.11"
   },
   "devDependencies": {
     "eslint": "^9.39.5",
